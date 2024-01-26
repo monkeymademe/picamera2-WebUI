@@ -16,9 +16,12 @@ app = Flask(__name__)
 picam2 = Picamera2()
 half_resolution = [dim // 2 for dim in picam2.sensor_resolution]
 full_resolution = [picam2.sensor_resolution]
+
+# Setting the stream to half resolution for the pi4 although I think it can handel full
 main_stream = {"size": half_resolution}
 video_config = picam2.create_video_configuration(main_stream)
-output = None
+
+
 
 # Set the path where the images will be stored
 UPLOAD_FOLDER = 'static/gallery'
@@ -27,7 +30,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create the upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+####################
+# Streaming Class
+####################
 
+output = None
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
@@ -47,6 +54,10 @@ def generate():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
+####################
+# Load Config from file Function
+####################
+
 # Load camera settings from config file
 def load_settings(settings_file):
     try:
@@ -62,7 +73,7 @@ def load_settings(settings_file):
         return None
 
 ####################
-# Site Routes
+# Site Routes (routes to actual pages)
 ####################
 @app.route("/")
 def home():
@@ -75,6 +86,10 @@ def about():
 @app.route('/video_feed')
 def video_feed():
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+####################
+# Setting Routes (routes that manipulate settings)
+####################
 
 # Route to update settings to the buffer
 @app.route('/update_live_settings', methods=['POST'])
@@ -130,6 +145,41 @@ def reset_default_live_settings():
     except Exception as e:
         return jsonify(error=str(e))
 
+# Add a new route to save settings
+@app.route('/save_settings', methods=['GET'])
+def save_settings():
+    global live_settings, restart_settings
+
+    try:
+        # Save current camera settings to the JSON file
+        with open('live-settings.json', 'w') as file:
+            json.dump(live_settings, file, indent=4)
+        with open('restart-settings.json', 'w') as file:
+            json.dump(restart_settings, file, indent=4)
+
+        return jsonify(success=True, message="Settings saved successfully")
+    except Exception as e:
+        return jsonify(success=False, message=str(e))
+
+####################
+# Start/Stop Steam and Take photo
+####################
+
+def start_camera_stream():
+    global picam2, output, video_config
+    #video_config = picam2.create_video_configuration()
+    # Flip Camera #################### Make configurable
+    # video_config["transform"] = Transform(hflip=1, vflip=1)
+    picam2.configure(video_config)
+    output = StreamingOutput()
+    picam2.start_recording(JpegEncoder(), FileOutput(output))
+    time.sleep(1)
+
+def stop_camera_stream():
+    global picam2
+    picam2.stop_recording()
+    time.sleep(1)
+
 # Define the route for capturing a photo
 @app.route('/capture_photo', methods=['POST'])
 def capture_photo():
@@ -152,41 +202,6 @@ def take_photo():
         logging.info(f"Image captured successfully. Path: {filepath}")
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
-
-# Add a new route to save settings
-@app.route('/save_settings', methods=['GET'])
-def save_settings():
-    global live_settings, restart_settings
-
-    try:
-        # Save current camera settings to the JSON file
-        with open('live-settings.json', 'w') as file:
-            json.dump(live_settings, file, indent=4)
-        with open('restart-settings.json', 'w') as file:
-            json.dump(restart_settings, file, indent=4)
-
-        return jsonify(success=True, message="Settings saved successfully")
-    except Exception as e:
-        return jsonify(success=False, message=str(e))
-
-####################
-# Start/Stop Camera Stream
-####################
-
-def start_camera_stream():
-    global picam2, output, video_config
-    #video_config = picam2.create_video_configuration()
-    # Flip Camera #################### Make configurable
-    # video_config["transform"] = Transform(hflip=1, vflip=1)
-    picam2.configure(video_config)
-    output = StreamingOutput()
-    picam2.start_recording(JpegEncoder(), FileOutput(output))
-    time.sleep(1)
-
-def stop_camera_stream():
-    global picam2
-    picam2.stop_recording()
-    time.sleep(1)
 
 
 ####################
@@ -262,6 +277,9 @@ def download_image(filename):
         print(f"Error downloading image: {e}")
         abort(500)
 
+####################
+# Lets get the party started
+####################
 
 if __name__ == "__main__":
     # Configure logging
