@@ -703,22 +703,8 @@ function saveSettings() {
     });
 }
 
-function capturePhotorr() {
-        fetch('/capture_photo', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            // Handle the response as needed
-        })
-        .catch(error => {
-            console.error('Error capturing photo:', error);
-        });
-    }
+////////////////////////////////////
+// Take a Picture functions
 
 let captureButton = document.getElementById('captureButton');
 let isButtonEnabled = true;
@@ -774,7 +760,6 @@ function capturePhoto() {
 
 ////////////////////////////////////
 // Feed Restarting Settings 
-
 // Function to update server settings and UI
 function updateRestartSettings(data) {
     return fetch('/update_restart_settings', {
