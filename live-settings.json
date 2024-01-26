@@ -1,0 +1,20 @@
+{
+    "LensPosition": 0.0,
+    "ExposureValue": 0.0,
+    "ExposureTime": 10000,
+    "AwbMode": 0,
+    "AfSpeed": 0,
+    "AfRange": 0,
+    "AeMeteringMode": 0,
+    "AeFlickerPeriod": 10000,
+    "AeFlickerMode": 0,
+    "AeExposureMode": 0,
+    "AeEnable": false,
+    "AwbEnable": false,
+    "AeConstraintMode": 0,
+    "Brightness": 0.0,
+    "Contrast": 1.0,
+    "Saturation": 1.0,
+    "Sharpness": 1.0,
+    "AfMode": 0
+}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-xxl">
+    <div class="row">
+        <div class="pt-5">
+            <!-- ###### Main Content ###### -->
+            <h2 class="pt-4 pb-2 mb-4 border-bottom">Image Gallery</h2>
+    <div class="container">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+       <h3>No images in gallery</h3>
+    </div>
+    </div>
+</div>
+</div>
+</div>
+<script>
+function deleteImage(filename, cardId) {
+    console.log('Deleting image:', filename, 'Card ID:', cardId);
+
+    if (confirm('Are you sure you want to delete this image?')) {
+        fetch(`/delete_image/${filename}`, {
+            method: 'DELETE', // Use DELETE method
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the card from the UI
+                const card = document.getElementById(cardId);
+                console.log('Selected card:', card);
+                if (card) {
+                    card.remove();
+                    console.log('Card removed successfully');
+                } else {
+                    console.log('Card not found');
+                }
+            }
+        })
+        .catch(error => console.error('Error deleting image:', error));
+    }
+}
+function adjustCardHeight() {
+    const cards = document.querySelectorAll('.card');
+    const rowHeight = 300; // Set your desired row height
+
+    let currentRow = -1;
+    let currentRowHeight = 0;
+
+    cards.forEach((card, index) => {
+        const cardHeight = card.offsetHeight;
+
+        if (currentRowHeight + cardHeight > rowHeight) {
+            currentRow++;
+            currentRowHeight = 0;
+        }
+
+        currentRowHeight += cardHeight;
+        card.style.gridRow = `span ${Math.ceil(cardHeight / rowHeight)}`;
+    });
+}
+</script>
+
+{% endblock%}

@@ -1,0 +1,842 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-xxl">
+    <div class="row">
+        <div class="col-md-8 pt-5">
+            <!-- ###### Main Content ###### -->
+            <h2 class="pt-4 pb-2 mb-4 border-bottom">Camera Feed</h2>
+            <img class="img-fluid" id="cameraImage" alt="Camera Feed">
+            <div class="pt-3 row">
+                <div class="col-4">
+                    <button type="button" class="btn btn-primary btn-success btn-lg" id="captureButton" onclick="capturePhoto()">Capture Image</button>
+                </div>
+                <div class="col-8">
+                    <div id="captureAlert" class="alert" role="alert" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 pt-5 pb-4 overflow-y-scroll" style="height: 100vh; height: -webkit-fill-available; max-height: 100vh; overflow-x: auto; overflow-y: hidden;">
+            <!-- ###### Side Bar ###### -->
+            <div class="accordion overflow-y-scroll pt-4" id="accordionExample">
+            <!-- ###### Orientation Settings ###### -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#orientationSettings" aria-expanded="false" aria-controls="orientationSettings">
+                    Orientation Settings
+                </button>
+                </h2>
+                <div id="orientationSettings" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        <!-- Orientation -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="hflip">
+                            <label class="form-check-label" for="hflip">Horazontal Flip</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="vflip">
+                            <label class="form-check-label" for="vflip">Vertical Flip </label>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="adjustflip()">Set</button>
+                        <!-- End of Line-->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ###### Auto Focus Settings ###### -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        Auto Focus Settings
+                    </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <!-- AfMode -->
+                            <p>Auto Focus Mode:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode0" onclick="adjustAfMode('0')">
+                                <label class="form-check-label" for="AfMode0">Manual</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode1" onclick="adjustAfMode('1')">
+                                <label class="form-check-label" for="AfMode1">Auto</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode2" onclick="adjustAfMode('2')">
+                                <label class="form-check-label" for="AfMode2">Continuous</label>
+                            </div>
+                            <hr>
+                            <!-- LensPosition -->
+                            <div class="form-group">
+                                <label for="LensPosition" class="form-label" id="currentLensPosition">Lens Position:</label>
+                                <input type="range" class="form-range" min="0.0" max="10.0" step="0.1" id="LensPosition" onchange="adjustLensPosition(this.value)">
+                                <div class="form-text" id="basic-addon4">In dioptres (1 / distance in metres)</div>
+                            </div>
+                            <hr>
+                            <!-- AfRange -->
+                            <p>Auto Focus Range:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange0" onclick="adjustAfRange('0')">
+                                <label class="form-check-label" for="AfRange0">Normal</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange1" onclick="adjustAfRange('1')">
+                                <label class="form-check-label" for="AfRange1">Macro</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange2" onclick="adjustAfRange('2')">
+                                <label class="form-check-label" for="AfRange2">Full</label>
+                            </div>
+                            <hr>
+                            <!-- AfSpeed -->
+                            <p>Auto Focus Speed:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed0" onclick="adjustAfSpeed('0')">
+                                <label class="form-check-label" for="AfSpeed0">Normal</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed1" onclick="adjustAfSpeed('1')">
+                                <label class="form-check-label" for="AfRange1">Fast</label>
+                            </div>
+                            <!-- End of Line-->
+                        </div>
+                    </div>
+                </div>
+
+            <!-- ###### Gain and Exposure Settings ###### -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Gain and Exposure Settings
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <!-- AeEnable -->
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="AeEnable" onchange="adjustAeEnable()">
+                                <label class="form-check-label" for="AeEnable">Enable Changes to AEC/AGC algorithm</label>
+                            </div>
+                            <hr>
+                            <!-- AeConstraintMode -->
+                            <p>AE Constraint Mode:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode0" onclick="adjustAeConstraintMode('0')">
+                                <label class="form-check-label" for="AeConstraintMode0">Normal</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode1" onclick="adjustAeConstraintMode('1')">
+                                <label class="form-check-label" for="AeConstraintMode1">Highlight</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode2" onclick="adjustAeConstraintMode('2')" disabled>
+                                <label class="form-check-label" for="AeConstraintMode2">Shadows</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode3" onclick="adjustAeConstraintMode('3')" disabled>
+                                <label class="form-check-label" for="AeConstraintMode3">Custom</label>
+                            </div>
+                            <hr>
+                            <!-- AeExposureMode -->
+                            <p>AE Exposure Mode:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode0" onclick="adjustAeExposureMode('0')">
+                                <label class="form-check-label" for="AeExposureMode0">Normal</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode1" onclick="adjustAeExposureMode('1')">
+                                <label class="form-check-label" for="AeExposureMode1">Short</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode2" onclick="adjustAeExposureMode('2')">
+                                <label class="form-check-label" for="AeExposureMode2">Long</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode3" onclick="adjustAeExposureMode('3')" disabled>
+                                <label class="form-check-label" for="AeExposureMode3">Custom</label>
+                            </div>
+                            <hr>
+                            <!-- AeFlickerMode -->
+                            <p>AE Flicker Mode:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeFlickerMode" id="AeFlickerMode0" onclick="adjustAeFlickerMode('0')">
+                                <label class="form-check-label" for="AeFlickerMode0">Off</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeFlickerMode" id="AeFlickerMode1" onclick="adjustAeFlickerMode('1')">
+                                <label class="form-check-label" for="AeFlickerMode1">Manual</label>
+                            </div>
+                            <hr>
+                            <!-- AeFlickerPeriod -->
+                            <label for="AeFlickerPeriod" class="form-label">AE Flicker Period:</label>
+                            <div class="input-group mb-3">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" placeholder="" aria-label="" aria-describedby="button-addon2" id="AeFlickerPeriod">
+                                    <label for="floatingInputValue">Value in microseconds</label>
+                                </div>
+                                <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustAeFlickerPeriod()">Set</button>
+                            </div>
+                            <hr>
+                            <!-- AeMeteringMode -->
+                            <p>AE Metering Mode:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode0" onclick="adjustAeMeteringMode('0')">
+                                <label class="form-check-label" for="AeMeteringMode0">Centre Weighted</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode1" onclick="adjustAeMeteringMode('1')">
+                                <label class="form-check-label" for="AeMeteringMode1">Short</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode2" onclick="adjustAeMeteringMode('2')">
+                                <label class="form-check-label" for="AeMeteringMode2">Matrix</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode3" onclick="adjustAeMeteringMode('3')" disabled>
+                                <label class="form-check-label" for="AeMeteringMode3">Custom</label>
+                            </div>
+                            <hr>
+                            <!-- ExposureTime -->
+                            <label for="ExposureTime" class="form-label">Exposure Time:</label>
+                            <div class="input-group mb-3">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" placeholder="" aria-label="" aria-describedby="button-addon2" id="ExposureTime">
+                                    <label for="floatingInputValue">Value in microseconds</label>
+                                </div>
+                                <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustExposureTime()">Set</button>
+                            </div>
+                            <hr>
+                            <!-- ExposureValue -->
+                            <div class="form-group">
+                                <label for="ExposureValue" class="form-label" id="ExposureValue">Exposure Compensation:</label>
+                                <input type="range" class="form-range" min="-8.0" max="8.0" step="0.1" id="ExposureValue" onchange="adjustExposureValue(this.value)">
+                            </div>
+                            <hr>
+                            <!-- End of Line-->
+                        </div>
+                    </div>
+                </div>
+
+            <!-- ###### Auto White Balance Settings ###### -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Auto White Balance Settings
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <!-- AwbEnable -->
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="AwbEnable" onchange="adjustAwbEnable()">
+                                <label class="form-check-label" for="AwbEnable">Enable AWB algorithm</label>
+                            </div>
+                            <hr>
+                            <!-- AwbMode -->
+                            <p>(AWB) White Balance Mode:</p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode0" onclick="adjustAwbMode('0')">
+                                <label class="form-check-label" for="AwbMode0">Auto</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode1" onclick="adjustAwbMode('1')">
+                                <label class="form-check-label" for="AwbMode1">Tungsten</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode2" onclick="adjustAwbMode('2')">
+                                <label class="form-check-label" for="AwbMode2">Fluorescent</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode3" onclick="adjustAwbMode('3')">
+                                <label class="form-check-label" for="AwbMode3">Indoor</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode4" onclick="adjustAwbMode('4')">
+                                <label class="form-check-label" for="AwbMode4">Daylight</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode5" onclick="adjustAwbMode('5')">
+                                <label class="form-check-label" for="AwbMode4">Cloudy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode6" onclick="adjustAwbMode('6')" disabled>
+                                <label class="form-check-label" for="AwbMode4">Custom</label>
+                            </div>
+                            <!-- End of Line-->
+                        </div>
+                    </div>
+                </div>
+
+            <!-- ###### Brightness & Contrast Settings ###### -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        Brightness & Contrast Settings
+                        </button>
+                    </h2>
+                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <!-- Brightness -->
+                            <div class="form-group">
+                                <label for="brightness" class="form-label" id="currentBrightness">Brightness:</label>
+                                <input type="range" class="form-range" min="-1.0" max="1.0" step="0.1" id="Brightness" onchange="adjustBrightness(this.value)">
+                            </div>
+                            <hr>
+                            <!-- Contrast -->
+                            <div class="form-group">
+                                <label for="contrast" class="form-label" id="currentContrast">Contrast:</label>
+                                <input type="range" class="form-range" min="0.0" max="32.0" step="1.0" id="Contrast" onchange="adjustContrast(this.value)">
+                            </div>
+                            <hr>
+                            <!-- Saturation -->
+                            <div class="form-group">
+                                <label for="saturation" class="form-label" id="currentSaturation">Saturation:</label>
+                                <input type="range" class="form-range" min="0.0" max="32.0" step="1.0" id="Saturation" onchange="adjustSaturation(this.value)">
+                            </div>
+                            <hr>
+                            <!-- Sharpness -->
+                            <div class="form-group">
+                                <label for="sharpness" class="form-label" id="currentSharpness">Sharpness:</label>
+                                <input type="range" class="form-range" min="0.0" max="16.0" step="0.1" id="Sharpness" onchange="adjustSharpness(this.value)">
+                            </div>
+                            <!-- End of Line-->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <ul class="list-group pt-3">
+                <li class="list-group-item active" aria-current="true">Settings Controls</li>
+                <li class="list-group-item">
+                    <button type="button" class="btn btn-primary" onclick="resetsettings()" style="margin: 0.25rem 0.125rem;">Reset Default Settings</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()" style="margin: 0.25rem 0.125rem;">Save Current Settings</button>
+                </li>
+            </ul>
+        </div>
+        
+    </div>
+</div>
+ 
+  
+  
+  
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOM content loaded');
+
+    // Parse the JSON string into a JavaScript object
+    var liveSettings = {{ live_settings | tojson }};
+    var restartSettings = {{ restart_settings | tojson }};
+    console.log(restartSettings);
+    // Call the updateUI
+
+    updateUI(liveSettings);
+    updateUI(restartSettings);
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+        // Get the image element
+        const cameraImage = document.getElementById('cameraImage');
+
+        // Set the source attribute to start loading the image
+        cameraImage.src = "{{ url_for('video_feed') }}";
+    });
+
+document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            // Page is visible, reload the camera feed
+            refreshCameraFeed();
+        }
+    });
+
+const settings = {};
+
+function updateUI(settings) {
+    for (const key in settings) {
+            if (key === 'LensPosition') {
+                document.getElementById('LensPosition').value = settings[key];
+                const LensPosition = document.getElementById('currentLensPosition');
+                if (LensPosition) {
+                    LensPosition.innerText = `Lens Position: ${settings[key]}`;
+                }
+            } else if (key === 'ExposureValue') {
+                document.getElementById('ExposureValue').value = settings[key];
+                const ExposureValue = document.getElementById('ExposureValue');
+                if (ExposureValue) {
+                    ExposureValue.innerText = `Exposure Compensation: ${settings[key]}`;
+                }
+            } else if (key === 'ExposureTime') {
+                // Update button for ExposureTime
+                const exposureTimeInput = document.getElementById('ExposureTime');
+                if (exposureTimeInput) {
+                    exposureTimeInput.value = settings[key];
+                }
+            } else if (key === 'AwbEnable') {
+                // Update the switch state
+                const awbEnableSwitch = document.getElementById('AwbEnable');
+                if (awbEnableSwitch) {
+                    awbEnableSwitch.checked = settings[key];
+                }
+            } else if (key === 'AeFlickerPeriod') {
+                // Update inputbox for AeFlickerPeriod
+                const aeFlickerPeriodInput = document.getElementById('AeFlickerPeriod');
+                if (aeFlickerPeriodInput) {
+                    aeFlickerPeriodInput.value = settings[key];
+                    console.log("aeFlickerPeriodInput");
+                }
+            } else  if (key === 'AeEnable') {
+                // Update the switch state
+                const aeEnableSwitch = document.getElementById('AeEnable');
+                if (aeEnableSwitch) {
+                    aeEnableSwitch.checked = settings[key];
+                }
+            } else if (key === 'Brightness') {
+                document.getElementById('Brightness').value = settings[key];
+                const brightnessSpan = document.getElementById('currentBrightness');
+                if (brightnessSpan) {
+                    brightnessSpan.innerText = `Brightness: ${settings[key]}`;
+                }
+            } else if (key === 'Contrast') {
+                document.getElementById('Contrast').value = settings[key];
+                const contrastSpan = document.getElementById('currentContrast');
+                if (contrastSpan) {
+                    contrastSpan.innerText = `Contrast: ${settings[key]}`;
+                }
+            } else if (key === 'Saturation') {
+                document.getElementById('Saturation').value = settings[key];
+                const saturationSpan = document.getElementById('currentSaturation');
+                if (saturationSpan) {
+                    saturationSpan.innerText = `Saturation: ${settings[key]}`;
+                }
+            } else if (key === 'Sharpness') {
+                document.getElementById('Sharpness').value = settings[key];
+                const sharpnessSpan = document.getElementById('currentSharpness');
+                if (sharpnessSpan) {
+                    sharpnessSpan.innerText = `Sharpness: ${settings[key]}`;
+                }
+            } else if (key === 'AfMode') {
+                // Update checkboxes for AfMode
+                const checkboxes = document.getElementsByName('AfMode');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AfMode', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AfRange') {
+                // Update checkboxes for AfRange
+                const checkboxes = document.getElementsByName('AfRange');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AfRange', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AfSpeed') {
+                // Update checkboxes for AfSpeed
+                const checkboxes = document.getElementsByName('AfSpeed');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AfSpeed', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AeConstraintMode') {
+                // Update checkboxes for AeConstraintMode
+                const checkboxes = document.getElementsByName('AeConstraintMode');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AeConstraintMode', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AeExposureMode') {
+                // Update checkboxes for AeExposureMode
+                const checkboxes = document.getElementsByName('AeExposureMode');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AeExposureMode', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AeFlickerMode') {
+                // Update checkboxes for AeFlickerMode
+                const checkboxes = document.getElementsByName('AeFlickerMode');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AeFlickerMode', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AeMeteringMode') {
+                // Update checkboxes for AeMeteringMode
+                const checkboxes = document.getElementsByName('AeMeteringMode');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AeMeteringMode', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'AwbMode') {
+                // Update checkboxes for AwbMode
+                const checkboxes = document.getElementsByName('AwbMode');
+                checkboxes.forEach(checkbox => {
+                    const checkboxValue = parseInt(checkbox.id.replace('AwbMode', ''));
+                    checkbox.checked = settings[key] === checkboxValue;
+                });
+            } else if (key === 'hflip') {
+                // Update checkbox for hflip
+                const checkbox = document.getElementById('hflip');
+                checkbox.checked = settings[key] === 1;
+            } else if (key === 'vflip') {
+                // Update checkbox for vflip
+                const checkbox = document.getElementById('vflip');
+                checkbox.checked = settings[key] === 1;
+            } else {
+                console.log(`Skipping unknown setting: ${key}`);
+            }
+    }
+}
+
+////////////////////////////////////
+// Live Settings 
+
+// Function to update server settings and UI
+function updateLiveSettings(data) {
+    return fetch('/update_live_settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Settings updated:', data);
+        // Return the data to the next chain
+        return data;
+    })
+    .catch(error => {
+        console.error('Error updating settings:', error);
+        throw error;  // Re-throw the error for the next catch
+    });
+}
+
+function adjustAfMode(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AfMode: modeInt });
+    // Update server settings
+    updateLiveSettings({ AfMode: modeInt });
+}
+function adjustAeConstraintMode(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AeConstraintMode: modeInt });
+    // Update server settings
+    updateLiveSettings({ AeConstraintMode: modeInt });
+}
+function adjustBrightness(value) {
+    console.log('Brightness changed:', value);
+    // Update UI with the new value
+    updateUI({ Brightness: value });
+    // Update server settings
+    updateLiveSettings({ Brightness: parseFloat(value) });
+}
+function adjustContrast(value) {
+    console.log('Contrast changed:', value);
+    // Update UI with the new value
+    updateUI({ Contrast: value });
+    // Update server settings
+    updateLiveSettings({ Contrast: parseFloat(value) });
+}
+function adjustSaturation(value) {
+    console.log('Saturation changed:', value);
+    // Update UI with the new value
+    updateUI({ Saturation: value });
+    // Update server settings
+    updateLiveSettings({ Saturation: parseFloat(value) });
+}
+function adjustSharpness(value) {
+    console.log('Sharpness changed:', value);
+    // Update UI with the new value
+    updateUI({ Sharpness: value });
+    // Update server settings
+    updateLiveSettings({ Sharpness: parseFloat(value) });
+}
+function adjustAeEnable() {
+    // Get the current state of the switch
+    const aeEnableSwitch = document.getElementById('AeEnable');
+    const newValue = aeEnableSwitch.checked;
+    // Send the data to the server
+    console.log('aeEnableSwitch:', newValue);
+    updateLiveSettings({ 'AeEnable': newValue });
+}
+function adjustAwbEnable() {
+    // Get the current state of the switch
+    const awbEnableSwitch = document.getElementById('AwbEnable');
+    const newValue = awbEnableSwitch.checked;
+    // Send the data to the server
+    updateLiveSettings({ 'AwbEnable': newValue });
+}
+function adjustAeExposureMode() {
+    // Get the current state of the switch
+    const a = document.getElementById('AeEnable');
+    const newValue = aeEnableSwitch.checked;
+    // Send the data to the server
+    updateLiveSettings({ 'AeEnable': newValue });
+}
+function adjustAeExposureMode(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AeExposureMode: modeInt });
+    // Update server settings
+    updateLiveSettings({ AeExposureMode: modeInt });
+}
+function adjustAeFlickerMode(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AeFlickerMode: modeInt });
+    // Update server settings
+    updateLiveSettings({ AeFlickerMode: modeInt });
+}
+function adjustAeFlickerPeriod() {
+    // Handle the input change here
+    const modeInt = document.getElementById('AeFlickerPeriod').value;
+    updateUI({ AeFlickerPeriod: modeInt });
+    // Update server settings
+    updateLiveSettings({ AeFlickerPeriod: modeInt });
+}
+function adjustAeMeteringMode(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AeMeteringMode: modeInt });
+    // Update server settings
+    updateLiveSettings({ AeMeteringMode: modeInt });
+}
+function adjustAfRange(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AfRange: modeInt });
+    // Update server settings
+    updateLiveSettings({ AfRange: modeInt });
+}
+function adjustAfSpeed(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AfSpeed: modeInt });
+    // Update server settings
+    updateLiveSettings({ AfSpeed: modeInt });
+}
+function adjustAwbMode(mode) {
+    // Convert mode to an integer
+    const modeInt = parseInt(mode);
+    // Update UI with the new value
+    updateUI({ AwbMode: modeInt });
+    // Update server settings
+    updateLiveSettings({ AwbMode: modeInt });
+}
+function adjustExposureTime() {
+    // Handle the input change here
+    const modeInt = document.getElementById('ExposureTime').value;
+    updateUI({ ExposureTime: modeInt });
+    // Update server settings
+    updateLiveSettings({ ExposureTime: modeInt });
+}
+function adjustExposureValue(value) {
+    console.log('ExposureValue changed:', value);
+    // Update UI with the new value
+    updateUI({ ExposureValue: value });
+    // Update server settings
+    updateLiveSettings({ ExposureValue: parseFloat(value) });
+}
+function adjustLensPosition(value) {
+    console.log('LensPosition changed:', value);
+    // Update UI with the new value
+    updateUI({ LensPosition: value });
+    // Update server settings
+    updateLiveSettings({ LensPosition: parseFloat(value) });
+}
+
+function resetsettingsold() {
+    // Handle the input change here
+    const modeInt = document.getElementById('ExposureTime').value;
+    updateUI(liveSettings)
+    console.log("Balls");
+}
+
+// Function to update server settings and UI
+function resetsettings() {
+        fetch('/reset_default_live_settings')
+            .then(response => response.json())
+            .then(data => {
+        console.log('Settings received:', data);
+
+        // Access live_settings and restart_settings
+        const live_settings = data.data1;
+        const restart_settings = data.data2;
+
+        console.log('Data 1:', live_settings);
+        console.log('Data 2:', restart_settings);
+        // Update UI with live_settings
+        updateUI(live_settings);
+        updateUI(restart_settings);
+        refreshCameraFeed();
+    })
+    .catch(error => {
+        console.error('Error updating settings:', error);
+        throw error;  // Re-throw the error for the next catch
+    });
+}
+
+function saveSettings() {
+    fetch('/save_settings', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Settings saved:', data);
+        // You can display a message or update the UI as needed
+    })
+    .catch(error => {
+        console.error('Error saving settings:', error);
+        // Handle the error
+    });
+}
+
+function capturePhotorr() {
+        fetch('/capture_photo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // Handle the response as needed
+        })
+        .catch(error => {
+            console.error('Error capturing photo:', error);
+        });
+    }
+
+let captureButton = document.getElementById('captureButton');
+let isButtonEnabled = true;
+
+function enableCaptureButton() {
+    isButtonEnabled = true;
+    captureButton.disabled = false;
+}
+
+function capturePhoto() {
+    if (!isButtonEnabled) {
+        return;
+    }
+
+    // Disable the button to prevent rapid presses
+    captureButton.disabled = true;
+    isButtonEnabled = false;
+    // Show alert based on the condition
+    const alertElement = document.getElementById('captureAlert');
+
+    // Call your capture_photo function here
+    fetch('/capture_photo', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the success response here
+        console.log(data);
+
+        // Re-enable the button after a successful response
+        enableCaptureButton();
+        // Success alert
+        alertElement.className = 'alert alert-success';
+        alertElement.textContent = 'Image saved successfully.';
+    })
+    .catch(error => {
+        // Handle the error response here
+        console.error('Error capturing photo:', error);
+        // Error alert
+        alertElement.className = 'alert alert-danger';
+        alertElement.textContent = 'Error capturing photo.';
+        // Re-enable the button in case of an error
+        enableCaptureButton();
+    });
+    alertElement.style.display = 'block';
+
+    // Optional: Hide the alert after a few seconds
+    setTimeout(() => {
+        alertElement.style.display = 'none';
+    }, 5000); // Adjust the time as needed
+}
+
+
+////////////////////////////////////
+// Feed Restarting Settings 
+
+// Function to update server settings and UI
+function updateRestartSettings(data) {
+    return fetch('/update_restart_settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Settings updated:', data);
+        // Update UI with the new settings
+        // updateUI(data);
+        // Return the data to the next chain
+        return data;
+    })
+    .catch(error => {
+        console.error('Error updating settings:', error);
+        throw error;  // Re-throw the error for the next catch
+    });
+}
+// Function to refresh the camera feed
+function refreshCameraFeed() {
+  const imageElement = document.getElementById('cameraImage');
+  if (imageElement) {
+    // Get the full resolution of the image
+    const fullResolutionWidth = imageElement.naturalWidth;
+    const fullResolutionHeight = imageElement.naturalHeight;
+
+    // Calculate the aspect ratio
+    const aspectRatio = fullResolutionWidth / fullResolutionHeight;
+
+    // Set the width to 100% and calculate the height based on the aspect ratio
+    imageElement.style.width = '100%';
+    imageElement.style.height = `${imageElement.offsetWidth / aspectRatio}px`;
+    cameraImage.src = `${cameraImage.src.split('?')[0]}?${new Date().getTime()}`;
+
+  }
+}
+
+function adjustflip(mode) {
+    // Convert mode to an integer
+    const hflipswitch = document.getElementById('hflip');
+    const hflipValue = hflipswitch.checked ? 1 : 0;  // Convert true to 1, false to 0
+    const vflipswitch = document.getElementById('vflip');
+    const vflipValue = vflipswitch.checked ? 1 : 0;  // Convert true to 1, false to 0
+    // Update UI with the new value
+    updateUI({ hflip: hflipValue, vflip: vflipValue });
+    // Update server settings and wait for it to complete
+    updateRestartSettings({ hflip: hflipValue, vflip: vflipValue })
+        .then(() => {
+            // Refresh the camera feed after updating server settings
+            refreshCameraFeed();
+        })
+        .catch(error => {
+            console.error('Error updating server settings:', error);
+            // Handle the error if needed
+        });
+}
+
+</script>
+
+{% endblock %}
+
