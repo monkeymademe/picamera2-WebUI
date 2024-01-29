@@ -42,7 +42,7 @@
                     </div>
                 </div>
             </div>
-            
+            {% if settings_from_camera['AfMode'] or settings_from_camera['LensPosition'] or settings_from_camera['AfRange'] or settings_from_camera['AfSpeed'] %}
             <!-- ###### Auto Focus Settings ###### -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
@@ -52,6 +52,7 @@
                     </h2>
                     <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                         <div class="accordion-body">
+                            {% if 'AfMode' in settings_from_camera %}
                             <!-- AfMode -->
                             <p>Auto Focus Mode:</p>
                             <div class="form-check">
@@ -67,13 +68,17 @@
                                 <label class="form-check-label" for="AfMode2">Continuous</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'LensPosition' in settings_from_camera %}
                             <!-- LensPosition -->
-                            <div class="form-group">
+                            <div class="form-group" id="LensPositionContainer">
                                 <label for="LensPosition" class="form-label" id="currentLensPosition">Lens Position:</label>
                                 <input type="range" class="form-range" min="0.0" max="10.0" step="0.1" id="LensPosition" onchange="adjustLensPosition(this.value)">
                                 <div class="form-text" id="basic-addon4">In dioptres (1 / distance in metres)</div>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AfRange' in settings_from_camera %}
                             <!-- AfRange -->
                             <p>Auto Focus Range:</p>
                             <div class="form-check">
@@ -89,6 +94,8 @@
                                 <label class="form-check-label" for="AfRange2">Full</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AfSpeed' in settings_from_camera %}
                             <!-- AfSpeed -->
                             <p>Auto Focus Speed:</p>
                             <div class="form-check">
@@ -99,11 +106,14 @@
                                 <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed1" onclick="adjustAfSpeed('1')">
                                 <label class="form-check-label" for="AfRange1">Fast</label>
                             </div>
+                            {% endif %}
                             <!-- End of Line-->
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
+            {% if settings_from_camera['AeEnable'] or settings_from_camera['AeConstraintMode'] or settings_from_camera['AeExposureMode'] or settings_from_camera['AeFlickerMode'] or settings_from_camera['AeFlickerPeriod'] or settings_from_camera['AeMeteringMode'] or settings_from_camera['ExposureTime'] or settings_from_camera['ExposureValue'] %}
             <!-- ###### Gain and Exposure Settings ###### -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
@@ -113,12 +123,15 @@
                     </h2>
                     <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                         <div class="accordion-body">
+                            {% if 'AeEnable' in settings_from_camera %}
                             <!-- AeEnable -->
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" id="AeEnable" onchange="adjustAeEnable()">
                                 <label class="form-check-label" for="AeEnable">Enable Changes to AEC/AGC algorithm</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AeConstraintMode' in settings_from_camera %}
                             <!-- AeConstraintMode -->
                             <p>AE Constraint Mode:</p>
                             <div class="form-check">
@@ -138,6 +151,8 @@
                                 <label class="form-check-label" for="AeConstraintMode3">Custom</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AeExposureMode' in settings_from_camera %}
                             <!-- AeExposureMode -->
                             <p>AE Exposure Mode:</p>
                             <div class="form-check">
@@ -157,6 +172,8 @@
                                 <label class="form-check-label" for="AeExposureMode3">Custom</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AeFlickerMode' in settings_from_camera %}
                             <!-- AeFlickerMode -->
                             <p>AE Flicker Mode:</p>
                             <div class="form-check">
@@ -168,6 +185,8 @@
                                 <label class="form-check-label" for="AeFlickerMode1">Manual</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AeFlickerPeriod' in settings_from_camera %}
                             <!-- AeFlickerPeriod -->
                             <label for="AeFlickerPeriod" class="form-label">AE Flicker Period:</label>
                             <div class="input-group mb-3">
@@ -178,6 +197,8 @@
                                 <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustAeFlickerPeriod()">Set</button>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AeMeteringMode' in settings_from_camera %}
                             <!-- AeMeteringMode -->
                             <p>AE Metering Mode:</p>
                             <div class="form-check">
@@ -197,6 +218,8 @@
                                 <label class="form-check-label" for="AeMeteringMode3">Custom</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'ExposureTime' in settings_from_camera %}
                             <!-- ExposureTime -->
                             <label for="ExposureTime" class="form-label">Exposure Time:</label>
                             <div class="input-group mb-3">
@@ -207,17 +230,21 @@
                                 <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustExposureTime()">Set</button>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'ExposureValue' in settings_from_camera %}
                             <!-- ExposureValue -->
                             <div class="form-group">
                                 <label for="ExposureValue" class="form-label" id="ExposureValue">Exposure Compensation:</label>
                                 <input type="range" class="form-range" min="-8.0" max="8.0" step="0.1" id="ExposureValue" onchange="adjustExposureValue(this.value)">
                             </div>
-                            <hr>
+                            {% endif %}
                             <!-- End of Line-->
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
+                {% if settings_from_camera['AwbEnable'] or settings_from_camera['AwbMode'] %}
             <!-- ###### Auto White Balance Settings ###### -->
                 <div class="accordion-item">
                     <h2 class="accordion-header">
@@ -227,12 +254,15 @@
                     </h2>
                     <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                         <div class="accordion-body">
+                            {% if 'AwbEnable' in settings_from_camera %}
                             <!-- AwbEnable -->
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" id="AwbEnable" onchange="adjustAwbEnable()">
                                 <label class="form-check-label" for="AwbEnable">Enable AWB algorithm</label>
                             </div>
                             <hr>
+                            {% endif %}
+                            {% if 'AwbMode' in settings_from_camera %}
                             <!-- AwbMode -->
                             <p>(AWB) White Balance Mode:</p>
                             <div class="form-check">
@@ -263,10 +293,12 @@
                                 <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode6" onclick="adjustAwbMode('6')" disabled>
                                 <label class="form-check-label" for="AwbMode4">Custom</label>
                             </div>
+                            {% endif %}
                             <!-- End of Line-->
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
             <!-- ###### Brightness & Contrast Settings ###### -->
                 <div class="accordion-item">
@@ -349,6 +381,12 @@ document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
             // Page is visible, reload the camera feed
             refreshCameraFeed();
+            document.getElementById('LensPosition').value = settings[key];
+                const LensPosition = document.getElementById('currentLensPosition');
+                if (LensPosition) {
+                    console.log('LensPosition');
+                }
+                console.log('No LensPosition');
         }
     });
 
@@ -361,7 +399,9 @@ function updateUI(settings) {
                 const LensPosition = document.getElementById('currentLensPosition');
                 if (LensPosition) {
                     LensPosition.innerText = `Lens Position: ${settings[key]}`;
+                    console.log('LensPosition');
                 }
+                console.log('No LensPosition');
             } else if (key === 'ExposureValue') {
                 document.getElementById('ExposureValue').value = settings[key];
                 const ExposureValue = document.getElementById('ExposureValue');
