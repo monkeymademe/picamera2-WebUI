@@ -60,7 +60,16 @@ Please check [Picamera installation Requirements](https://github.com/raspberrypi
 
 - **Hardware**
 
-Tested on Raspberry Pi Camera Module v3 which has focus settings. v1,2 and HQ are untested but if you see any bugs please post an issue. In theory any settings like Lens Position that are unique to Camera Module v3 could simply not effect the camera feed.
+Tested on Raspberry Pi Camera Module v3 which has focus settings. v1 is untested but if you see any bugs please post an issue. v2 and HQ has been tested settings like Auto focus that are unique to Camera Module v3 are filtered and removed when an older camera is used.
+
+Raspberry Pi Compatibilty: 
+
+- Pi 5 (8GB): Perfect
+- Pi 4 (4GB): Perfect
+- Pi 3B: Perfect
+- Pi Zero v2: Slower lower frame rate on feed but very useable
+- Pi Zero v1: Untested
+- Older Pi's (Model A, 2B etc): Untested but expected not to work well.
 
 ## Future features
 
