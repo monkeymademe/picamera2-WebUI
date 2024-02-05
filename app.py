@@ -20,7 +20,6 @@ full_resolution = [picam2.sensor_resolution]
 # Setting the stream to half resolution for the pi4 although I think it can handel full
 main_stream = {"size": half_resolution}
 video_config = picam2.create_video_configuration(main_stream)
-settings_from_camera = picam2.camera_controls
 print(picam2.camera_properties['Model'])
 
 # Set the path where the images will be stored
@@ -77,7 +76,7 @@ def load_settings(settings_file):
 ####################
 @app.route("/")
 def home():
-    return render_template("camerasettings.html", title="Home", live_settings=live_settings, restart_settings=restart_settings, settings_from_camera=settings_from_camera)
+    return render_template("camerasettings.html", title="Home", live_settings=live_settings, restart_settings=restart_settings, settings_from_camera=default_settings)
 
 @app.route("/beta")
 def beta():
@@ -103,14 +102,16 @@ def update_settings():
     try:
         # Parse JSON data from the request
         data = request.get_json()
+        print(data)
         # Update only the keys that are present in the data
         for key in data:
             if key in live_settings:
+                print(key)
                 if key in ('AfMode', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeFlickerPeriod', 'AeMeteringMode', 'AfRange', 'AfSpeed', 'AwbMode', 'ExposureTime') :
                     live_settings[key] = int(data[key])
                 elif key in ('Brightness', 'Contrast', 'Saturation', 'Sharpness', 'ExposureValue', 'LensPosition'):
                     live_settings[key] = float(data[key])
-                elif key in ('AeEnable', 'AwbEnable'):
+                elif key in ('AeEnable', 'AwbEnable', 'ScalerCrop'):
                     live_settings[key] = data[key]
         # Update the configuration of the video feed
         configure_camera(live_settings)
@@ -217,8 +218,6 @@ def take_photo():
 
 def configure_camera(live_settings):
     picam2.set_controls(live_settings)
-    temp = picam2.camera_controls
-    print(temp)
     time.sleep(0.5)
 
 def restart_configure_camera(restart_settings):

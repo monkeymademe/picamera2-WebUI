@@ -339,6 +339,65 @@
                     </div>
                 </div>
 
+
+                <!-- ###### ScalerCrop Settings ###### -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                            Scaler Crop Settings
+                        </button>
+                    </h2>
+                    <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <!-- ScalerCrop -->
+                            <style>
+                                #cameraFrame {
+                                   width: 242px; /* Set a smaller width */
+                                   height: 135px; /* Set a smaller height */
+                                }
+
+                                 #cropFrame {
+                                    position: absolute;
+                                }
+
+                                input {
+                                    width: 50px;
+                                }
+                            </style>
+                            <div class="border border-primary card" id="cameraFrame">
+                                <div class="border border-danger card" id="cropFrame"></div>
+                            </div>
+                            <label for="ScalerCrop" class="form-label">Size of Crop</label>
+                            <div class="input-group mb-3 has-validation">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" placeholder="" aria-label="width" id="ScalerCropWidth">
+                                    <label for="floatingInputValue">Width in px</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" placeholder="" aria-label="height" id="ScalerCropHeight">
+                                    <label for="floatingInputValue">Height in px</label>
+                                </div>
+                            </div>
+                            <label for="ScalerCrop" class="form-label">Offset</label>
+                            <div class="input-group mb-3 has-validation">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" placeholder="" aria-label="xOffset" id="ScalerCropXOffset">
+                                    <label for="floatingInputValue">X Offset</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" placeholder="" aria-label="yOffset" id="ScalerCropYOffset">
+                                    <label for="floatingInputValue">Y Offset</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustScalerCrop()">Set</button>
+                        
+
+                            <!-- End of Line-->
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
             <ul class="list-group pt-3">
                 <li class="list-group-item active" aria-current="true">Settings Controls</li>
@@ -396,6 +455,7 @@ document.addEventListener('visibilitychange', function() {
 function setrange(settings_from_camera) {
     for (const key in settings_from_camera) {
         const setting = settings_from_camera[key];
+        //console.log(`${key} setting: ${setting}`);
         const min = setting[0];
         const max = setting[1];
         const defaultValue = setting[2]; 
@@ -423,6 +483,38 @@ function setrange(settings_from_camera) {
                     const rangeElementId = document.getElementById(`${key}Range`);
                     rangeElementId.innerHTML = `Please enter a value between ${min} and ${max}`;
                 }
+            } else if (key === 'ScalerCrop') {
+                //Scaler crop needs a little more config
+                // Deal with width
+                const width = document.getElementById(`${key}Width`);
+                if (width) {
+                    width.min = min[2];
+                    width.max = max[2];
+                    width.value = defaultValue[2];
+                }
+                // Deal with height
+                const height = document.getElementById(`${key}Height`);
+                if (height) {
+                    height.min = min[3];
+                    height.max = max[3];
+                    height.value = defaultValue[3];
+                }
+                // Deal with x-offset
+                const xOffset = document.getElementById(`${key}XOffset`);
+                if (xOffset) {
+                    xOffset.min = min[0];
+                    xOffset.max = max[0];
+                    xOffset.value = defaultValue[0];
+                }
+                // Deal with y-offset
+                const yOffset = document.getElementById(`${key}YOffset`);
+                if (yOffset) {
+                    yOffset.min = min[1];
+                    yOffset.max = max[1];
+                    yOffset.value = defaultValue[1];
+                }
+
+                
             } else {
                 console.log(`Skipping setting: ${key}`);
             }
@@ -460,6 +552,31 @@ function updateUI(settings) {
                 if (input) {
                     input.value = settings[key];
                 }
+            } else if (key === 'ScalerCrop') {
+                console.log(settings[key]);
+                const cropFrame = document.getElementById('cropFrame');
+                const x_offset = document.getElementById('ScalerCropXOffset');
+                const y_offset = document.getElementById('ScalerCropYOffset');
+                const width = document.getElementById('ScalerCropWidth');
+                const height = document.getElementById('ScalerCropHeight');
+                const maxFrameWidth = parseInt(document.getElementById('ScalerCropWidth').max);
+                const maxFrameHeight = parseInt(document.getElementById('ScalerCropHeight').max);
+                if (x_offset) {
+                    x_offset.value = settings[key][0]
+                    cropFrame.style.left = (settings[key][0] * 240 / maxFrameWidth) + 'px';
+                } 
+                if (y_offset) {
+                    y_offset.value = settings[key][1]
+                    cropFrame.style.top = (settings[key][1] * 133 / maxFrameHeight) + 'px';
+                }
+                if (width) {
+                    width.value = settings[key][2]
+                    cropFrame.style.width = (settings[key][2] * 240 / maxFrameWidth) + 'px';
+                } 
+                if (height) {
+                    height.value = settings[key][3]
+                    cropFrame.style.height = (settings[key][3] * 133 / maxFrameHeight) + 'px';
+                }
             } else {
                 console.log(`Skipping unknown setting: ${key}`);
             }
@@ -471,6 +588,7 @@ function updateUI(settings) {
 
 // Function to update server settings and UI
 function updateLiveSettings(data) {
+    console.log(data);
     return fetch('/update_live_settings', {
         method: 'POST',
         headers: {
@@ -541,6 +659,47 @@ function adjustNumericSetting(settingId) {
         updateLiveSettings({ [settingId]: setValue });
     }
 }
+
+function adjustScalerCrop() {
+            const x_offset = parseInt(document.getElementById('ScalerCropXOffset').value);
+            const y_offset = parseInt(document.getElementById('ScalerCropYOffset').value);
+            let width = parseInt(document.getElementById('ScalerCropWidth').value);
+            let height = parseInt(document.getElementById('ScalerCropHeight').value);
+            
+            const maxFrameWidth = parseInt(document.getElementById('ScalerCropWidth').max); // Maximum width of the cameraFrame
+            const maxFrameHeight = parseInt(document.getElementById('ScalerCropHeight').max); // Maximum height of the cameraFrame
+            const minFrameWidth = parseInt(document.getElementById('ScalerCropWidth').min); // Minimum width of the cameraFrame
+            const minFrameHeight = parseInt(document.getElementById('ScalerCropHeight').min); // Minimum height of the cameraFrame
+    
+            // Adjust width if needed
+            if (width < minFrameWidth) {
+                width = minFrameWidth;
+                document.getElementById('ScalerCropWidth').value = width;
+            }
+            if (x_offset + width > maxFrameWidth) {
+                width = maxFrameWidth - x_offset;
+                document.getElementById('ScalerCropWidth').value = width;
+            }
+    
+            // Adjust height if needed
+            if (height < minFrameHeight) {
+                height = minFrameHeight;
+                document.getElementById('ScalerCropHeight').value = height;
+            }
+            if (y_offset + height > maxFrameHeight) {
+                height = maxFrameHeight - y_offset;
+                document.getElementById('ScalerCropHeight').value = height;
+            }
+    
+            const cropFrame = document.getElementById('cropFrame');
+            cropFrame.style.left = (x_offset * 240 / maxFrameWidth) + 'px';
+            cropFrame.style.top = (y_offset * 133 / maxFrameHeight) + 'px';
+            cropFrame.style.width = (width * 240 / maxFrameWidth) + 'px';
+            cropFrame.style.height = (height * 133 / maxFrameHeight) + 'px';
+            console.log(`ScalerCrop: [${x_offset}, ${y_offset}, ${width}, ${height}]`);
+            updateLiveSettings({'ScalerCrop':[x_offset, y_offset, width, height]})
+}
+
 
 function resetsettingsold() {
     // Handle the input change here
