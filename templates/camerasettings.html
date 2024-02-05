@@ -189,13 +189,13 @@
                             {% if 'AeFlickerPeriod' in settings_from_camera %}
                             <!-- AeFlickerPeriod -->
                             <label for="AeFlickerPeriod" class="form-label">AE Flicker Period:</label>
-                            <div class="input-group has-validation mb-3">
+                            <div class="input-group mb-3 has-validation ">
                                 <div class="form-floating">
                                     <input type="number" class="form-control" placeholder="" aria-label="" aria-describedby="button-addon2" id="AeFlickerPeriod">
                                     <label for="floatingInputValue">Value in microseconds</label>
                                 </div>
                                 <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustNumericSetting('AeFlickerPeriod')">Set</button>
-                            </div>     
+                            </div>    
                             <div class="form-text" id="AeFlickerPeriodRange"></div>                     
                             <hr>
                             {% endif %}
@@ -332,7 +332,7 @@
                             <!-- Sharpness -->
                             <div class="form-group">
                                 <label for="sharpness" class="form-label" id="currentSharpness">Sharpness:</label>
-                                <input type="range" class="form-range" min="0.0" max="16.0" step="0.1" id="Sharpness" onchange="aadjustSliderSetting('Sharpness', this.value)">
+                                <input type="range" class="form-range" min="0.0" max="16.0" step="0.1" id="Sharpness" onchange="adjustSliderSetting('Sharpness', this.value)">
                             </div>
                             <!-- End of Line-->
                         </div>
@@ -388,24 +388,33 @@ document.addEventListener('visibilitychange', function() {
         }
     });
 
-const settings = {};
+    const checkboxSettings = ['AfMode', 'AfRange', 'AfSpeed', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeMeteringMode', 'AwbMode'];
+    const switchSettings = ['AwbEnable', 'AeEnable', 'AwbMode', 'hflip', 'vflip'];
+    const sliderSettings = ['LensPosition', 'ExposureValue', 'Brightness', 'Contrast', 'Saturation', 'Sharpness'];
+    const inputSettings = ['ExposureTime', 'AeFlickerPeriod']
 
 function setrange(settings_from_camera) {
     for (const key in settings_from_camera) {
         const setting = settings_from_camera[key];
         const min = setting[0];
         const max = setting[1];
-        const defaultValue = setting[2];  
-            if (key === 'ExposureValue') {
+        const defaultValue = setting[2]; 
+        if (sliderSettings.includes(key)) {
                 const elementId = document.getElementById(key);
                 if (elementId) {
                     elementId.min = min;
                     elementId.max = max;
                     elementId.value = defaultValue;
                     const rangeElementId = document.getElementById(`current${key}`);
-                    rangeElementId.innerHTML = `Exposure Compensation: ${defaultValue}`;
+                    if (key === 'LensPosition') {
+                        rangeElementId.innerHTML = `Lens Position: ${defaultValue}`;
+                    } else if (key === 'ExposureValue') {
+                        rangeElementId.innerHTML = `Exposure Compensation: ${defaultValue}`;
+                    } else {
+                        rangeElementId.innerHTML = `${key}: ${defaultValue}`;
+                    }  
                 }
-            } else if (key === 'AeFlickerPeriod') {
+            } else if (inputSettings.includes(key)) {
                 const elementId = document.getElementById(key);
                 if (elementId) {
                     elementId.min = min;
@@ -413,60 +422,6 @@ function setrange(settings_from_camera) {
                     elementId.value = defaultValue;
                     const rangeElementId = document.getElementById(`${key}Range`);
                     rangeElementId.innerHTML = `Please enter a value between ${min} and ${max}`;
-                }
-            } else if (key === 'ExposureTime') {
-                const elementId = document.getElementById(key);
-                if (elementId) {
-                    elementId.min = min;
-                    elementId.max = max;
-                    elementId.value = defaultValue;
-                    const rangeElementId = document.getElementById(`${key}Range`);
-                    rangeElementId.innerHTML = `Please enter a value between ${min} and ${max}`;
-                }
-            } else if (key === 'LensPosition') {
-                const elementId = document.getElementById(key);
-                if (elementId) {
-                    elementId.min = min;
-                    elementId.max = max;
-                    elementId.value = defaultValue;
-                    const rangeElementId = document.getElementById(`current${key}`);
-                    rangeElementId.innerHTML = `Lens Position: ${defaultValue}`;
-                }
-            } else if (key === 'Brightness') {
-                const elementId = document.getElementById(key);
-                if (elementId) {
-                    elementId.min = min;
-                    elementId.max = max;
-                    elementId.value = defaultValue;
-                    const rangeElementId = document.getElementById(`current${key}`);
-                    rangeElementId.innerHTML = `Brightness: ${defaultValue}`;
-                }
-            } else if (key === 'Contrast') {
-                const elementId = document.getElementById(key);
-                if (elementId) {
-                    elementId.min = min;
-                    elementId.max = max;
-                    elementId.value = defaultValue;
-                    const rangeElementId = document.getElementById(`current${key}`);
-                    rangeElementId.innerHTML = `Contrast: ${defaultValue}`;
-                }
-            } else if (key === 'Saturation') {
-                const elementId = document.getElementById(key);
-                if (elementId) {
-                    elementId.min = min;
-                    elementId.max = max;
-                    elementId.value = defaultValue;
-                    const rangeElementId = document.getElementById(`current${key}`);
-                    rangeElementId.innerHTML = `Saturation: ${defaultValue}`;
-                }
-            } else if (key === 'Sharpness') {
-                const elementId = document.getElementById(key);
-                if (elementId) {
-                    elementId.min = min;
-                    elementId.max = max;
-                    elementId.value = defaultValue;
-                    const rangeElementId = document.getElementById(`current${key}`);
-                    rangeElementId.innerHTML = `Sharpness: ${defaultValue}`;
                 }
             } else {
                 console.log(`Skipping setting: ${key}`);
@@ -476,131 +431,35 @@ function setrange(settings_from_camera) {
 
 function updateUI(settings) {
     for (const key in settings) {
-            if (key === 'LensPosition') {
-                document.getElementById('LensPosition').value = settings[key];
-                const LensPosition = document.getElementById('currentLensPosition');
-                if (LensPosition) {
-                    LensPosition.innerText = `Lens Position: ${settings[key]}`;
-                }
-            } else if (key === 'ExposureValue') {
-                document.getElementById('ExposureValue').value = settings[key];
-                const ExposureValue = document.getElementById('currentExposureValue');
-                if (ExposureValue) {
-                    ExposureValue.innerText = `Exposure Compensation: ${settings[key]}`;
-                }
-            } else if (key === 'ExposureTime') {
-                // Update button for ExposureTime
-                const exposureTimeInput = document.getElementById('ExposureTime');
-                if (exposureTimeInput) {
-                    exposureTimeInput.value = settings[key];
-                }
-            } else if (key === 'AwbEnable') {
-                // Update the switch state
-                const awbEnableSwitch = document.getElementById('AwbEnable');
-                if (awbEnableSwitch) {
-                    awbEnableSwitch.checked = settings[key];
-                }
-            } else if (key === 'AeFlickerPeriod') {
-                // Update inputbox for AeFlickerPeriod
-                const aeFlickerPeriodInput = document.getElementById('AeFlickerPeriod');
-                if (aeFlickerPeriodInput) {
-                    aeFlickerPeriodInput.value = settings[key];
-                    console.log("aeFlickerPeriodInput");
-                }
-            } else  if (key === 'AeEnable') {
-                // Update the switch state
-                const aeEnableSwitch = document.getElementById('AeEnable');
-                if (aeEnableSwitch) {
-                    aeEnableSwitch.checked = settings[key];
-                }
-            } else if (key === 'Brightness') {
-                document.getElementById('Brightness').value = settings[key];
-                const brightnessSpan = document.getElementById('currentBrightness');
-                if (brightnessSpan) {
-                    brightnessSpan.innerText = `Brightness: ${settings[key]}`;
-                }
-            } else if (key === 'Contrast') {
-                document.getElementById('Contrast').value = settings[key];
-                const contrastSpan = document.getElementById('currentContrast');
-                if (contrastSpan) {
-                    contrastSpan.innerText = `Contrast: ${settings[key]}`;
-                }
-            } else if (key === 'Saturation') {
-                document.getElementById('Saturation').value = settings[key];
-                const saturationSpan = document.getElementById('currentSaturation');
-                if (saturationSpan) {
-                    saturationSpan.innerText = `Saturation: ${settings[key]}`;
-                }
-            } else if (key === 'Sharpness') {
-                document.getElementById('Sharpness').value = settings[key];
-                const sharpnessSpan = document.getElementById('currentSharpness');
-                if (sharpnessSpan) {
-                    sharpnessSpan.innerText = `Sharpness: ${settings[key]}`;
-                }
-            } else if (key === 'AfMode') {
+        if (checkboxSettings.includes(key)) {
+            console.log(`UpdateUI setting: ${settings[key]}`);
                 // Update checkboxes for AfMode
-                const checkboxes = document.getElementsByName('AfMode');
+                const checkboxes = document.getElementsByName(key);
                 checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AfMode', ''));
+                    const checkboxValue = parseInt(checkbox.id.replace(key, ''));
                     checkbox.checked = settings[key] === checkboxValue;
                 });
-            } else if (key === 'AfRange') {
-                // Update checkboxes for AfRange
-                const checkboxes = document.getElementsByName('AfRange');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AfRange', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'AfSpeed') {
-                // Update checkboxes for AfSpeed
-                const checkboxes = document.getElementsByName('AfSpeed');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AfSpeed', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'AeConstraintMode') {
-                // Update checkboxes for AeConstraintMode
-                const checkboxes = document.getElementsByName('AeConstraintMode');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AeConstraintMode', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'AeExposureMode') {
-                // Update checkboxes for AeExposureMode
-                const checkboxes = document.getElementsByName('AeExposureMode');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AeExposureMode', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'AeFlickerMode') {
-                // Update checkboxes for AeFlickerMode
-                const checkboxes = document.getElementsByName('AeFlickerMode');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AeFlickerMode', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'AeMeteringMode') {
-                // Update checkboxes for AeMeteringMode
-                const checkboxes = document.getElementsByName('AeMeteringMode');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AeMeteringMode', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'AwbMode') {
-                // Update checkboxes for AwbMode
-                const checkboxes = document.getElementsByName('AwbMode');
-                checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace('AwbMode', ''));
-                    checkbox.checked = settings[key] === checkboxValue;
-                });
-            } else if (key === 'hflip') {
-                // Update checkbox for hflip
-                const checkbox = document.getElementById('hflip');
-                checkbox.checked = settings[key] === 1;
-            } else if (key === 'vflip') {
-                // Update checkbox for vflip
-                const checkbox = document.getElementById('vflip');
-                checkbox.checked = settings[key] === 1;
+            } else if (switchSettings.includes(key)) {
+                // Update the switch state
+                const switchbox = document.getElementById(key);
+                if (switchbox) {
+                    switchbox.checked = settings[key];
+                }
+            } else if (sliderSettings.includes(key)) {
+                document.getElementById(key).value = settings[key];
+                const slider = document.getElementById(`current${key}`);
+                if (key === 'LensPosition') {
+                    slider.innerText = `Lens Position: ${settings[key]}`;
+                } else if (key === 'ExposureValue') {
+                    slider.innerText = `Exposure Compensation: ${settings[key]}`;
+                } else {
+                    slider.innerText = `${key}: ${settings[key]}`; 
+                }
+            } else if (inputSettings.includes(key)) {
+                const input = document.getElementById(key);
+                if (input) {
+                    input.value = settings[key];
+                }
             } else {
                 console.log(`Skipping unknown setting: ${key}`);
             }
