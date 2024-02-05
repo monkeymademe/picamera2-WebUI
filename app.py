@@ -21,8 +21,7 @@ full_resolution = [picam2.sensor_resolution]
 main_stream = {"size": half_resolution}
 video_config = picam2.create_video_configuration(main_stream)
 settings_from_camera = picam2.camera_controls
-
-
+print(picam2.camera_properties['Model'])
 
 # Set the path where the images will be stored
 UPLOAD_FOLDER = 'static/gallery'
@@ -79,6 +78,11 @@ def load_settings(settings_file):
 @app.route("/")
 def home():
     return render_template("camerasettings.html", title="Home", live_settings=live_settings, restart_settings=restart_settings, settings_from_camera=settings_from_camera)
+
+@app.route("/beta")
+def beta():
+    return render_template("beta.html", title="beta")
+
 
 @app.route("/about")
 def about():
@@ -176,7 +180,6 @@ def start_camera_stream():
     output = StreamingOutput()
     picam2.start_recording(JpegEncoder(), FileOutput(output))
     metadata = picam2.capture_metadata()
-    print("Checking")
     time.sleep(1)
 
 def stop_camera_stream():

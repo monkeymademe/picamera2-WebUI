@@ -18,7 +18,7 @@
         </div>
         <div class="col-lg-4 pt-5 pb-4 overflow-y-scroll" style="height: 100vh; height: -webkit-fill-available; max-height: 100vh; overflow-x: auto; overflow-y: hidden;">
             <!-- ###### Side Bar ###### -->
-            <div class="accordion overflow-y-scroll pt-4" id="accordionExample">
+            <div class="accordion pt-4" id="accordionExample">
             <!-- ###### Orientation Settings ###### -->
             <div class="accordion-item">
                 <h2 class="accordion-header">
@@ -56,15 +56,15 @@
                             <!-- AfMode -->
                             <p>Auto Focus Mode:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode0" onclick="adjustAfMode('0')">
+                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode0" onclick="adjustCheckboxSetting('AfMode', '0')">
                                 <label class="form-check-label" for="AfMode0">Manual</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode1" onclick="adjustAfMode('1')">
+                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode1" onclick="adjustCheckboxSetting('AfMode', '1')">
                                 <label class="form-check-label" for="AfMode1">Auto</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode2" onclick="adjustAfMode('2')">
+                                <input class="form-check-input" type="checkbox" name="AfMode" id="AfMode2" onclick="adjustCheckboxSetting('AfMode', '2')">
                                 <label class="form-check-label" for="AfMode2">Continuous</label>
                             </div>
                             <hr>
@@ -73,7 +73,7 @@
                             <!-- LensPosition -->
                             <div class="form-group" id="LensPositionContainer">
                                 <label for="LensPosition" class="form-label" id="currentLensPosition">Lens Position:</label>
-                                <input type="range" class="form-range" min="0.0" max="32.0" step="0.1" id="LensPosition" onchange="adjustLensPosition(this.value)">
+                                <input type="range" class="form-range" min="0.0" max="10.0" step="0.1" id="LensPosition" onchange="adjustSliderSetting('LensPosition', this.value)">
                                 <div class="form-text" id="basic-addon4">In dioptres (1 / distance in metres)</div>
                             </div>
                             <hr>
@@ -82,15 +82,15 @@
                             <!-- AfRange -->
                             <p>Auto Focus Range:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange0" onclick="adjustAfRange('0')">
+                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange0" onclick="adjustCheckboxSetting('AfRange', '0')">
                                 <label class="form-check-label" for="AfRange0">Normal</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange1" onclick="adjustAfRange('1')">
+                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange1" onclick="adjustCheckboxSetting('AfRange','1')">
                                 <label class="form-check-label" for="AfRange1">Macro</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange2" onclick="adjustAfRange('2')">
+                                <input class="form-check-input" type="checkbox" name="AfRange" id="AfRange2" onclick="adjustCheckboxSetting('AfRange','2')">
                                 <label class="form-check-label" for="AfRange2">Full</label>
                             </div>
                             <hr>
@@ -99,11 +99,11 @@
                             <!-- AfSpeed -->
                             <p>Auto Focus Speed:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed0" onclick="adjustAfSpeed('0')">
+                                <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed0" onclick="adjustCheckboxSetting('AfSpeed','0')">
                                 <label class="form-check-label" for="AfSpeed0">Normal</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed1" onclick="adjustAfSpeed('1')">
+                                <input class="form-check-input" type="checkbox" name="AfSpeed" id="AfSpeed1" onclick="adjustCheckboxSetting('AfSpeed','1')">
                                 <label class="form-check-label" for="AfRange1">Fast</label>
                             </div>
                             {% endif %}
@@ -126,7 +126,7 @@
                             {% if 'AeEnable' in settings_from_camera %}
                             <!-- AeEnable -->
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="AeEnable" onchange="adjustAeEnable()">
+                                <input class="form-check-input" type="checkbox" role="switch" id="AeEnable" onchange="adjustSwitchSetting('AeEnable')">
                                 <label class="form-check-label" for="AeEnable">Enable Changes to AEC/AGC algorithm</label>
                             </div>
                             <hr>
@@ -135,19 +135,19 @@
                             <!-- AeConstraintMode -->
                             <p>AE Constraint Mode:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode0" onclick="adjustAeConstraintMode('0')">
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode0" onclick="adjustCheckboxSetting('AeConstraintMode', '0')">
                                 <label class="form-check-label" for="AeConstraintMode0">Normal</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode1" onclick="adjustAeConstraintMode('1')">
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode1" onclick="adjustCheckboxSetting('AeConstraintMode', '1')">
                                 <label class="form-check-label" for="AeConstraintMode1">Highlight</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode2" onclick="adjustAeConstraintMode('2')" disabled>
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode2" onclick="adjustCheckboxSetting('AeConstraintMode', '2')" disabled>
                                 <label class="form-check-label" for="AeConstraintMode2">Shadows</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode3" onclick="adjustAeConstraintMode('3')" disabled>
+                                <input class="form-check-input" type="checkbox" name="AeConstraintMode" id="AeConstraintMode3" onclick="adjustCheckboxSetting('AeConstraintMode', '3')" disabled>
                                 <label class="form-check-label" for="AeConstraintMode3">Custom</label>
                             </div>
                             <hr>
@@ -156,19 +156,19 @@
                             <!-- AeExposureMode -->
                             <p>AE Exposure Mode:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode0" onclick="adjustAeExposureMode('0')">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode0" onclick="adjustCheckboxSetting('AeExposureMode', '0')">
                                 <label class="form-check-label" for="AeExposureMode0">Normal</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode1" onclick="adjustAeExposureMode('1')">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode1" onclick="adjustCheckboxSetting('AeExposureMode', '1')">
                                 <label class="form-check-label" for="AeExposureMode1">Short</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode2" onclick="adjustAeExposureMode('2')">
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode2" onclick="adjustCheckboxSetting('AeExposureMode', '2')">
                                 <label class="form-check-label" for="AeExposureMode2">Long</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode3" onclick="adjustAeExposureMode('3')" disabled>
+                                <input class="form-check-input" type="checkbox" name="AeExposureMode" id="AeExposureMode3" onclick="adjustCheckboxSetting('AeExposureMode', '3')" disabled>
                                 <label class="form-check-label" for="AeExposureMode3">Custom</label>
                             </div>
                             <hr>
@@ -177,11 +177,11 @@
                             <!-- AeFlickerMode -->
                             <p>AE Flicker Mode:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeFlickerMode" id="AeFlickerMode0" onclick="adjustAeFlickerMode('0')">
+                                <input class="form-check-input" type="checkbox" name="AeFlickerMode" id="AeFlickerMode0" onclick="adjustCheckboxSetting('AeFlickerMode', '0')">
                                 <label class="form-check-label" for="AeFlickerMode0">Off</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeFlickerMode" id="AeFlickerMode1" onclick="adjustAeFlickerMode('1')">
+                                <input class="form-check-input" type="checkbox" name="AeFlickerMode" id="AeFlickerMode1" onclick="adjustCheckboxSetting('AeFlickerMode', '1')">
                                 <label class="form-check-label" for="AeFlickerMode1">Manual</label>
                             </div>
                             <hr>
@@ -189,32 +189,33 @@
                             {% if 'AeFlickerPeriod' in settings_from_camera %}
                             <!-- AeFlickerPeriod -->
                             <label for="AeFlickerPeriod" class="form-label">AE Flicker Period:</label>
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                                 <div class="form-floating">
                                     <input type="number" class="form-control" placeholder="" aria-label="" aria-describedby="button-addon2" id="AeFlickerPeriod">
                                     <label for="floatingInputValue">Value in microseconds</label>
                                 </div>
-                                <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustAeFlickerPeriod()">Set</button>
-                            </div>
+                                <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustNumericSetting('AeFlickerPeriod')">Set</button>
+                            </div>     
+                            <div class="form-text" id="AeFlickerPeriodRange"></div>                     
                             <hr>
                             {% endif %}
                             {% if 'AeMeteringMode' in settings_from_camera %}
                             <!-- AeMeteringMode -->
                             <p>AE Metering Mode:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode0" onclick="adjustAeMeteringMode('0')">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode0" onclick="adjustCheckboxSetting('AeMeteringMode', '0')">
                                 <label class="form-check-label" for="AeMeteringMode0">Centre Weighted</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode1" onclick="adjustAeMeteringMode('1')">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode1" onclick="adjustCheckboxSetting('AeMeteringMode', '1')">
                                 <label class="form-check-label" for="AeMeteringMode1">Short</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode2" onclick="adjustAeMeteringMode('2')">
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode2" onclick="adjustCheckboxSetting('AeMeteringMode', '2')">
                                 <label class="form-check-label" for="AeMeteringMode2">Matrix</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode3" onclick="adjustAeMeteringMode('3')" disabled>
+                                <input class="form-check-input" type="checkbox" name="AeMeteringMode" id="AeMeteringMode3" onclick="adjustCheckboxSetting('AeMeteringMode', '3')" disabled>
                                 <label class="form-check-label" for="AeMeteringMode3">Custom</label>
                             </div>
                             <hr>
@@ -222,20 +223,21 @@
                             {% if 'ExposureTime' in settings_from_camera %}
                             <!-- ExposureTime -->
                             <label for="ExposureTime" class="form-label">Exposure Time:</label>
-                            <div class="input-group mb-3">
+                            <div class="input-group has-validation mb-3">
                                 <div class="form-floating">
                                     <input type="number" class="form-control" placeholder="" aria-label="" aria-describedby="button-addon2" id="ExposureTime">
                                     <label for="floatingInputValue">Value in microseconds</label>
                                 </div>
-                                <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustExposureTime()">Set</button>
-                            </div>
+                                <button class="btn btn-outline-secondary" type="button" id="button-ExposureTime" onclick="adjustNumericSetting('ExposureTime')">Set</button>
+                            </div> 
+                            <div class="form-text" id="ExposureTimeRange"></div>                         
                             <hr>
                             {% endif %}
                             {% if 'ExposureValue' in settings_from_camera %}
                             <!-- ExposureValue -->
                             <div class="form-group">
-                                <label for="ExposureValue" class="form-label" id="ExposureValue">Exposure Compensation:</label>
-                                <input type="range" class="form-range" min="-8.0" max="8.0" step="0.1" id="ExposureValue" onchange="adjustExposureValue(this.value)">
+                                <label for="ExposureValue" class="form-label" id="currentExposureValue">Exposure Compensation:</label>
+                                <input type="range" class="form-range" min="-8.0" max="8.0" step="0.1" id="ExposureValue" onchange="adjustSliderSetting('ExposureValue', this.value)">
                             </div>
                             {% endif %}
                             <!-- End of Line-->
@@ -257,7 +259,7 @@
                             {% if 'AwbEnable' in settings_from_camera %}
                             <!-- AwbEnable -->
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" id="AwbEnable" onchange="adjustAwbEnable()">
+                                <input class="form-check-input" type="checkbox" role="switch" id="AwbEnable" onchange="adjustSwitchSetting('AwbEnable')">
                                 <label class="form-check-label" for="AwbEnable">Enable AWB algorithm</label>
                             </div>
                             <hr>
@@ -266,31 +268,31 @@
                             <!-- AwbMode -->
                             <p>(AWB) White Balance Mode:</p>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode0" onclick="adjustAwbMode('0')">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode0" onclick="adjustCheckboxSetting('AwbMode', '0')">
                                 <label class="form-check-label" for="AwbMode0">Auto</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode1" onclick="adjustAwbMode('1')">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode1" onclick="adjustCheckboxSetting('AwbMode', '1')">
                                 <label class="form-check-label" for="AwbMode1">Tungsten</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode2" onclick="adjustAwbMode('2')">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode2" onclick="adjustCheckboxSetting('AwbMode', '2')">
                                 <label class="form-check-label" for="AwbMode2">Fluorescent</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode3" onclick="adjustAwbMode('3')">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode3" onclick="adjustCheckboxSetting('AwbMode', '3')">
                                 <label class="form-check-label" for="AwbMode3">Indoor</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode4" onclick="adjustAwbMode('4')">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode4" onclick="adjustCheckboxSetting('AwbMode', '4')">
                                 <label class="form-check-label" for="AwbMode4">Daylight</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode5" onclick="adjustAwbMode('5')">
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode5" onclick="adjustCheckboxSetting('AwbMode', '5')">
                                 <label class="form-check-label" for="AwbMode4">Cloudy</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode6" onclick="adjustAwbMode('6')" disabled>
+                                <input class="form-check-input" type="checkbox" name="AwbMode" id="AwbMode6" onclick="adjustCheckboxSetting('AwbMode', '6')" disabled>
                                 <label class="form-check-label" for="AwbMode4">Custom</label>
                             </div>
                             {% endif %}
@@ -312,25 +314,25 @@
                             <!-- Brightness -->
                             <div class="form-group">
                                 <label for="brightness" class="form-label" id="currentBrightness">Brightness:</label>
-                                <input type="range" class="form-range" min="-1.0" max="1.0" step="0.1" id="Brightness" onchange="adjustBrightness(this.value)">
+                                <input type="range" class="form-range" min="-1.0" max="1.0" step="0.1" id="Brightness" onchange="adjustSliderSetting('Brightness', this.value)">
                             </div>
                             <hr>
                             <!-- Contrast -->
                             <div class="form-group">
                                 <label for="contrast" class="form-label" id="currentContrast">Contrast:</label>
-                                <input type="range" class="form-range" min="0.0" max="32.0" step="1.0" id="Contrast" onchange="adjustContrast(this.value)">
+                                <input type="range" class="form-range" min="0.0" max="32.0" step="1.0" id="Contrast" onchange="adjustSliderSetting('Contrast', this.value)">
                             </div>
                             <hr>
                             <!-- Saturation -->
                             <div class="form-group">
                                 <label for="saturation" class="form-label" id="currentSaturation">Saturation:</label>
-                                <input type="range" class="form-range" min="0.0" max="32.0" step="1.0" id="Saturation" onchange="adjustSaturation(this.value)">
+                                <input type="range" class="form-range" min="0.0" max="32.0" step="1.0" id="Saturation" onchange="adjustSliderSetting('Saturation', this.value)">
                             </div>
                             <hr>
                             <!-- Sharpness -->
                             <div class="form-group">
                                 <label for="sharpness" class="form-label" id="currentSharpness">Sharpness:</label>
-                                <input type="range" class="form-range" min="0.0" max="16.0" step="0.1" id="Sharpness" onchange="adjustSharpness(this.value)">
+                                <input type="range" class="form-range" min="0.0" max="16.0" step="0.1" id="Sharpness" onchange="aadjustSliderSetting('Sharpness', this.value)">
                             </div>
                             <!-- End of Line-->
                         </div>
@@ -362,9 +364,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Parse the JSON string into a JavaScript object
     var liveSettings = {{ live_settings | tojson }};
     var restartSettings = {{ restart_settings | tojson }};
+    var settings_from_camera = {{ settings_from_camera | tojson }};
     console.log(restartSettings);
     // Call the updateUI
 
+    setrange(settings_from_camera);
     updateUI(liveSettings);
     updateUI(restartSettings);
 });
@@ -381,16 +385,94 @@ document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
             // Page is visible, reload the camera feed
             refreshCameraFeed();
-            document.getElementById('LensPosition').value = settings[key];
-                const LensPosition = document.getElementById('currentLensPosition');
-                if (LensPosition) {
-                    console.log('LensPosition');
-                }
-                console.log('No LensPosition');
         }
     });
 
 const settings = {};
+
+function setrange(settings_from_camera) {
+    for (const key in settings_from_camera) {
+        const setting = settings_from_camera[key];
+        const min = setting[0];
+        const max = setting[1];
+        const defaultValue = setting[2];  
+            if (key === 'ExposureValue') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`current${key}`);
+                    rangeElementId.innerHTML = `Exposure Compensation: ${defaultValue}`;
+                }
+            } else if (key === 'AeFlickerPeriod') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`${key}Range`);
+                    rangeElementId.innerHTML = `Please enter a value between ${min} and ${max}`;
+                }
+            } else if (key === 'ExposureTime') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`${key}Range`);
+                    rangeElementId.innerHTML = `Please enter a value between ${min} and ${max}`;
+                }
+            } else if (key === 'LensPosition') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`current${key}`);
+                    rangeElementId.innerHTML = `Lens Position: ${defaultValue}`;
+                }
+            } else if (key === 'Brightness') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`current${key}`);
+                    rangeElementId.innerHTML = `Brightness: ${defaultValue}`;
+                }
+            } else if (key === 'Contrast') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`current${key}`);
+                    rangeElementId.innerHTML = `Contrast: ${defaultValue}`;
+                }
+            } else if (key === 'Saturation') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`current${key}`);
+                    rangeElementId.innerHTML = `Saturation: ${defaultValue}`;
+                }
+            } else if (key === 'Sharpness') {
+                const elementId = document.getElementById(key);
+                if (elementId) {
+                    elementId.min = min;
+                    elementId.max = max;
+                    elementId.value = defaultValue;
+                    const rangeElementId = document.getElementById(`current${key}`);
+                    rangeElementId.innerHTML = `Sharpness: ${defaultValue}`;
+                }
+            } else {
+                console.log(`Skipping setting: ${key}`);
+            }
+    }
+}
 
 function updateUI(settings) {
     for (const key in settings) {
@@ -399,12 +481,10 @@ function updateUI(settings) {
                 const LensPosition = document.getElementById('currentLensPosition');
                 if (LensPosition) {
                     LensPosition.innerText = `Lens Position: ${settings[key]}`;
-                    console.log('LensPosition');
                 }
-                console.log('No LensPosition');
             } else if (key === 'ExposureValue') {
                 document.getElementById('ExposureValue').value = settings[key];
-                const ExposureValue = document.getElementById('ExposureValue');
+                const ExposureValue = document.getElementById('currentExposureValue');
                 if (ExposureValue) {
                     ExposureValue.innerText = `Exposure Compensation: ${settings[key]}`;
                 }
@@ -551,147 +631,56 @@ function updateLiveSettings(data) {
     });
 }
 
-function adjustAfMode(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AfMode: modeInt });
-    // Update server settings
-    updateLiveSettings({ AfMode: modeInt });
-}
-function adjustAeConstraintMode(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AeConstraintMode: modeInt });
-    // Update server settings
-    updateLiveSettings({ AeConstraintMode: modeInt });
-}
-function adjustBrightness(value) {
-    console.log('Brightness changed:', value);
-    // Update UI with the new value
-    updateUI({ Brightness: value });
-    // Update server settings
-    updateLiveSettings({ Brightness: parseFloat(value) });
-}
-function adjustContrast(value) {
-    console.log('Contrast changed:', value);
-    // Update UI with the new value
-    updateUI({ Contrast: value });
-    // Update server settings
-    updateLiveSettings({ Contrast: parseFloat(value) });
-}
-function adjustSaturation(value) {
-    console.log('Saturation changed:', value);
-    // Update UI with the new value
-    updateUI({ Saturation: value });
-    // Update server settings
-    updateLiveSettings({ Saturation: parseFloat(value) });
-}
-function adjustSharpness(value) {
-    console.log('Sharpness changed:', value);
-    // Update UI with the new value
-    updateUI({ Sharpness: value });
-    // Update server settings
-    updateLiveSettings({ Sharpness: parseFloat(value) });
-}
-function adjustAeEnable() {
+function adjustSwitchSetting(settingId) {
     // Get the current state of the switch
-    const aeEnableSwitch = document.getElementById('AeEnable');
-    const newValue = aeEnableSwitch.checked;
-    // Send the data to the server
-    console.log('aeEnableSwitch:', newValue);
-    updateLiveSettings({ 'AeEnable': newValue });
-}
-function adjustAwbEnable() {
-    // Get the current state of the switch
-    const awbEnableSwitch = document.getElementById('AwbEnable');
-    const newValue = awbEnableSwitch.checked;
-    // Send the data to the server
-    updateLiveSettings({ 'AwbEnable': newValue });
-}
-function adjustAeExposureMode() {
-    // Get the current state of the switch
-    const a = document.getElementById('AeEnable');
-    const newValue = aeEnableSwitch.checked;
-    // Send the data to the server
-    updateLiveSettings({ 'AeEnable': newValue });
-}
-function adjustAeExposureMode(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AeExposureMode: modeInt });
+    const inputElement = document.getElementById(settingId);
+    const selection = inputElement.checked;
     // Update server settings
-    updateLiveSettings({ AeExposureMode: modeInt });
+    updateLiveSettings({ [settingId]: selection });
+    // Notify console
+    console.log(settingId, 'changed:', selection);
 }
-function adjustAeFlickerMode(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
+
+function adjustCheckboxSetting(settingId, selection) {
+    // Convert settingValue to an integer
+    const settingValue = parseInt(selection);
     // Update UI with the new value
-    updateUI({ AeFlickerMode: modeInt });
+    updateUI({ [settingId]: settingValue });
     // Update server settings
-    updateLiveSettings({ AeFlickerMode: modeInt });
+    updateLiveSettings({ [settingId]: settingValue });
+    // Notify console
+    console.log(settingId, 'changed:', settingValue);
 }
-function adjustAeFlickerPeriod() {
+
+function adjustSliderSetting(settingId, selection) {
+    // Convert settingValue to an float
+    const settingValue = parseFloat(selection);
+    // Update UI with the new value
+    updateUI({ [settingId]: settingValue });
+    // Update server settings
+    updateLiveSettings({ [settingId]: settingValue });
+    // Notify console
+    console.log(settingId, 'changed:', settingValue);
+}
+
+function adjustNumericSetting(settingId) {
     // Handle the input change here
-    const modeInt = document.getElementById('AeFlickerPeriod').value;
-    updateUI({ AeFlickerPeriod: modeInt });
-    // Update server settings
-    updateLiveSettings({ AeFlickerPeriod: modeInt });
-}
-function adjustAeMeteringMode(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AeMeteringMode: modeInt });
-    // Update server settings
-    updateLiveSettings({ AeMeteringMode: modeInt });
-}
-function adjustAfRange(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AfRange: modeInt });
-    // Update server settings
-    updateLiveSettings({ AfRange: modeInt });
-}
-function adjustAfSpeed(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AfSpeed: modeInt });
-    // Update server settings
-    updateLiveSettings({ AfSpeed: modeInt });
-}
-function adjustAwbMode(mode) {
-    // Convert mode to an integer
-    const modeInt = parseInt(mode);
-    // Update UI with the new value
-    updateUI({ AwbMode: modeInt });
-    // Update server settings
-    updateLiveSettings({ AwbMode: modeInt });
-}
-function adjustExposureTime() {
-    // Handle the input change here
-    const modeInt = document.getElementById('ExposureTime').value;
-    updateUI({ ExposureTime: modeInt });
-    // Update server settings
-    updateLiveSettings({ ExposureTime: modeInt });
-}
-function adjustExposureValue(value) {
-    console.log('ExposureValue changed:', value);
-    // Update UI with the new value
-    updateUI({ ExposureValue: value });
-    // Update server settings
-    updateLiveSettings({ ExposureValue: parseFloat(value) });
-}
-function adjustLensPosition(value) {
-    console.log('LensPosition changed:', value);
-    // Update UI with the new value
-    updateUI({ LensPosition: value });
-    // Update server settings
-    updateLiveSettings({ LensPosition: parseFloat(value) });
+    const inputElement = document.getElementById(settingId);
+    const setValue = parseFloat(inputElement.value); // Convert to a number
+    // Get the min and max values from the input element
+    const minValue = parseFloat(inputElement.min);
+    const maxValue = parseFloat(inputElement.max);
+    // Check if the entered value is within the valid range
+    if (setValue < minValue || setValue > maxValue || isNaN(setValue)) {
+        // Add 'invalid' class to the input element
+        inputElement.classList.add('is-invalid');
+    } else {
+        // Remove 'invalid' class and error message div if they exist
+        inputElement.classList.remove('is-invalid');
+        // Update UI and server settings
+        updateUI({ [settingId]: setValue });
+        updateLiveSettings({ [settingId]: setValue });
+    }
 }
 
 function resetsettingsold() {
