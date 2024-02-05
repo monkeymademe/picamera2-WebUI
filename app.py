@@ -143,8 +143,17 @@ def update_restart_settings():
 def reset_default_live_settings():
     global live_settings, restart_settings
     try:
-        live_settings = load_settings("default-live-settings.json")
-        live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
+        # Get the default settings from picam2.camera_controls
+        default_settings = picam2.camera_controls
+
+        # Apply only the default values to live_settings
+        for key in default_settings:
+            if key in live_settings:
+                min_value, max_value, default_value = default_settings[key]
+                live_settings[key] = default_value if default_value is not None else min_value
+
+        #live_settings = load_settings("default-live-settings.json")
+        #live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
         restart_settings = load_settings("default-restart-settings.json")
         configure_camera(live_settings)
         restart_configure_camera(restart_settings)
