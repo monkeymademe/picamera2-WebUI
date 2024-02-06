@@ -19,7 +19,8 @@ full_resolution = [picam2.sensor_resolution]
 
 # Setting the stream to half resolution for the pi4 although I think it can handel full
 main_stream = {"size": half_resolution}
-video_config = picam2.create_video_configuration(main_stream)
+mode = picam2.sensor_modes[1]
+video_config = picam2.create_video_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
 print(picam2.camera_properties['Model'])
 
 # Set the path where the images will be stored
