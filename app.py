@@ -167,7 +167,7 @@ def reset_default_live_settings():
         for key in default_settings:
             if key in live_settings:
                 min_value, max_value, default_value = default_settings[key]
-                live_settings[key] = default_value if default_value is not None else min_value
+                live_settings[key] = default_value if default_value is not None else max_value
 
         #live_settings = load_settings("default-live-settings.json")
         #live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
