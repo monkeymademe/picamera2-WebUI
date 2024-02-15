@@ -21,7 +21,12 @@ full_resolution = [picam2.sensor_resolution]
 main_stream = {"size": half_resolution}
 mode = picam2.sensor_modes[1]
 video_config = picam2.create_video_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-print(picam2.camera_properties['Model'])
+
+# Load camera modules data from the JSON file
+with open("camera-module-info.json", "r") as file:
+    camera_module_info = json.load(file)
+
+print(picam2.camera_properties)
 
 # Set the path where the images will be stored
 UPLOAD_FOLDER = 'static/gallery'
@@ -77,12 +82,23 @@ def load_settings(settings_file):
 ####################
 @app.route("/")
 def home():
-    return render_template("camerasettings.html", title="Home", live_settings=live_settings, restart_settings=restart_settings, settings_from_camera=default_settings)
+    return render_template("camerasettings.html", title="Picamera2 WebUI Lite", live_settings=live_settings, restart_settings=restart_settings, settings_from_camera=default_settings)
 
 @app.route("/beta")
 def beta():
     return render_template("beta.html", title="beta")
 
+@app.route("/camera_info")
+def camera_info():
+
+    connected_camera = picam2.camera_properties['Model']
+    connected_camera_data = next((module for module in camera_module_info["camera_modules"] if module["sensor_model"] == connected_camera), None)
+    print(connected_camera)
+    print(connected_camera_data)
+    if connected_camera_data:
+        return render_template("camera_info.html", title="Camera Info", connected_camera_data=connected_camera_data)
+    else:
+        return jsonify(error="Camera module data not found")
 
 @app.route("/about")
 def about():

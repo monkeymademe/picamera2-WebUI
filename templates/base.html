@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light"> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
     <script async type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
   </head>
 <body>
-  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark border-bottom">
     <div class="container-fluid">
       <a class="navbar-brand" href="#"><i class="bi bi-camera"></i> Picamera2 WebUI Lite</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,8 +24,12 @@
             <a class="nav-link" href="{{ url_for('image_gallery') }}">View Image Gallery</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('camera_info') }}">Camera Info</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{{ url_for('about') }}">About</a>
           </li>
+          
         </ul>
       </div>
     </div>

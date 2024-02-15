@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Custom CSS only for this page */
+    .feature-icon-small {
+    width: 3rem;
+    height: 3rem;
+    }
+    .feature-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.75rem;
+    }
+</style>
+<div class="container-xxl">
+    <div class="container px-4 py-5 pt-5 pb-0 mt-4" id="custom-cards">
+      {% if connected_camera_data %}
+        <h2 class="pb-2 border-bottom">Connected Camera Information</h2>
+        
+            <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
+              <div class="col d-flex flex-column align-items-start gap-2">
+                <div class="card mb-3" style="width: 18rem;" >
+                 <img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image" >
+                
+                </div>
+
+                <!--<img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image">-->
+                <h2 class="fw-bold text-body-emphasis">{{ connected_camera_data.module_name }}</h2>
+                <p class="text-body-secondary">
+                  {{ connected_camera_data.manufacturer }} {{ connected_camera_data.sensor_model }}
+                </p>
+                <a href="https://github.com/monkeymademe/picamera2-WebUI-Lite" class="btn btn-primary btn-lg">Link to RPI</a>
+              </div>
+        
+              <div class="col">
+                <div class="row row-cols-1 row-cols-sm-2 g-4">
+                  <table class="table">
+                    <thead>
+                        
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Megapixels</th>
+                            <td>{{ connected_camera_data.megapixels }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Sensor Resolution</th>
+                            <td>{{ connected_camera_data.sensor_resolution }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Video Modes</th>
+                            <td>{{ connected_camera_data.video_modes }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Sensor Image Area</th>
+                          <td>{{ connected_camera_data.sensor_image_area }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Pixel Size</th>
+                          <td>{{ connected_camera_data.pixel_size }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Optical Size</th>
+                          <td>{{ connected_camera_data.optical_size }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Focus</th>
+                          <td>{{ connected_camera_data.focus }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Depth of field</th>
+                          <td>{{ connected_camera_data.dof }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Focal Length</th>
+                          <td>{{ connected_camera_data.focal_length }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Horizontal Field of View (FoV)</th>
+                          <td>{{ connected_camera_data.horizontal_fov }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Vertical Field of View (FoV)</th>
+                          <td>{{ connected_camera_data.vertical_fov }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Focal ratio (F-Stop)</th>
+                          <td>{{ connected_camera_data.f_stop }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Maximum exposure times (seconds)</th>
+                          <td>{{ connected_camera_data.max_exposure_time }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Lens Mount</th>
+                          <td>{{ connected_camera_data.lens_mount }}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">NoIR version available?</th>
+                          <td>{{ connected_camera_data.got_noir }}</td>
+                        </tr>
+                        <!-- Add more rows for additional properties -->
+                    </tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <p>Error: Camera module data not found</p>
+        {% endif %}
+  </div>
+</div>
+
+ 
+  
+  
+  
+
+
+<script>
+
+</script>
+
+{% endblock %}
