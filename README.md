@@ -4,6 +4,9 @@
 
 Picamera2 WebUI Lite is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 library. This project provides a simple user interface to configure camera settings, capture photos, and manage images in a basic gallery.
 
+[![Watch the Demo here](https://img.youtube.com/vi/K_pSdu5fv1M/0.jpg)](https://www.youtube.com/watch?v=K_pSdu5fv1M)
+
+
 ## Features
 
 - **Camera Settings:** Easily configure camera settings such as image rotation, exposure, white balance settings, and meny more.
