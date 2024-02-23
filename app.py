@@ -16,6 +16,7 @@ app = Flask(__name__)
 picam2 = Picamera2()
 
 # Setting the stream to half resolution for the pi4 although I think it can handel full
+camera_modes = picam2.sensor_modes
 mode = picam2.sensor_modes[1]
 video_config = picam2.create_video_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
 
@@ -90,10 +91,8 @@ def camera_info():
 
     connected_camera = picam2.camera_properties['Model']
     connected_camera_data = next((module for module in camera_module_info["camera_modules"] if module["sensor_model"] == connected_camera), None)
-    print(connected_camera)
-    print(connected_camera_data)
     if connected_camera_data:
-        return render_template("camera_info.html", title="Camera Info", connected_camera_data=connected_camera_data)
+        return render_template("camera_info.html", title="Camera Info", connected_camera_data=connected_camera_data, camera_modes=camera_modes)
     else:
         return jsonify(error="Camera module data not found")
 

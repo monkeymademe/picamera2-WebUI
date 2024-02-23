@@ -19,7 +19,7 @@
         <h2 class="pb-2 border-bottom">Connected Camera Information</h2>
         
             <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
-              <div class="col d-flex flex-column align-items-start gap-2">
+              <div class="col d-flex flex-column align-items-start flex-column align-items-center justify-content-center">
                 <div class="card mb-3" style="width: 18rem;" >
                  <img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image" >
                 
@@ -30,15 +30,14 @@
                 <p class="text-body-secondary">
                   {{ connected_camera_data.manufacturer }} {{ connected_camera_data.sensor_model }}
                 </p>
-                <a href="https://github.com/monkeymademe/picamera2-WebUI-Lite" class="btn btn-primary btn-lg">Link to RPI</a>
+
+                
+
               </div>
-        
-              <div class="col">
+
+              <div class="col" style="margin-top: 0px;">
                 <div class="row row-cols-1 row-cols-sm-2 g-4">
                   <table class="table">
-                    <thead>
-                        
-                    </thead>
                     <tbody>
                         <tr>
                             <th scope="row">Megapixels</th>
