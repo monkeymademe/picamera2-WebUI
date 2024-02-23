@@ -14,11 +14,8 @@ app = Flask(__name__)
 
 # Int Picamera2 and default settings
 picam2 = Picamera2()
-half_resolution = [dim // 2 for dim in picam2.sensor_resolution]
-full_resolution = [picam2.sensor_resolution]
 
 # Setting the stream to half resolution for the pi4 although I think it can handel full
-main_stream = {"size": half_resolution}
 mode = picam2.sensor_modes[1]
 video_config = picam2.create_video_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
 
