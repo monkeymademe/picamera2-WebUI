@@ -2,7 +2,7 @@
     "controls": {
         "LensPosition": 1.0,
         "ExposureValue": 0.0,
-        "ExposureTime": 112072753,
+        "ExposureTime": 220417486,
         "AwbMode": 0,
         "AfSpeed": 0,
         "AfRange": 0,
@@ -25,16 +25,15 @@
             2592
         ]
     },
-    "rotation": 
-      {
+    "rotation": {
         "hflip": 0,
         "vflip": 0
-      },
+    },
     "sensor-mode": 2,
-    "capture-settings": : { 
+    "capture-settings": {
         "resolution": [
             4608,
             2592
         ]
     }
-  }
+}

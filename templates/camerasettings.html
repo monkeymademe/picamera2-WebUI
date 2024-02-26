@@ -422,14 +422,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Parse the JSON string into a JavaScript object
     var liveSettings = {{ live_settings | tojson }};
-    var restartSettings = {{ restart_settings | tojson }};
+    var rotationSettings = {{ rotation_settings | tojson }};
     var settings_from_camera = {{ settings_from_camera | tojson }};
-    console.log(restartSettings);
+    console.log(rotationSettings);
     // Call the updateUI
 
     setrange(settings_from_camera);
     updateUI(liveSettings);
-    updateUI(restartSettings);
+    updateUI(rotationSettings);
 });
 
 document.addEventListener('DOMContentLoaded', function () {

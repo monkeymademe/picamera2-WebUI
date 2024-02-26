@@ -15,10 +15,30 @@ app = Flask(__name__)
 # Int Picamera2 and default settings
 picam2 = Picamera2()
 
-# Setting the stream to half resolution for the pi4 although I think it can handel full
+# Pull settings from from config file
+with open("camera-config.json", "r") as file:
+    camera_config = json.load(file)
+# Print config for validation
+print(camera_config)
+
+# Split config for different uses
+live_settings = camera_config.get('controls', {})
+rotation_settings = camera_config.get('rotation', {})
+sensor_mode = camera_config.get('sensor-mode', 1)
+capture_settings = camera_config.get('capture-settings', {}) 
+
+# Get the sensor modes and pick from the the camera_config
 camera_modes = picam2.sensor_modes
-mode = picam2.sensor_modes[1]
-video_config = picam2.create_video_configuration(sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+mode = picam2.sensor_modes[sensor_mode]
+
+# Create the video_config 
+video_config = picam2.create_video_configuration(main={'size': mode['size']}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+print(video_config)
+
+# Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
+default_settings = picam2.camera_controls
+live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
+
 
 # Load camera modules data from the JSON file
 with open("camera-module-info.json", "r") as file:
@@ -66,6 +86,7 @@ def load_settings(settings_file):
     try:
         with open(settings_file, 'r') as file:
             settings = json.load(file)
+            print(settings)
             return settings
     except FileNotFoundError:
         # Return default settings if the file is not found
@@ -80,7 +101,7 @@ def load_settings(settings_file):
 ####################
 @app.route("/")
 def home():
-    return render_template("camerasettings.html", title="Picamera2 WebUI Lite", live_settings=live_settings, restart_settings=restart_settings, settings_from_camera=default_settings)
+    return render_template("camerasettings.html", title="Picamera2 WebUI Lite", live_settings=live_settings, rotation_settings=rotation_settings, settings_from_camera=default_settings)
 
 @app.route("/beta")
 def beta():
@@ -88,7 +109,6 @@ def beta():
 
 @app.route("/camera_info")
 def camera_info():
-
     connected_camera = picam2.camera_properties['Model']
     connected_camera_data = next((module for module in camera_module_info["camera_modules"] if module["sensor_model"] == connected_camera), None)
     if connected_camera_data:
@@ -135,18 +155,18 @@ def update_settings():
 # Route to update settings that requires a restart of the stream
 @app.route('/update_restart_settings', methods=['POST'])
 def update_restart_settings():
-    global restart_settings, picam2, video_config
+    global rotation_settings, video_config
     try:
         data = request.get_json()
         stop_camera_stream()
         transform = Transform()
         # Update settings that require a restart
         for key, value in data.items():
-            if key in restart_settings:
+            if key in rotation_settings:
                 if key in ('hflip', 'vflip'):
-                    restart_settings[key] = data[key]
+                    rotation_settings[key] = data[key]
                     setattr(transform, key, value)
-        video_config["transform"] = transform
+                video_config["transform"] = transform     
         start_camera_stream()
         return jsonify(success=True, message="Restart settings updated successfully", settings=live_settings)
     except Exception as e:
@@ -154,7 +174,7 @@ def update_restart_settings():
 
 @app.route('/reset_default_live_settings', methods=['GET'])
 def reset_default_live_settings():
-    global live_settings, restart_settings
+    global live_settings, rotation_settings
     try:
         # Get the default settings from picam2.camera_controls
         default_settings = picam2.camera_controls
@@ -164,30 +184,42 @@ def reset_default_live_settings():
             if key in live_settings:
                 min_value, max_value, default_value = default_settings[key]
                 live_settings[key] = default_value if default_value is not None else max_value
-
-        #live_settings = load_settings("default-live-settings.json")
-        #live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
-        restart_settings = load_settings("default-restart-settings.json")
         configure_camera(live_settings)
-        restart_configure_camera(restart_settings)
-        return jsonify(data1=live_settings, data2=restart_settings)
+
+        # Reset rotation settings and restart stream
+        for key, value in rotation_settings.items():
+            rotation_settings[key] = 0
+        restart_configure_camera(rotation_settings)
+        
+        return jsonify(data1=live_settings, data2=rotation_settings)
     except Exception as e:
         return jsonify(error=str(e))
 
 # Add a new route to save settings
 @app.route('/save_settings', methods=['GET'])
 def save_settings():
-    global live_settings, restart_settings
-
+    global live_settings, rotation_settings, camera_config
     try:
+        with open('camera-config.json', 'r') as file:
+            camera_config = json.load(file)
+
+        # Update controls in the configuration with live_settings
+        for key, value in live_settings.items():
+            if key in camera_config['controls']:
+                camera_config['controls'][key] = value
+
+        # Update controls in the configuration with rotation settings
+        for key, value in rotation_settings.items():
+            if key in camera_config['rotation']:
+                camera_config['rotation'][key] = value
+        
         # Save current camera settings to the JSON file
-        with open('live-settings.json', 'w') as file:
-            json.dump(live_settings, file, indent=4)
-        with open('restart-settings.json', 'w') as file:
-            json.dump(restart_settings, file, indent=4)
+        with open('camera-config.json', 'w') as file:
+            json.dump(camera_config, file, indent=4)
 
         return jsonify(success=True, message="Settings saved successfully")
     except Exception as e:
+        logging.error(f"Error in saving data: {e}")
         return jsonify(success=False, message=str(e))
 
 ####################
@@ -319,10 +351,6 @@ if __name__ == "__main__":
     start_camera_stream()
 
     # Load and set camera settings
-    live_settings = load_settings("live-settings.json")
-    restart_settings = load_settings("restart-settings.json")
-    default_settings = picam2.camera_controls
-    live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
     configure_camera(live_settings)
 
     # Start the Flask application

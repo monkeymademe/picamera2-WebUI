@@ -12,14 +12,81 @@
     height: 4rem;
     border-radius: 0.75rem;
     }
+
+
+      .list-group {
+  width: 100%;
+  max-width: 460px;
+  margin-inline: 1.5rem;
+}
+
+.form-check-input:checked + .form-checked-content {
+  opacity: .5;
+}
+
+.form-check-input-placeholder {
+  border-style: dashed;
+}
+[contenteditable]:focus {
+  outline: 0;
+}
+
+.list-group-checkable .list-group-item {
+  cursor: pointer;
+}
+.list-group-item-check {
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+}
+.list-group-item-check:hover + .list-group-item {
+  background-color: var(--bs-secondary-bg);
+}
+.list-group-item-check:checked + .list-group-item {
+  color: #fff;
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+.list-group-item-check[disabled] + .list-group-item,
+.list-group-item-check:disabled + .list-group-item {
+  pointer-events: none;
+  filter: none;
+  opacity: .5;
+}
+
+.list-group-radio .list-group-item {
+  cursor: pointer;
+  border-radius: .5rem;
+}
+.list-group-radio .form-check-input {
+  z-index: 2;
+  margin-top: -.5em;
+}
+.list-group-radio .list-group-item:hover,
+.list-group-radio .list-group-item:focus {
+  background-color: var(--bs-secondary-bg);
+}
+
+.list-group-radio .form-check-input:checked + .list-group-item {
+  background-color: var(--bs-body);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 2px var(--bs-primary);
+}
+.list-group-radio .form-check-input[disabled] + .list-group-item,
+.list-group-radio .form-check-input:disabled + .list-group-item {
+  pointer-events: none;
+  filter: none;
+  opacity: .5;
+}
+
+
 </style>
 <div class="container-xxl">
     <div class="container px-4 py-5 pt-5 pb-0 mt-4" id="custom-cards">
       {% if connected_camera_data %}
         <h2 class="pb-2 border-bottom">Connected Camera Information</h2>
         
-            <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
-              <div class="col d-flex flex-column align-items-start flex-column align-items-center justify-content-center">
+            <div class="row row-cols-1 row-cols-md-2 g-5 py-5">
+              <div class="col d-flex flex-column align-items-start flex-column align-items-center justify-content-center" style="margin-top:0px;">
                 <div class="card mb-3" style="width: 18rem;" >
                  <img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image" >
                 
@@ -30,8 +97,23 @@
                 <p class="text-body-secondary">
                   {{ connected_camera_data.manufacturer }} {{ connected_camera_data.sensor_model }}
                 </p>
-
                 
+
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-center">
+                  <div class="list-group list-group-radio d-grid gap-2 border-0">
+                    {% for mode in camera_modes %}
+                    <div class="position-relative">
+                      <input class="form-check-input position-absolute top-50 end-0 me-3 fs-5" type="radio" name="listGroupRadioGrid" id="listGroupRadioGrid{{ loop.index }}" value="" checked="">
+                      <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid{{ loop.index }}">
+                        <strong class="fw-semibold">Mode {{ loop.index }}</strong>
+                        <span class="d-block small opacity-75">Resolution: {{ mode['size'] }}</span>
+                        <span class="d-block small opacity-75">FPS: {{ mode['fps'] }}</span>
+                      </label>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+            
 
               </div>
 
