@@ -4,6 +4,8 @@ from threading import Condition
 
 from flask import Flask, render_template, request, jsonify, Response, send_file, abort
 
+from PIL import Image
+
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
@@ -27,6 +29,11 @@ rotation_settings = camera_config.get('rotation', {})
 sensor_mode = camera_config.get('sensor-mode', 1)
 capture_settings = camera_config.get('capture-settings', {}) 
 
+# Parse the selected capture resolution for later
+selected_resolution = capture_settings["Resolution"]
+resolution = capture_settings["available-resolutions"][selected_resolution]
+print(capture_settings)
+
 # Get the sensor modes and pick from the the camera_config
 camera_modes = picam2.sensor_modes
 mode = picam2.sensor_modes[sensor_mode]
@@ -43,7 +50,6 @@ live_settings = {key: value for key, value in live_settings.items() if key in de
 # Load camera modules data from the JSON file
 with open("camera-module-info.json", "r") as file:
     camera_module_info = json.load(file)
-
 print(picam2.camera_properties)
 
 # Set the path where the images will be stored
@@ -101,7 +107,7 @@ def load_settings(settings_file):
 ####################
 @app.route("/")
 def home():
-    return render_template("camerasettings.html", title="Picamera2 WebUI Lite", live_settings=live_settings, rotation_settings=rotation_settings, settings_from_camera=default_settings)
+    return render_template("camerasettings.html", title="Picamera2 WebUI Lite", live_settings=live_settings, rotation_settings=rotation_settings, settings_from_camera=default_settings, capture_settings=capture_settings)
 
 @app.route("/beta")
 def beta():
@@ -112,7 +118,7 @@ def camera_info():
     connected_camera = picam2.camera_properties['Model']
     connected_camera_data = next((module for module in camera_module_info["camera_modules"] if module["sensor_model"] == connected_camera), None)
     if connected_camera_data:
-        return render_template("camera_info.html", title="Camera Info", connected_camera_data=connected_camera_data, camera_modes=camera_modes)
+        return render_template("camera_info.html", title="Camera Info", connected_camera_data=connected_camera_data, camera_modes=camera_modes, sensor_mode=sensor_mode)
     else:
         return jsonify(error="Camera module data not found")
 
@@ -131,7 +137,7 @@ def video_feed():
 # Route to update settings to the buffer
 @app.route('/update_live_settings', methods=['POST'])
 def update_settings():
-    global live_settings, picam2, video_config
+    global live_settings, capture_settings, picam2, video_config, resolution, sensor_mode
     try:
         # Parse JSON data from the request
         data = request.get_json()
@@ -146,9 +152,23 @@ def update_settings():
                     live_settings[key] = float(data[key])
                 elif key in ('AeEnable', 'AwbEnable', 'ScalerCrop'):
                     live_settings[key] = data[key]
-        # Update the configuration of the video feed
-        configure_camera(live_settings)
-        return jsonify(success=True, message="Settings updated successfully", settings=live_settings)
+                # Update the configuration of the video feed
+                configure_camera(live_settings)
+                return jsonify(success=True, message="Settings updated successfully", settings=live_settings)
+            elif key in capture_settings:
+                if key in ('Resolution'):
+                    capture_settings['Resolution'] = int(data[key])
+                    selected_resolution = int(data[key])
+                    resolution = capture_settings["available-resolutions"][selected_resolution]
+                    return jsonify(success=True, message="Settings updated successfully", settings=live_settings)
+            elif key == ('sensor_mode'):
+                sensor_mode = int(data[key])
+                mode = picam2.sensor_modes[sensor_mode]
+                stop_camera_stream()
+                video_config = picam2.create_video_configuration(main={'size': mode['size']}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                start_camera_stream()
+                save_sensor_mode(sensor_mode)
+                return jsonify(success=True, message="Settings updated successfully", settings=live_settings)
     except Exception as e:
         return jsonify(success=False, message=str(e))
 
@@ -190,7 +210,7 @@ def reset_default_live_settings():
         for key, value in rotation_settings.items():
             rotation_settings[key] = 0
         restart_configure_camera(rotation_settings)
-        
+
         return jsonify(data1=live_settings, data2=rotation_settings)
     except Exception as e:
         return jsonify(error=str(e))
@@ -198,7 +218,7 @@ def reset_default_live_settings():
 # Add a new route to save settings
 @app.route('/save_settings', methods=['GET'])
 def save_settings():
-    global live_settings, rotation_settings, camera_config
+    global live_settings, rotation_settings, capture_settings, camera_config
     try:
         with open('camera-config.json', 'r') as file:
             camera_config = json.load(file)
@@ -212,6 +232,28 @@ def save_settings():
         for key, value in rotation_settings.items():
             if key in camera_config['rotation']:
                 camera_config['rotation'][key] = value
+
+        # Update controls in the configuration with rotation settings
+        for key, value in capture_settings.items():
+            if key in camera_config['capture-settings']:
+                camera_config['capture-settings'][key] = value
+        
+        # Save current camera settings to the JSON file
+        with open('camera-config.json', 'w') as file:
+            json.dump(camera_config, file, indent=4)
+
+        return jsonify(success=True, message="Settings saved successfully")
+    except Exception as e:
+        logging.error(f"Error in saving data: {e}")
+        return jsonify(success=False, message=str(e))
+    
+def save_sensor_mode(sensor_mode):
+    try:
+        with open('camera-config.json', 'r') as file:
+            camera_config = json.load(file)
+
+        # Update sensor mode
+        camera_config['sensor-mode'] = sensor_mode
         
         # Save current camera settings to the JSON file
         with open('camera-config.json', 'w') as file:
@@ -227,7 +269,7 @@ def save_settings():
 ####################
 
 def start_camera_stream():
-    global picam2, output, video_config
+    global picam2, output, video_config, still_config
     #video_config = picam2.create_video_configuration()
     # Flip Camera #################### Make configurable
     # video_config["transform"] = Transform(hflip=1, vflip=1)
@@ -253,14 +295,20 @@ def capture_photo():
         return jsonify(success=False, message=str(e))
 
 def take_photo():
-    global picam2
+    global picam2, capture_settings
     try:
         timestamp = int(datetime.timestamp(datetime.now()))
         image_name = f'pimage_{timestamp}.jpg'
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
         request = picam2.capture_request()
         request.save("main", filepath)
+
         request.release()
+        selected_resolution = capture_settings["Resolution"]
+        resolution = capture_settings["available-resolutions"][selected_resolution]
+        original_image = Image.open(filepath)
+        resized_image = original_image.resize(resolution)
+        resized_image.save(filepath)
         logging.info(f"Image captured successfully. Path: {filepath}")
     except Exception as e:
         logging.error(f"Error capturing image: {e}")

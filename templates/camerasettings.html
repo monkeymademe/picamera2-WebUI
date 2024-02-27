@@ -396,7 +396,42 @@
                         </div>
                     </div>
                 </div>
-
+                            <!-- ###### Auto White Balance Settings ###### -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+                                            Camera Capture Settings
+                                        </button>
+                                    </h2>
+                                    <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            <!-- Resolution -->
+                                            <p>Select Resolution:</p>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution0" onclick="adjustCheckboxSetting('Resolution', '0')">
+                                                <label class="form-check-label" for="Resolution0">4608, 2592</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution1" onclick="adjustCheckboxSetting('Resolution', '1')">
+                                                <label class="form-check-label" for="Resolution1">2304, 1296</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution2" onclick="adjustCheckboxSetting('Resolution', '2')">
+                                                <label class="form-check-label" for="Resolution2">1920, 1080</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution3" onclick="adjustCheckboxSetting('Resolution', '3')">
+                                                <label class="form-check-label" for="Resolution3">1280, 720</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution4" onclick="adjustCheckboxSetting('Resolution', '4')">
+                                                <label class="form-check-label" for="Resolution4">640, 360</label>
+                                            </div>
+                                            <!-- End of Line-->
+                                        </div>
+                                    </div>
+                                </div>
+                       
 
             </div>
             <ul class="list-group pt-3">
@@ -424,12 +459,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var liveSettings = {{ live_settings | tojson }};
     var rotationSettings = {{ rotation_settings | tojson }};
     var settings_from_camera = {{ settings_from_camera | tojson }};
-    console.log(rotationSettings);
+    var capture_settings = {{ capture_settings | tojson }};
+    console.log(liveSettings);
+    console.log(capture_settings);
     // Call the updateUI
 
     setrange(settings_from_camera);
     updateUI(liveSettings);
     updateUI(rotationSettings);
+    updateUI(capture_settings);
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -447,7 +485,7 @@ document.addEventListener('visibilitychange', function() {
         }
     });
 
-    const checkboxSettings = ['AfMode', 'AfRange', 'AfSpeed', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeMeteringMode', 'AwbMode'];
+    const checkboxSettings = ['AfMode', 'AfRange', 'AfSpeed', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeMeteringMode', 'AwbMode', 'Resolution'];
     const switchSettings = ['AwbEnable', 'AeEnable', 'AwbMode', 'hflip', 'vflip'];
     const sliderSettings = ['LensPosition', 'ExposureValue', 'Brightness', 'Contrast', 'Saturation', 'Sharpness'];
     const inputSettings = ['ExposureTime', 'AeFlickerPeriod']
@@ -524,9 +562,11 @@ function setrange(settings_from_camera) {
 function updateUI(settings) {
     for (const key in settings) {
         if (checkboxSettings.includes(key)) {
-            console.log(`UpdateUI setting: ${settings[key]}`);
-                // Update checkboxes for AfMode
+                console.log(settings[key]);
+                console.log(settings);
+                // Update checkboxes
                 const checkboxes = document.getElementsByName(key);
+                console.log(checkboxes);
                 checkboxes.forEach(checkbox => {
                     const checkboxValue = parseInt(checkbox.id.replace(key, ''));
                     checkbox.checked = settings[key] === checkboxValue;
@@ -576,7 +616,7 @@ function updateUI(settings) {
                 if (height) {
                     height.value = settings[key][3]
                     cropFrame.style.height = (settings[key][3] * 133 / maxFrameHeight) + 'px';
-                }
+                }                
             } else {
                 console.log(`Skipping unknown setting: ${key}`);
             }
@@ -698,14 +738,6 @@ function adjustScalerCrop() {
             cropFrame.style.height = (height * 133 / maxFrameHeight) + 'px';
             console.log(`ScalerCrop: [${x_offset}, ${y_offset}, ${width}, ${height}]`);
             updateLiveSettings({'ScalerCrop':[x_offset, y_offset, width, height]})
-}
-
-
-function resetsettingsold() {
-    // Handle the input change here
-    const modeInt = document.getElementById('ExposureTime').value;
-    updateUI(liveSettings)
-    console.log("Balls");
 }
 
 // Function to update server settings and UI

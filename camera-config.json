@@ -31,9 +31,28 @@
     },
     "sensor-mode": 2,
     "capture-settings": {
-        "resolution": [
-            4608,
-            2592
+        "Resolution": 0,
+        "available-resolutions": [
+            [
+                4608,
+                2592
+            ],
+            [
+                2304,
+                1296
+            ],
+            [
+                1920,
+                1080
+            ],
+            [
+                1280,
+                720
+            ],
+            [
+                640,
+                360
+            ]
         ]
     }
 }
