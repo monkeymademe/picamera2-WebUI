@@ -396,7 +396,7 @@
                         </div>
                     </div>
                 </div>
-                            <!-- ###### Auto White Balance Settings ###### -->
+                            <!-- ###### Camera Capture Settings ###### -->
                                 <div class="accordion-item">
                                     <h2 class="accordion-header">
                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
@@ -406,26 +406,32 @@
                                     <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                                         <div class="accordion-body">
                                             <!-- Resolution -->
-                                            <p>Select Resolution:</p>
+                                            <p>Select Feed/Capture Resolution:</p>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution0" onclick="adjustCheckboxSetting('Resolution', '0')">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution0" onclick="adjustResoltuion('Resolution', '0')">
                                                 <label class="form-check-label" for="Resolution0">4608, 2592</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution1" onclick="adjustCheckboxSetting('Resolution', '1')">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution1" onclick="adjustResoltuion('Resolution', '1')">
                                                 <label class="form-check-label" for="Resolution1">2304, 1296</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution2" onclick="adjustCheckboxSetting('Resolution', '2')">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution2" onclick="adjustResoltuion('Resolution', '2')">
                                                 <label class="form-check-label" for="Resolution2">1920, 1080</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution3" onclick="adjustCheckboxSetting('Resolution', '3')">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution3" onclick="adjustResoltuion('Resolution', '3')">
                                                 <label class="form-check-label" for="Resolution3">1280, 720</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution4" onclick="adjustCheckboxSetting('Resolution', '4')">
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution4" onclick="adjustResoltuion('Resolution', '4')">
                                                 <label class="form-check-label" for="Resolution4">640, 360</label>
+                                            </div>
+                                        <hr></hr>
+                                            <!-- Make Raw -->
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" role="switch" id="makeRaw" onchange="adjustSwitchSetting('makeRaw')">
+                                                <label for="makeRaw" >Enable: Save Raw Image</label>
                                             </div>
                                             <!-- End of Line-->
                                         </div>
@@ -486,7 +492,7 @@ document.addEventListener('visibilitychange', function() {
     });
 
     const checkboxSettings = ['AfMode', 'AfRange', 'AfSpeed', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeMeteringMode', 'AwbMode', 'Resolution'];
-    const switchSettings = ['AwbEnable', 'AeEnable', 'AwbMode', 'hflip', 'vflip'];
+    const switchSettings = ['AwbEnable', 'AeEnable', 'AwbMode', 'hflip', 'vflip', 'makeRaw'];
     const sliderSettings = ['LensPosition', 'ExposureValue', 'Brightness', 'Contrast', 'Saturation', 'Sharpness'];
     const inputSettings = ['ExposureTime', 'AeFlickerPeriod']
 
@@ -661,12 +667,16 @@ function adjustSwitchSetting(settingId) {
 function adjustCheckboxSetting(settingId, selection) {
     // Convert settingValue to an integer
     const settingValue = parseInt(selection);
+
     // Update UI with the new value
     updateUI({ [settingId]: settingValue });
-    // Update server settings
-    updateLiveSettings({ [settingId]: settingValue });
-    // Notify console
-    console.log(settingId, 'changed:', settingValue);
+
+    // Update server settings and return the promise
+    return updateLiveSettings({ [settingId]: settingValue })
+        .then(() => {
+            // Notify console
+            console.log(settingId, 'changed:', settingValue);
+        });
 }
 
 function adjustSliderSetting(settingId, selection) {
@@ -879,6 +889,22 @@ function refreshCameraFeed() {
 
   }
 }
+
+function adjustResoltuion(settingId, selection) {
+    // Call adjustCheckboxSetting
+    adjustCheckboxSetting(settingId, selection)
+        .then(() => {
+            // The asynchronous part is done, now you can perform other tasks
+            refreshCameraFeed();
+        })
+        .catch(error => {
+            console.error('Error updating server settings:', error);
+            // Handle the error if needed
+        });
+}
+
+
+
 
 function adjustflip(mode) {
     // Convert mode to an integer

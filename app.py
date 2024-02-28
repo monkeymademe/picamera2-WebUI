@@ -8,6 +8,7 @@ from PIL import Image
 
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
+from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 from libcamera import Transform, controls
 
@@ -33,13 +34,14 @@ capture_settings = camera_config.get('capture-settings', {})
 selected_resolution = capture_settings["Resolution"]
 resolution = capture_settings["available-resolutions"][selected_resolution]
 print(capture_settings)
+print(resolution)
 
 # Get the sensor modes and pick from the the camera_config
 camera_modes = picam2.sensor_modes
 mode = picam2.sensor_modes[sensor_mode]
 
 # Create the video_config 
-video_config = picam2.create_video_configuration(main={'size': mode['size']}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+video_config = picam2.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
 print(video_config)
 
 # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
@@ -137,7 +139,7 @@ def video_feed():
 # Route to update settings to the buffer
 @app.route('/update_live_settings', methods=['POST'])
 def update_settings():
-    global live_settings, capture_settings, picam2, video_config, resolution, sensor_mode
+    global live_settings, capture_settings, picam2, video_config, resolution, sensor_mode, mode
     try:
         # Parse JSON data from the request
         data = request.get_json()
@@ -160,15 +162,21 @@ def update_settings():
                     capture_settings['Resolution'] = int(data[key])
                     selected_resolution = int(data[key])
                     resolution = capture_settings["available-resolutions"][selected_resolution]
-                    return jsonify(success=True, message="Settings updated successfully", settings=live_settings)
+                    stop_camera_stream()
+                    video_config = picam2.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                    start_camera_stream()
+                    return jsonify(success=True, message="Settings updated successfully", settings=capture_settings)
+                elif key in ('makeRaw'):
+                    capture_settings[key] = data[key]
+                    return jsonify(success=True, message="Settings updated successfully", settings=capture_settings)
             elif key == ('sensor_mode'):
                 sensor_mode = int(data[key])
                 mode = picam2.sensor_modes[sensor_mode]
                 stop_camera_stream()
-                video_config = picam2.create_video_configuration(main={'size': mode['size']}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                video_config = picam2.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
                 start_camera_stream()
                 save_sensor_mode(sensor_mode)
-                return jsonify(success=True, message="Settings updated successfully", settings=live_settings)
+                return jsonify(success=True, message="Settings updated successfully", settings=sensor_mode)
     except Exception as e:
         return jsonify(success=False, message=str(e))
 
@@ -269,10 +277,7 @@ def save_sensor_mode(sensor_mode):
 ####################
 
 def start_camera_stream():
-    global picam2, output, video_config, still_config
-    #video_config = picam2.create_video_configuration()
-    # Flip Camera #################### Make configurable
-    # video_config["transform"] = Transform(hflip=1, vflip=1)
+    global picam2, output, video_config
     picam2.configure(video_config)
     output = StreamingOutput()
     picam2.start_recording(JpegEncoder(), FileOutput(output))
@@ -298,17 +303,18 @@ def take_photo():
     global picam2, capture_settings
     try:
         timestamp = int(datetime.timestamp(datetime.now()))
-        image_name = f'pimage_{timestamp}.jpg'
+        image_name = f'pimage_{timestamp}'
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
         request = picam2.capture_request()
-        request.save("main", filepath)
-
+        request.save("main", f'{filepath}.jpg')
+        if capture_settings["makeRaw"]:
+            request.save_dng(f'{filepath}.dng')
         request.release()
-        selected_resolution = capture_settings["Resolution"]
-        resolution = capture_settings["available-resolutions"][selected_resolution]
-        original_image = Image.open(filepath)
-        resized_image = original_image.resize(resolution)
-        resized_image.save(filepath)
+        #selected_resolution = capture_settings["Resolution"]
+        #resolution = capture_settings["available-resolutions"][selected_resolution]
+        #original_image = Image.open(filepath)
+        #resized_image = original_image.resize(resolution)
+        #resized_image.save(filepath)
         logging.info(f"Image captured successfully. Path: {filepath}")
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
@@ -337,24 +343,31 @@ def restart_configure_camera(restart_settings):
 # Image Gallery Functions
 ####################
 
+from datetime import datetime
+import os
+
 @app.route('/image_gallery')
 def image_gallery():
     try:
-        image_files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith(('.jpg', '.jpeg', '.png', '.gif'))]
+        image_files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith(('.jpg'))]
         
         if not image_files:
             # Handle the case where there are no files
             return render_template('no_files.html')
         
-        # Create a list of dictionaries containing file name and timestamp
+        # Create a list of dictionaries containing file name, timestamp, and dng presence
         files_and_timestamps = []
         for image_file in image_files:
             # Extracting Unix timestamp from the filename
             unix_timestamp = int(image_file.split('_')[-1].split('.')[0])
             timestamp = datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
             
+            # Check if corresponding .dng file exists
+            dng_file = os.path.splitext(image_file)[0] + '.dng'
+            has_dng = os.path.exists(os.path.join(UPLOAD_FOLDER, dng_file))
+            
             # Appending dictionary to the list
-            files_and_timestamps.append({'filename': image_file, 'timestamp': timestamp})
+            files_and_timestamps.append({'filename': image_file, 'timestamp': timestamp, 'has_dng': has_dng, 'dng_file': dng_file})
         
         # Sorting the list based on Unix timestamp
         files_and_timestamps.sort(key=lambda x: x['timestamp'], reverse=True)
@@ -363,6 +376,7 @@ def image_gallery():
     except Exception as e:
         logging.error(f"Error loading image gallery: {e}")
         return render_template('error.html', error=str(e))
+
 
 @app.route('/delete_image/<filename>', methods=['DELETE'])
 def delete_image(filename):

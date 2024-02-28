@@ -31,23 +31,26 @@
     <div class="container">
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         {% for file_data in image_files %}
-            <div class="col" id="card_{{ file_data['filename'] }}">
-                <div class="card shadow-sm" >
-                    <img src="{{ url_for('static', filename='gallery/' + file_data['filename']) }}" alt="{{ file_data['filename'] }}" class="bd-placeholder-img card-img-top" width="100%">
-                    <div class="card-body">
-                        <p class="card-text">Date taken: {{ file_data['timestamp'] }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/view_image/{{ file_data['filename'] }}'">View</button>
-                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteConfirmationModal('{{ file_data['filename'] }}', 'card_{{ file_data['filename'] }}')">Delete</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['filename'] }}'">Download</button>
-
-                            </div>
-                        </div>
+    <div class="col" id="card_{{ file_data['filename'] }}">
+        <div class="card shadow-sm" >
+            <img src="{{ url_for('static', filename='gallery/' + file_data['filename']) }}" alt="{{ file_data['filename'] }}" class="bd-placeholder-img card-img-top" width="100%">
+            <div class="card-body">
+                <p class="card-text">Date taken: {{ file_data['timestamp'] }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/view_image/{{ file_data['filename'] }}'">View</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteConfirmationModal('{{ file_data['filename'] }}', 'card_{{ file_data['filename'] }}')">Delete</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['filename'] }}'">Download</button>
+                        {% if file_data['has_dng'] %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['dng_file'] }}'">Download Raw</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-        {% endfor %}
+        </div>
+    </div>
+{% endfor %}
+
     </div>
     </div>
 </div>
