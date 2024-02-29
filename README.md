@@ -81,7 +81,5 @@ Raspberry Pi Compatibilty:
 3. Noise Reduction settings
 4. AfWindows (Target location iin frame to focus on)
 
-## Known Bugs
-
-1. When the user returns to the page the feed is square, its part of a refreash feature that reloads the feed when you leave the page and come back but due to the responsive layout it makes the feed square. If you reload the page its fine and also it does not always happen.
-2. Old code tests and comments need to be flushed and sorted out. This is a hamer it in till it works project.
+## Copyright and license
+Code and documentation copyright 2024 the Picamera2 WebUI Lite Authors. Code released under the MIT License. Docs released under Creative Commons.
