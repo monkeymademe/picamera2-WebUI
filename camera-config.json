@@ -32,7 +32,7 @@
     "sensor-mode": 2,
     "capture-settings": {
         "Resize": false,
-        "makeRaw": true,
+        "makeRaw": false,
         "Resolution": 0,
         "available-resolutions": [
             [
