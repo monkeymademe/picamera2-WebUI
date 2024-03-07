@@ -22,7 +22,7 @@ picam2 = Picamera2()
 with open("camera-config.json", "r") as file:
     camera_config = json.load(file)
 # Print config for validation
-print(camera_config)
+print(f'\nCamera Config:\n{camera_config}\n')
 
 # Split config for different uses
 live_settings = camera_config.get('controls', {})
@@ -33,8 +33,8 @@ capture_settings = camera_config.get('capture-settings', {})
 # Parse the selected capture resolution for later
 selected_resolution = capture_settings["Resolution"]
 resolution = capture_settings["available-resolutions"][selected_resolution]
-print(capture_settings)
-print(resolution)
+print(f'\nCamera Settings:\n{capture_settings}\n')
+print(f'\nCamera Set Resolution:\n{resolution}\n')
 
 # Get the sensor modes and pick from the the camera_config
 camera_modes = picam2.sensor_modes
@@ -42,7 +42,7 @@ mode = picam2.sensor_modes[sensor_mode]
 
 # Create the video_config 
 video_config = picam2.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-print(video_config)
+print(f'\nVideo Config:\n{video_config}\n')
 
 # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
 default_settings = picam2.camera_controls
@@ -52,7 +52,8 @@ live_settings = {key: value for key, value in live_settings.items() if key in de
 # Load camera modules data from the JSON file
 with open("camera-module-info.json", "r") as file:
     camera_module_info = json.load(file)
-print(picam2.camera_properties)
+camera_properties = picam2.camera_properties
+print(f'\nPicamera2 Camera Properties:\n{camera_properties}\n')
 
 # Set the path where the images will be stored
 UPLOAD_FOLDER = 'static/gallery'
