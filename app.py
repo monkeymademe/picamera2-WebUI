@@ -140,7 +140,7 @@ def snapshot():
     # Wait for a few seconds to ensure the image is saved
     time.sleep(2)
     # Return the image file
-    image_name = f'pimage_snapshot.jpg'
+    image_name = f'snapshot/pimage_snapshot.jpg'
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
     return send_file(filepath, mimetype='image/jpg')
 
@@ -334,7 +334,7 @@ def take_photo():
 def take_snapshot():
     global picam2, capture_settings
     try:
-        image_name = f'pimage_snapshot'
+        image_name = f'snapshot/pimage_snapshot'
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
         request = picam2.capture_request()
         request.save("main", f'{filepath}.jpg')
