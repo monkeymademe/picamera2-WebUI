@@ -133,6 +133,17 @@ def about():
 def video_feed():
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/snapshot')
+def snapshot():
+    # Capture an image
+    take_snapshot()
+    # Wait for a few seconds to ensure the image is saved
+    time.sleep(2)
+    # Return the image file
+    image_name = f'pimage_snapshot.jpg'
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+    return send_file(filepath, mimetype='image/jpg')
+
 ####################
 # Setting Routes (routes that manipulate settings)
 ####################
@@ -320,6 +331,16 @@ def take_photo():
     except Exception as e:
         logging.error(f"Error capturing image: {e}")
 
+def take_snapshot():
+    global picam2, capture_settings
+    try:
+        image_name = f'pimage_snapshot'
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+        request = picam2.capture_request()
+        request.save("main", f'{filepath}.jpg')
+        logging.info(f"Image captured successfully. Path: {filepath}")
+    except Exception as e:
+        logging.error(f"Error capturing image: {e}")
 
 ####################
 # Configure Camera
