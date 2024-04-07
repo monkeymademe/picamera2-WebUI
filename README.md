@@ -43,7 +43,7 @@ sudo apt update && sudo apt upgrade
 
 2. Clone the repository to your Raspberry Pi:
 ```bash
-git clone https://github.com/your-username/picamera2-WebUI-Lite.git
+git clone https://github.com/monkeymademe/picamera2-WebUI-Lite.git
 ```
 3. Enter the directory: 
 ```bash
