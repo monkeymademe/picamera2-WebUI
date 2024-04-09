@@ -18,8 +18,12 @@ app = Flask(__name__)
 # Int Picamera2 and default settings
 picam2 = Picamera2()
 
+# Get the directory of the current script
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Define the path to the camera-config.json file
+camera_config_path = os.path.join(current_dir, 'camera-config.json')
 # Pull settings from from config file
-with open("camera-config.json", "r") as file:
+with open(camera_config_path, "r") as file:
     camera_config = json.load(file)
 # Print config for validation
 print(f'\nCamera Config:\n{camera_config}\n')
@@ -48,15 +52,16 @@ print(f'\nVideo Config:\n{video_config}\n')
 default_settings = picam2.camera_controls
 live_settings = {key: value for key, value in live_settings.items() if key in default_settings}
 
-
+# Define the path to the camera-module-info.json file
+camera_module_info_path = os.path.join(current_dir, 'camera-module-info.json')
 # Load camera modules data from the JSON file
-with open("camera-module-info.json", "r") as file:
+with open(camera_module_info_path, "r") as file:
     camera_module_info = json.load(file)
 camera_properties = picam2.camera_properties
 print(f'\nPicamera2 Camera Properties:\n{camera_properties}\n')
 
 # Set the path where the images will be stored
-UPLOAD_FOLDER = 'static/gallery'
+UPLOAD_FOLDER = os.path.join(current_dir, 'static/gallery')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Create the upload folder if it doesn't exist
