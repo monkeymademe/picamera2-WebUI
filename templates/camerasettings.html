@@ -8,8 +8,10 @@
             <h2 class="pt-4 pb-2 mb-4 border-bottom">Camera Feed</h2>
             <img class="img-fluid" id="cameraImage" alt="Camera Feed">
             <div class="pt-3 row">
-                <div class="col-4">
+                <div class="d-grid gap-2 col-4 mx-auto">
                     <button type="button" class="btn btn-primary btn-success btn-lg" id="captureButton" onclick="capturePhoto()">Capture Image</button>
+                    <button type="button" class="btn btn-primary btn-info btn-lg" id="starttimelapseButton" onclick="start_timelapse()">Start Timelapse</button>
+                    <button type="button" class="btn btn-primary btn-danger btn-lg" id="stoptimelapseButton" onclick="stop_timelapse()">Stop Timelapse</button>
                 </div>
                 <div class="col-8">
                     <div id="captureAlert" class="alert" role="alert" style="display: none;"></div>
@@ -803,6 +805,16 @@ function enableCaptureButton() {
     captureButton.disabled = false;
 }
 
+function enablestoptimelapseButton() {
+    isButtonEnabled = true;
+    stoptimelapseButton.disabled = false;
+}
+
+function enablestarttimelapseButton() {
+    isButtonEnabled = true;
+    starttimelapseButton.disabled = false;
+}
+
 function capturePhoto() {
     if (!isButtonEnabled) {
         return;
@@ -837,6 +849,92 @@ function capturePhoto() {
         alertElement.textContent = 'Error capturing photo.';
         // Re-enable the button in case of an error
         enableCaptureButton();
+    });
+    alertElement.style.display = 'block';
+
+    // Optional: Hide the alert after a few seconds
+    setTimeout(() => {
+        alertElement.style.display = 'none';
+    }, 5000); // Adjust the time as needed
+}
+
+function stop_timelapse() {
+    if (!isButtonEnabled) {
+        return;
+    }
+
+    // Disable the button to prevent rapid presses
+    stoptimelapseButton.disabled = true;
+    isButtonEnabled = false;
+    // Show alert based on the condition
+    const alertElement = document.getElementById('captureAlert');
+
+    // Call your capture_photo function here
+    fetch('/stop_timelapse', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the success response here
+        console.log(data);
+
+        // Re-enable the button after a successful response
+        enablestoptimelapseButton();
+        // Success alert
+        alertElement.className = 'alert alert-success';
+        alertElement.textContent = 'Timelapse stopped succesfully.';
+    })
+    .catch(error => {
+        // Handle the error response here
+        console.error('Error capturing photo:', error);
+        // Error alert
+        alertElement.className = 'alert alert-danger';
+        alertElement.textContent = 'Error capturing photo.';
+        // Re-enable the button in case of an error
+        enablestoptimelapseButton();
+    });
+    alertElement.style.display = 'block';
+
+    // Optional: Hide the alert after a few seconds
+    setTimeout(() => {
+        alertElement.style.display = 'none';
+    }, 5000); // Adjust the time as needed
+}
+
+function start_timelapse() {
+    if (!isButtonEnabled) {
+        return;
+    }
+
+    // Disable the button to prevent rapid presses
+    starttimelapseButton.disabled = true;
+    isButtonEnabled = false;
+    // Show alert based on the condition
+    const alertElement = document.getElementById('captureAlert');
+
+    // Call your capture_photo function here
+    fetch('/start_timelapse', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the success response here
+        console.log(data);
+
+        // Re-enable the button after a successful response
+        enablestarttimelapseButton();
+        // Success alert
+        alertElement.className = 'alert alert-sucess';
+        alertElement.textContent = 'Timelapse Started.';
+    })
+    .catch(error => {
+        // Handle the error response here
+        console.error('Error starting timelapse:', error);
+        // Error alert
+        alertElement.className = 'alert alert-danger';
+        alertElement.textContent = 'Error starting timelapse.';
+        // Re-enable the button in case of an error
+        enablestarttimelapseButton();
     });
     alertElement.style.display = 'block';
 

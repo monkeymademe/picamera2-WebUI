@@ -1,6 +1,8 @@
 import os, io, logging, json, time, re
 from datetime import datetime
 from threading import Condition
+import threading
+
 
 from flask import Flask, render_template, request, jsonify, Response, send_file, abort
 
@@ -17,6 +19,10 @@ app = Flask(__name__)
 
 # Int Picamera2 and default settings
 picam2 = Picamera2()
+
+# Int Picamera2 and default settings
+timelapse_running = False
+timelapse_thread = None
 
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -315,6 +321,55 @@ def capture_photo():
         return jsonify(success=True, message="Photo captured successfully")
     except Exception as e:
         return jsonify(success=False, message=str(e))
+
+# Route to stop the timelapse
+@app.route('/stop_timelapse', methods=['POST'])
+def stop_timelapse():
+    global timelapse_running, timelapse_thread
+    print("Stop timelapse button pressed")
+    # Check if the timelapse is running
+    if timelapse_running:
+        # Set the timelapse flag to False
+        timelapse_running = False
+        
+        # Wait for the timelapse thread to finish
+        if timelapse_thread:
+            timelapse_thread.join()
+        
+        return jsonify(success=True, message="Timelapse stopped successfully")
+    else:
+        print("Timelapse is not running")
+        return jsonify(success=True, message="Timelapse is not running")
+ 
+ # Route to start the timelapse
+@app.route('/start_timelapse', methods=['POST'])
+def start_timelapse():
+    global timelapse_running, timelapse_thread
+    # Check if the timelapse is already running
+    if not timelapse_running:
+        # Specify the interval between images (in seconds)
+        interval = 2
+        
+        # Set the timelapse flag to True
+        timelapse_running = True
+        
+        # Create a new thread to run the timelapse function
+        timelapse_thread = threading.Thread(target=take_lapse, args=(interval,))
+        
+        # Start the timelapse thread
+        timelapse_thread.start()
+        
+        return jsonify(success=True, message="Timelapse started successfully")
+    else:
+        print("Timelapse is already running")
+        return jsonify(success=True, message="Timelapse is already running")
+
+# Function to take images for timelapse
+def take_lapse(interval):
+    global timelapse_running
+    while timelapse_running:
+        take_photo()
+        time.sleep(interval)
 
 def take_photo():
     global picam2, capture_settings
