@@ -80,8 +80,8 @@ Restart=always
 WantedBy=multi-user.target
 ```
 - Save the file
-- Run 'sudo systemctl start picamera2-webui-lite.service' to start the service 
-- Run the following to check the service is running 'sudo systemctl status picamera2-webui-lite.service'
+- Run `sudo systemctl start picamera2-webui-lite.service` to start the service 
+- Run the following to check the service is running `sudo systemctl status picamera2-webui-lite.service`
 - Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui-lite.service`
   
 ## Compatibilty
