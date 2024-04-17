@@ -17,7 +17,11 @@ Picamera2 WebUI Lite is a lightweight web interface for the Raspberry Pi camera 
 
 This is part of a bigger project I am working on that would have some very advanced features like databases for settings and different gallery folders for example. But a lite version started to form during development so before I go down the rabbit hole of advanced features I branched this off so it nicely stands alone.
 
-## Picamera2 Library
+## Is this a finished project
+
+I don't think there will be ever a point I could call this finished but at the moment there are features still in testing and missing so, no this is not a finished product.
+
+## What is Picamera2 Library
 
 This project utilizes the Picamera2 library for Python. Picamera2 is the libcamera-based replacement for Picamera which was a Python interface to the Raspberry Pi's legacy camera stack. 
 For more information about Picamera2, visit [Picamera2 GitHub Repository](https://github.com/raspberrypi/picamera2).
@@ -33,6 +37,8 @@ Preinstalls
 You will need to install the following:
 - [flask](https://flask.palletsprojects.com/en/3.0.x/installation/#install-flask)
 - [Picamera2](https://github.com/raspberrypi/picamera2)
+
+As of March the bookworm version of Raspberry Pi OS has come preinstalled with both flask and Picamera2 meaning all you need to do is install git and clone the repo
 
 Picamera2 may already be installed 
 
@@ -55,11 +61,34 @@ python app.py
 ```
 5. From your broswer on connected to the same network goto the following address: 'http://**Your IP**:8080/'
 
+## Running as a service 
+
+- Run the following command and note down the location for python which python should look like "/usr/bin/python" `which python`
+- Goto the following directory `cd /etc/systemd/system/`
+- Create and edit the following file `sudo nano picamera2-webui-lite.service`
+- Paste this into the file, in the line "ExecStart" the 1st part should be the result of your "which python" command we did at the start (if its the same then its all good) the 2nd path is the location of the cloned repo with the app.py
+  
+```bash
+[Unit]
+Description=Picamera2 WebUI Lite Server
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /home/pi/picamera2-WebUI-Lite/app.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
+```
+- Save the file
+- Run 'sudo systemctl start picamera2-webui-lite.service' to start the service 
+- Run the following to check the service is running 'sudo systemctl status picamera2-webui-lite.service'
+- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui-lite.service`
+  
 ## Compatibilty
 
 - **Picamera2**
 
-Please check [Picamera installation Requirements](https://github.com/raspberrypi/picamera2?tab=readme-ov-file#installation). Your operating system may not be compatible with Picamera2
+Please check [Picamera installation Requirements](https://github.com/raspberrypi/picamera2?tab=readme-ov-file#installation). Your operating system may not be compatible with Picamera2. We have has reported issues with older versions (pre bookworm) not functioning due to libcamera not being updated in older versions. I recomend even on older pi's to use bookworm.
 
 - **Hardware**
 
@@ -74,12 +103,14 @@ Raspberry Pi Compatibilty:
 - Pi Zero v1: Untested
 - Older Pi's (Model A, 2B etc): Untested but expected not to work well.
 
-## Future features
+## Features currently in BETA
 
-1. Set resoution
-2. HDR settings
-3. Noise Reduction settings
-4. AfWindows (Target location iin frame to focus on)
+- Timelapse is an option with the current version but it can't be configured and is unstable
 
+## Known issues 
+
+- Resolution settings need a rework there is an issue between old and new cameras and saving settngs for both
+- If the camera is not connected the system will not load
+  
 ## Copyright and license
 Code and documentation copyright 2024 the Picamera2 WebUI Lite Authors. Code released under the MIT License. Docs released under Creative Commons.
