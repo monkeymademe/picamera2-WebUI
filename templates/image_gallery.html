@@ -53,6 +53,36 @@
 
     </div>
     </div>
+    <div class="clearfix">...</div>
+
+<nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center">
+    {% if page == 1 %}
+    <li class="page-item disabled">
+      <a class="page-link">Previous</a>
+    </li>
+    {% else %}
+    <li class="page-item">
+      <a class="page-link" href="{{ url_for('image_gallery', page=page-1) }}">Previous</a>
+    </li>
+    {% endif %}
+{% for i in range(start_page, end_page + 1) %}
+    <li class="page-item {% if i == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('image_gallery', page=i) }}">{{ i }}</a>
+    </li>
+    {% endfor %}
+    {% if page == end_page %}
+    <li class="page-item disabled">
+      <a class="page-link">Next</a>
+    </li>
+    {% else %}
+    <li class="page-item">
+      <a class="page-link" href="{{ url_for('image_gallery', page=page+1) }}">Next</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+
 </div>
 </div>
 </div>

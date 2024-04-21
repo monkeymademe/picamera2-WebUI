@@ -431,30 +431,43 @@ import os
 @app.route('/image_gallery')
 def image_gallery():
     try:
-        image_files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith(('.jpg'))]
-        
+        image_files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.jpg')]
+        print(image_files)
+
         if not image_files:
             # Handle the case where there are no files
             return render_template('no_files.html')
-        
+
         # Create a list of dictionaries containing file name, timestamp, and dng presence
         files_and_timestamps = []
         for image_file in image_files:
             # Extracting Unix timestamp from the filename
             unix_timestamp = int(image_file.split('_')[-1].split('.')[0])
             timestamp = datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
-            
+
             # Check if corresponding .dng file exists
             dng_file = os.path.splitext(image_file)[0] + '.dng'
             has_dng = os.path.exists(os.path.join(UPLOAD_FOLDER, dng_file))
-            
+
             # Appending dictionary to the list
             files_and_timestamps.append({'filename': image_file, 'timestamp': timestamp, 'has_dng': has_dng, 'dng_file': dng_file})
-        
+
         # Sorting the list based on Unix timestamp
         files_and_timestamps.sort(key=lambda x: x['timestamp'], reverse=True)
 
-        return render_template('image_gallery.html', image_files=files_and_timestamps)
+        # Pagination
+        page = request.args.get('page', 1, type=int)
+        items_per_page = 15
+        total_pages = (len(files_and_timestamps) + items_per_page - 1) // items_per_page
+
+        # Calculate the start and end page numbers for pagination
+        start_page = max(1, page - 1)
+        end_page = min(page + 3, total_pages)
+        start_index = (page - 1) * items_per_page
+        end_index = start_index + items_per_page
+        files_and_timestamps_page = files_and_timestamps[start_index:end_index]
+
+        return render_template('image_gallery.html', image_files=files_and_timestamps_page, page=page, start_page=start_page, end_page=end_page)
     except Exception as e:
         logging.error(f"Error loading image gallery: {e}")
         return render_template('error.html', error=str(e))
