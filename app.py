@@ -151,9 +151,9 @@ def snapshot():
     # Wait for a few seconds to ensure the image is saved
     time.sleep(2)
     # Return the image file
-    image_name = f'snapshot/pimage_snapshot.jpg'
+    image_name = 'snapshot/pimage_snapshot.jpg'
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
-    return send_file(filepath, mimetype='image/jpg')
+    return send_file(filepath, as_attachment=False, download_name="snapshot.jpg",  mimetype='image/jpeg')
 
 ####################
 # Setting Routes (routes that manipulate settings)
