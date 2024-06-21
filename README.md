@@ -1,8 +1,8 @@
-# Picamera2 WebUI Lite
+# Picamera2 WebUI
 
 ## Overview
 
-Picamera2 WebUI Lite is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 library. This project provides a simple user interface to configure camera settings, capture photos, and manage images in a basic gallery.
+Picamera2 WebUI is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 library. This project provides a simple user interface to configure camera settings, capture photos, and manage images in a basic gallery.
 
 [![Watch the Demo here](https://img.youtube.com/vi/K_pSdu5fv1M/0.jpg)](https://www.youtube.com/watch?v=K_pSdu5fv1M)
 
@@ -12,10 +12,6 @@ Picamera2 WebUI Lite is a lightweight web interface for the Raspberry Pi camera 
 - **Camera Settings:** Easily configure camera settings such as image rotation, exposure, white balance settings, and meny more.
 - **Capture Photos:** Take photos with a single click and save them to the image gallery.
 - **Image Gallery:** Veiw, delete, and download your images in a simple gallery interface.
-
-## What Does 'Lite' Mean
-
-This is part of a bigger project I am working on that would have some very advanced features like databases for settings and different gallery folders for example. But a lite version started to form during development so before I go down the rabbit hole of advanced features I branched this off so it nicely stands alone.
 
 ## Is this a finished project
 
@@ -49,11 +45,11 @@ sudo apt update && sudo apt upgrade
 
 2. Clone the repository to your Raspberry Pi:
 ```bash
-git clone https://github.com/monkeymademe/picamera2-WebUI-Lite.git
+git clone https://github.com/monkeymademe/picamera2-WebUI.git
 ```
 3. Enter the directory: 
 ```bash
-cd picamera2-WebUI-Lite
+cd picamera2-WebUI
 ```
 4. Run the application and access the web interface through your browser.
 ```bash
@@ -65,24 +61,24 @@ python app.py
 
 - Run the following command and note down the location for python which python should look like "/usr/bin/python" `which python`
 - Goto the following directory `cd /etc/systemd/system/`
-- Create and edit the following file `sudo nano picamera2-webui-lite.service`
+- Create and edit the following file `sudo nano picamera2-webui.service`
 - Paste this into the file, in the line "ExecStart" the 1st part should be the result of your "which python" command we did at the start (if its the same then its all good) the 2nd path is the location of the cloned repo with the app.py
   
 ```bash
 [Unit]
-Description=Picamera2 WebUI Lite Server
+Description=Picamera2 WebUI Server
 After=network.target
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /home/pi/picamera2-WebUI-Lite/app.py
+ExecStart=/usr/bin/python /home/pi/picamera2-WebUI/app.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
 ```
 - Save the file
-- Run `sudo systemctl start picamera2-webui-lite.service` to start the service 
-- Run the following to check the service is running `sudo systemctl status picamera2-webui-lite.service`
-- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui-lite.service`
+- Run `sudo systemctl start picamera2-webui.service` to start the service 
+- Run the following to check the service is running `sudo systemctl status picamera2-webui.service`
+- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui.service`
   
 ## Compatibilty
 
@@ -113,4 +109,4 @@ Raspberry Pi Compatibilty:
 - If the camera is not connected the system will not load
   
 ## Copyright and license
-Code and documentation copyright 2024 the Picamera2 WebUI Lite Authors. Code released under the MIT License. Docs released under Creative Commons.
+Code and documentation copyright 2024 the Picamera2 WebUI Authors. Code released under the MIT License. Docs released under Creative Commons.
