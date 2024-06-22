@@ -1102,7 +1102,7 @@ function capturePhoto() {
     const alertElement = document.getElementById('captureAlert');
 
     // Call your capture_photo function here
-    fetch('/capture_photo', {
+    fetch('/capture_photo_'+ camera_num, {
         method: 'POST',
     })
     .then(response => response.json())

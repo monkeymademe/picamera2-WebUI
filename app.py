@@ -128,6 +128,20 @@ class CameraObject:
         sorted_resolutions = sorted(unique_resolutions, key=lambda x: (x[0] * x[1], x))
         return sorted_resolutions
 
+    def take_photo(self):
+        try:
+            timestamp = int(datetime.timestamp(datetime.now()))
+            image_name = f'pimage_{timestamp}'
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+            request = self.camera.capture_request()
+            request.save("main", f'{filepath}.jpg')
+            if self.self.live_config['controls']['capture-settings']["makeRaw"]:
+                request.save_dng(f'{filepath}.dng')
+            request.release()
+            logging.info(f"Image captured successfully. Path: {filepath}")
+        except Exception as e:
+            logging.error(f"Error capturing image: {e}")
+
     def start_streaming(self):
         self.output = StreamingOutput()
         self.camera.start_recording(MJPEGEncoder(), output=FileOutput(self.output))
@@ -390,6 +404,17 @@ def camera_info(camera_num):
         return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'))
     else:
         return jsonify(error="Camera module data not found")
+
+@app.route('/capture_photo_<int:camera_num>', methods=['POST'])
+def capture_photo(camera_num):
+    try:
+        cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+        camera = cameras.get(camera_num)
+        camera.take_photo()  # Call your take_photo function
+        time.sleep(1)
+        return jsonify(success=True, message="Photo captured successfully")
+    except Exception as e:
+        return jsonify(success=False, message=str(e))
 
 @app.route("/about")
 def about():
