@@ -9,7 +9,7 @@
       <div class="row row-cols-1 row-cols-md-2 g-4">
         
 
-      {% for camera_num, camera, model in camera_list %}
+      {% for camera_num, camera, model, camera_module_info in camera_list %}
       <div class="col">
       <div class="card">
           <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot.jpg') }}" class="card-img-top" alt="...">
@@ -18,8 +18,8 @@
           <div style="position:absolute; margin-top:-70px; left:50%; width:100px; height:100px;margin-left:-50px; text-align:center;">
           <img class="shadow rounded-circle" style="" src="{{ url_for('static', filename='img/' + model|string + '.jpg') }}" width="100" alt="...">
         </div>
-          <h5 class="card-title mt-5">Camera {{ camera_num }}</h5>
-          <p class="card-text">Model: {{ model }}</p>
+          <h5 class="card-title mt-5">{{ camera_module_info.module_name }}</h5>
+          <p class="card-text">{{ camera_module_info.manufacturer }} {{ model }}</p>
           <p>Detected as Camera {{ camera_num }}</p>
         </div>
         <div class="card-footer text-end">

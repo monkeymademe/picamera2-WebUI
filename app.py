@@ -115,9 +115,6 @@ class CameraObject:
                 
         return default_config
 
-
-
-
     def available_resolutions(self):
         # Use a set to collect unique resolutions
         resolutions_set = set()
@@ -345,6 +342,11 @@ print(f'\nCurrent detected compatible Cameras:\n{camera_new_config}\n')
 with open(os.path.join(current_dir, 'camera-last-config.json'), 'w') as file:
     json.dump(camera_new_config, file, indent=4)
 
+def get_camera_info(camera_model, camera_module_info):
+    return next(
+        (module for module in camera_module_info["camera_modules"] if module["sensor_model"] == camera_model),
+        next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
+    )
 
 ####################
 # Site Routes (routes to actual pages)
@@ -355,8 +357,7 @@ with open(os.path.join(current_dir, 'camera-last-config.json'), 'w') as file:
 def home():
     # Assuming cameras is a dictionary containing your CameraObjects
     cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
-    print(f'Camera Data {cameras_data}')
-    camera_list = [(camera_num, camera, camera.camera_info['Model']) for camera_num, camera in cameras.items()]
+    camera_list = [(camera_num, camera, camera.camera_info['Model'], get_camera_info(camera.camera_info['Model'], camera_module_info)) for camera_num, camera in cameras.items()]
     # Pass cameras_data as a context variable to your template
     return render_template('home.html', title="Picamera2 WebUI", cameras_data=cameras_data, camera_list=camera_list)
 
@@ -381,6 +382,10 @@ def camera_info(camera_num):
     camera = cameras.get(camera_num)
     connected_camera = camera.camera_info['Model']
     connected_camera_data = next((module for module in camera_module_info["camera_modules"] if module["sensor_model"] == connected_camera), None)
+    # If connected camera is not found, select the "Unknown" camera
+    if connected_camera_data is None:
+        connected_camera_data = next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
+    print(cameras_data)
     if connected_camera_data:
         return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'))
     else:

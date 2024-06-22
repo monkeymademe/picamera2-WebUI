@@ -23,7 +23,7 @@
         },
         {
             "module_name": "Camera Module v2",
-            "sensor_model": "imx219",
+            "sensor_model": "imx219-",
             "manufacturer": "Sony",
             "megapixels": 8,
             "sensor_resolution": "3280 × 2464 pixels",
@@ -125,6 +125,27 @@
             "lens_mount": "C/CS",
             "got_noir": "No",
             "is_pi_cam": true
+        },
+        {
+            "module_name": "Unknown Camera",
+            "sensor_model": "Unknown",
+            "manufacturer": "",
+            "megapixels": "-",
+            "sensor_resolution": "-",
+            "video_modes": "-",
+            "sensor_image_area": "-",
+            "pixel_size": "-",
+            "optical_size": "-",
+            "focus": "-",
+            "dof": "-",
+            "focal_length": "-",
+            "horizontal_fov": "-",
+            "vertical_fov": "-",
+            "f_stop": "-",
+            "max_exposure_time": "-",
+            "lens_mount": "-",
+            "got_noir": "-",
+            "is_pi_cam": false
         }
     ]
 }
