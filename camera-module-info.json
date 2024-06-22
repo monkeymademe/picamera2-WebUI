@@ -23,7 +23,7 @@
         },
         {
             "module_name": "Camera Module v2",
-            "sensor_model": "imx219-",
+            "sensor_model": "imx219",
             "manufacturer": "Sony",
             "megapixels": 8,
             "sensor_resolution": "3280 × 2464 pixels",
