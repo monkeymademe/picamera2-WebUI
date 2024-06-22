@@ -29,7 +29,7 @@
         "hflip": 0,
         "vflip": 0
     },
-    "sensor-mode": 7,
+    "sensor-mode": 2,
     "capture-settings": {
         "Resize": false,
         "makeRaw": false,

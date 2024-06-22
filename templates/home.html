@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container px-4 py-5 pt-5 pb-0 mt-4">
+  <div class="row p-4 pb-0 pe-lg-0 pt-lg-5 align-items-center rounded-3 border shadow-lg">
+    <div class="col p-3 p-lg-5 pt-lg-3">
+      <h1 class="display-4 fw-bold lh-1 text-body-emphasis">Connected Cameras</h1>
+      <table class="table m-0 align-middle">
+        <tbody>
+             
+      {% for camera_num, camera, model in camera_list %}
+      <tr>
+                    <td><img src="{{ url_for('static', filename='img/' + model|string + '.jpg') }}" width="100" alt="..."></td>
+                    <td><h3 class="m-0 text-end">Camera {{ camera_num }}</h3></td>
+                    <td><h3 class="m-0 text-center">-</h3></td>
+                    <td><h3 class="m-0">Model: {{ model }}</h3></td>
+                    <td></td>
+                    <td>
+                      <div class="btn-group text-end" role="group">
+                      <a href="{{ url_for('video_feed', camera_num=camera_num) }}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                      <button type="button" class="btn btn-primary"><i class="bi bi-info-circle"></i></button>
+                      <button type="button" class="btn btn-primary"><i class="bi bi-gear"></i></button>
+                    </div>
+                  </td>
+                </tr>
+          
+          {% endfor %}
+        
+      </tbody>
+    </table>
+  </div>
+  </div>
+  </div>
+  
+
+ 
+{% endblock %}

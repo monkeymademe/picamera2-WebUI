@@ -17,7 +17,7 @@
         "Contrast": 1.0,
         "Saturation": 1.0,
         "Sharpness": 1.0,
-        "AfMode": 0,
+        "AfMode": 1,
         "ScalerCrop": [
             0,
             0,
@@ -29,7 +29,7 @@
         "hflip": 0,
         "vflip": 0
     },
-    "sensor-mode": 7,
+    "sensor-mode": 2,
     "capture-settings": {
         "Resize": false,
         "makeRaw": false,
