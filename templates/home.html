@@ -5,29 +5,35 @@
   <div class="row p-4 pb-0 pe-lg-0 pt-lg-5 align-items-center rounded-3 border shadow-lg">
     <div class="col p-3 p-lg-5 pt-lg-3">
       <h1 class="display-4 fw-bold lh-1 text-body-emphasis">Connected Cameras</h1>
-      <table class="table m-0 align-middle">
-        <tbody>
-             
-      {% for camera_num, camera, model in camera_list %}
-      <tr>
-                    <td><img src="{{ url_for('static', filename='img/' + model|string + '.jpg') }}" width="100" alt="..."></td>
-                    <td><h3 class="m-0 text-end">Camera {{ camera_num }}</h3></td>
-                    <td><h3 class="m-0 text-center">-</h3></td>
-                    <td><h3 class="m-0">Model: {{ model }}</h3></td>
-                    <td></td>
-                    <td>
-                      <div class="btn-group text-end" role="group">
-                      <a href="{{ url_for('video_feed', camera_num=camera_num) }}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
-                      <button type="button" class="btn btn-primary"><i class="bi bi-info-circle"></i></button>
-                      <button type="button" class="btn btn-primary"><i class="bi bi-gear"></i></button>
-                    </div>
-                  </td>
-                </tr>
-          
-          {% endfor %}
+      <hr>
+      <div class="row row-cols-1 row-cols-md-2 g-4">
         
-      </tbody>
-    </table>
+
+      {% for camera_num, camera, model in camera_list %}
+      <div class="col">
+      <div class="card">
+          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot.jpg') }}" class="card-img-top" alt="...">
+
+        <div class="card-body text-center">
+          <div style="position:absolute; margin-top:-70px; left:50%; width:100px; height:100px;margin-left:-50px; text-align:center;">
+          <img class="shadow rounded-circle" style="" src="{{ url_for('static', filename='img/' + model|string + '.jpg') }}" width="100" alt="...">
+        </div>
+          <h5 class="card-title mt-5">Camera {{ camera_num }}</h5>
+          <p class="card-text">Model: {{ model }}</p>
+          <p>Detected as Camera {{ camera_num }}</p>
+        </div>
+        <div class="card-footer text-end">
+          <div class="btn-group text-end" role="group">
+            <a href="{{ url_for('video_feed', camera_num=camera_num) }}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+            <button type="button" class="btn btn-primary"><i class="bi bi-info-circle"></i></button>
+            <button type="button" class="btn btn-primary"><i class="bi bi-gear"></i></button>
+          </div>
+        </div>
+      </div>
+</div>
+      {% endfor %}
+</div>
+      
   </div>
   </div>
   </div>
