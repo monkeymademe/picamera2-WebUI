@@ -12,7 +12,7 @@
       {% for camera_num, camera, model, camera_module_info in camera_list %}
       <div class="col">
       <div class="card">
-          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot.jpg') }}" class="card-img-top" alt="...">
+          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot_' + camera_num|string + '.jpg') }}" class="card-img-top" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/pimage_1709139459.jpg') }}';">
 
         <div class="card-body text-center">
           <div style="position:absolute; margin-top:-70px; left:50%; width:100px; height:100px;margin-left:-50px; text-align:center;">
