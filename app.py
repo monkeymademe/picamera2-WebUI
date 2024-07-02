@@ -297,6 +297,16 @@ class CameraObject:
         except Exception as e:
             logging.error(f"Error capturing image: {e}")
         
+    def take_preview(self,camera_num):
+        try:
+            image_name = f'snapshot/pimage_preview_{camera_num}'
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+            request = self.camera.capture_request()
+            request.save("main", f'{filepath}.jpg')
+            logging.info(f"Image captured successfully. Path: {filepath}")
+            return f'{filepath}.jpg'
+        except Exception as e:
+            logging.error(f"Error capturing image: {e}")
 
 # Init dictionary to store camera instances
 cameras = {}
@@ -440,6 +450,19 @@ def snapshot(camera_num):
         return send_file(filepath, as_attachment=False, download_name="snapshot.jpg",  mimetype='image/jpeg')
     else:
         abort(404)
+
+@app.route('/preview_<int:camera_num>', methods=['POST'])
+def preview(camera_num):
+    try:
+        camera = cameras.get(camera_num)
+        if camera:
+            # Capture an image
+            filepath = camera.take_preview(camera_num)
+            # Wait for a few seconds to ensure the image is saved
+            time.sleep(1)
+            return jsonify(success=True, message="Photo captured successfully")
+    except Exception as e:
+        return jsonify(success=False, message=str(e))
 
 ####################
 # POST routes for saving data

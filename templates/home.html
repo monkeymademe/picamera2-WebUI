@@ -11,7 +11,7 @@
       {% for camera_num, camera, model, camera_module_info in camera_list %}
       <div class="col">
       <div class="card">
-          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot_' + camera_num|string + '.jpg') }}" class="card-img-top" style="max-height: 200px;" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/pimage_1709139459.jpg') }}';">
+          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_preview_' + camera_num|string + '.jpg') }}" class="card-img-top" style="max-height: 200px;" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/snapshot/camera.svg') }}';">
 
         <div class="card-body text-center">
           <div style="position:absolute; margin-top:-70px; left:50%; width:100px; height:100px;margin-left:-50px; text-align:center;">
@@ -26,7 +26,7 @@
           <div class="container text-center">
             <div class="row align-items-end">
           <div class="col text-start p-0">
-            <button type="button" class="btn btn-primary">Update Preview</button>
+            <button type="button" class="btn btn-primary" id="captureButton" onclick="capturePreview({{ camera_num }})">Update Preview</button>
           </div>
           <div class="col text-end p-0">
           <div class="btn-group text-end" role="group">
@@ -47,6 +47,59 @@
   </div>
   </div>
   
+<script>
 
+let captureButton = document.getElementById('captureButton');
+let isButtonEnabled = true;
+
+function enableCaptureButton() {
+    isButtonEnabled = true;
+    captureButton.disabled = false;
+}
+
+function capturePreview(camera_num) {
+    if (!isButtonEnabled) {
+        return;
+    }
+
+    // Disable the button to prevent rapid presses
+    captureButton.disabled = true;
+    isButtonEnabled = false;
+    // Show alert based on the condition
+    // const alertElement = document.getElementById('captureAlert');
+
+    // Call your capture_photo function here
+    fetch('/preview_'+ camera_num, {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the success response here
+        console.log(data);
+
+        // Re-enable the button after a successful response
+        enableCaptureButton();
+        // Success alert
+        //alertElement.className = 'alert alert-success';
+        //alertElement.textContent = 'Image saved successfully.';
+    })
+    .catch(error => {
+        // Handle the error response here
+        console.error('Error capturing photo:', error);
+        // Error alert
+        //alertElement.className = 'alert alert-danger';
+        //alertElement.textContent = 'Error capturing photo.';
+        // Re-enable the button in case of an error
+        enableCaptureButton();
+    });
+    //alertElement.style.display = 'block';
+
+    // Optional: Hide the alert after a few seconds
+    //setTimeout(() => {
+    //    alertElement.style.display = 'none';
+    //}, 5000); // Adjust the time as needed
+}
+
+</script>
  
 {% endblock %}
