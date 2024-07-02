@@ -8,11 +8,10 @@
       <hr>
       <div class="row row-cols-1 row-cols-md-2 g-4">
         
-
       {% for camera_num, camera, model, camera_module_info in camera_list %}
       <div class="col">
       <div class="card">
-          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot_' + camera_num|string + '.jpg') }}" class="card-img-top" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/pimage_1709139459.jpg') }}';">
+          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_snapshot_' + camera_num|string + '.jpg') }}" class="card-img-top" style="max-height: 200px;" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/pimage_1709139459.jpg') }}';">
 
         <div class="card-body text-center">
           <div style="position:absolute; margin-top:-70px; left:50%; width:100px; height:100px;margin-left:-50px; text-align:center;">
@@ -22,12 +21,22 @@
           <p class="card-text">{{ camera_module_info.manufacturer }} {{ model }}</p>
           <p>Detected as Camera {{ camera_num }}</p>
         </div>
-        <div class="card-footer text-end">
+        
+        <div class="card-footer">
+          <div class="container text-center">
+            <div class="row align-items-end">
+          <div class="col text-start p-0">
+            <button type="button" class="btn btn-primary">Update Preview</button>
+          </div>
+          <div class="col text-end p-0">
           <div class="btn-group text-end" role="group">
             <a href="{{ url_for('video_feed', camera_num=camera_num) }}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
             <button type="button" class="btn btn-primary"><i class="bi bi-info-circle"></i></button>
             <button type="button" class="btn btn-primary"><i class="bi bi-gear"></i></button>
           </div>
+          </div>
+        </div>
+      </div>
         </div>
       </div>
 </div>
