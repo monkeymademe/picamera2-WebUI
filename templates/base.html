@@ -18,11 +18,11 @@
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav me-auto mb-2 mb-md-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" aria-current="page" href="{{ url_for('home') }}">Home</a>
           </li>
           {% if cameras_data|length > 1 %}
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {% if active_page == 'control_camera' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Control Cameras
             </a>
             <ul class="dropdown-menu">
@@ -35,16 +35,16 @@
           {% else %}
           <li class="nav-item">
             {% for camera_num, camera in cameras_data %}
-               <a class="nav-link" href="{{ url_for('control_camera', camera_num=camera_num) }}">Control Camera</a>
+               <a class="nav-link {% if active_page == 'control_camera' %}active{% endif %}" href="{{ url_for('control_camera', camera_num=camera_num) }}">Control Camera</a>
             {% endfor %}
           </li>
           {% endif %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('image_gallery') }}">View Image Gallery</a>
+            <a class="nav-link {% if active_page == 'image_gallery' %}active{% endif %}" href="{{ url_for('image_gallery') }}">View Image Gallery</a>
           </li>
           {% if cameras_data|length > 1 %}
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {% if active_page == 'camera_info' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Camera Info
             </a>
             <ul class="dropdown-menu">
@@ -57,12 +57,12 @@
           {% else %}
           <li class="nav-item">
             {% for camera_num, camera in cameras_data %}
-               <a class="nav-link" href="{{ url_for('camera_info', camera_num=camera_num) }}">Camera Info</a>
+               <a class="nav-link {% if active_page == 'camera_info' %}active{% endif %}" href="{{ url_for('camera_info', camera_num=camera_num) }}">Camera Info</a>
             {% endfor %}
           </li>
           {% endif %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('about') }}">About</a>
+            <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="{{ url_for('about') }}">About</a>
           </li>
           
         </ul>

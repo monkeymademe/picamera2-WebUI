@@ -383,7 +383,7 @@ def home():
     cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
     camera_list = [(camera_num, camera, camera.camera_info['Model'], get_camera_info(camera.camera_info['Model'], camera_module_info)) for camera_num, camera in cameras.items()]
     # Pass cameras_data as a context variable to your template
-    return render_template('home.html', title="Picamera2 WebUI", cameras_data=cameras_data, camera_list=camera_list)
+    return render_template('home.html', title="Picamera2 WebUI", cameras_data=cameras_data, camera_list=camera_list, active_page='home')
 
 @app.route('/control_camera_<int:camera_num>')
 def control_camera(camera_num):
@@ -392,7 +392,7 @@ def control_camera(camera_num):
     resolutions = camera.available_resolutions()
     print(camera.live_config.get('capture-settings'))
     if camera:
-        return render_template("camerasettings.html", title="Picamera2 WebUI - Camera <int:camera_num>", cameras_data=cameras_data, camera_num=camera_num, live_settings=camera.live_config.get('controls'), rotation_settings=camera.live_config.get('rotation'), settings_from_camera=camera.settings, capture_settings=camera.live_config.get('capture-settings'), resolutions=resolutions, enumerate=enumerate)
+        return render_template("camerasettings.html", title="Picamera2 WebUI - Camera <int:camera_num>", cameras_data=cameras_data, camera_num=camera_num, live_settings=camera.live_config.get('controls'), rotation_settings=camera.live_config.get('rotation'), settings_from_camera=camera.settings, capture_settings=camera.live_config.get('capture-settings'), resolutions=resolutions, enumerate=enumerate, active_page='control_camera')
     else:
         abort(404)
 
@@ -411,7 +411,7 @@ def camera_info(camera_num):
         connected_camera_data = next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
     print(cameras_data)
     if connected_camera_data:
-        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'))
+        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info')
     else:
         return jsonify(error="Camera module data not found")
 
@@ -428,7 +428,7 @@ def capture_photo(camera_num):
 
 @app.route("/about")
 def about():
-    return render_template("about.html", title="About Picamera2 WebUI")
+    return render_template("about.html", title="About Picamera2 WebUI", active_page='about')
 
 @app.route('/video_feed_<int:camera_num>')
 def video_feed(camera_num):
@@ -545,7 +545,7 @@ def image_gallery():
         end_index = start_index + items_per_page
         files_and_timestamps_page = files_and_timestamps[start_index:end_index]
 
-        return render_template('image_gallery.html', image_files=files_and_timestamps_page, page=page, start_page=start_page, end_page=end_page, cameras_data=cameras_data, camera_list=camera_list)
+        return render_template('image_gallery.html', image_files=files_and_timestamps_page, page=page, start_page=start_page, end_page=end_page, cameras_data=cameras_data, camera_list=camera_list, active_page='image_gallery')
     except Exception as e:
         logging.error(f"Error loading image gallery: {e}")
         return render_template('error.html', error=str(e), cameras_data=cameras_data, camera_list=camera_list)
