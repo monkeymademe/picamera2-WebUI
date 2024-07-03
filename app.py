@@ -428,7 +428,10 @@ def capture_photo(camera_num):
 
 @app.route("/about")
 def about():
-    return render_template("about.html", title="About Picamera2 WebUI", active_page='about')
+    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+    camera_list = [(camera_num, camera, camera.camera_info['Model'], get_camera_info(camera.camera_info['Model'], camera_module_info)) for camera_num, camera in cameras.items()]
+    # Pass cameras_data as a context variable to your template
+    return render_template("about.html", title="About Picamera2 WebUI", cameras_data=cameras_data, camera_list=camera_list, active_page='about')
 
 @app.route('/video_feed_<int:camera_num>')
 def video_feed(camera_num):
