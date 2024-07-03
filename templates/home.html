@@ -11,7 +11,7 @@
       {% for camera_num, camera, model, camera_module_info in camera_list %}
       <div class="col">
       <div class="card">
-          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_preview_' + camera_num|string + '.jpg') }}" class="card-img-top" style="max-height: 200px;" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/snapshot/default_preview.svg') }}';">
+          <img src="{{ url_for('static', filename='gallery/snapshot/pimage_preview_' + camera_num|string + '.jpg') }}" class="card-img-top" style="max-height: 200px; object-fit: cover;" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='gallery/snapshot/default_preview.svg') }}';">
 
         <div class="card-body text-center">
           <div style="position:absolute; margin-top:-70px; left:50%; width:100px; height:100px;margin-left:-50px; text-align:center;">
