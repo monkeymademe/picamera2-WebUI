@@ -2,14 +2,14 @@
 
 ## Overview
 
-Picamera2 WebUI is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 library. This project provides a simple user interface to configure camera settings, capture photos, and manage images in a basic gallery.
+Picamera2 WebUI is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 Python library and using Flask. This project provides a user interface to configure camera settings, capture photos, and manage images in a basic gallery.
 
 [![Watch the Demo here](https://img.youtube.com/vi/K_pSdu5fv1M/0.jpg)](https://www.youtube.com/watch?v=K_pSdu5fv1M)
 
 
 ## Features
 
-- **Camera Settings:** Easily configure camera settings such as image rotation, exposure, white balance settings, and meny more.
+- **Camera Control:** Easily configure camera settings such as image rotation, exposure, white balance settings, and meny more.
 - **Capture Photos:** Take photos with a single click and save them to the image gallery.
 - **Image Gallery:** Veiw, delete, and download your images in a simple gallery interface.
 
@@ -19,7 +19,7 @@ I don't think there will be ever a point I could call this finished but at the m
 
 ## What is Picamera2 Library
 
-This project utilizes the Picamera2 library for Python. Picamera2 is the libcamera-based replacement for Picamera which was a Python interface to the Raspberry Pi's legacy camera stack. 
+This project utilizes the Picamera2 Python library. Picamera2 is the libcamera-based replacement for Picamera which was a Python interface to the Raspberry Pi's legacy camera stack. 
 For more information about Picamera2, visit [Picamera2 GitHub Repository](https://github.com/raspberrypi/picamera2).
 
 ## Author
@@ -34,15 +34,12 @@ You will need to install the following:
 - [flask](https://flask.palletsprojects.com/en/3.0.x/installation/#install-flask)
 - [Picamera2](https://github.com/raspberrypi/picamera2)
 
-As of March the bookworm version of Raspberry Pi OS has come preinstalled with both flask and Picamera2 meaning all you need to do is install git and clone the repo
-
-Picamera2 may already be installed 
+As of March the bookworm version of Raspberry Pi OS (Desktop) has come preinstalled with both flask and Picamera2 meaning all you need to do is install git and clone the repo. If you are using Lite you will need to install flask and Picamera2.
 
 1. Update Raspberry Pi OS: 
 ```bash
 sudo apt update && sudo apt upgrade
 ```
-
 2. Clone the repository to your Raspberry Pi:
 ```bash
 git clone https://github.com/monkeymademe/picamera2-WebUI.git
@@ -61,30 +58,32 @@ python app.py
 
 - Run the following command and note down the location for python which python should look like "/usr/bin/python" `which python`
 - Goto the following directory `cd /etc/systemd/system/`
-- Create and edit the following file `sudo nano picamera2-webui.service`
+- Create and edit the following file `sudo nano picamera2-webui-lite.service`
 - Paste this into the file, in the line "ExecStart" the 1st part should be the result of your "which python" command we did at the start (if its the same then its all good) the 2nd path is the location of the cloned repo with the app.py
   
 ```bash
 [Unit]
-Description=Picamera2 WebUI Server
+Description=Picamera2 WebUI Lite Server
 After=network.target
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /home/pi/picamera2-WebUI/app.py
+ExecStart=/usr/bin/python /home/pi/picamera2-WebUI-Lite/app.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
 ```
 - Save the file
-- Run `sudo systemctl start picamera2-webui.service` to start the service 
-- Run the following to check the service is running `sudo systemctl status picamera2-webui.service`
-- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui.service`
+- Run `sudo systemctl start picamera2-webui-lite.service` to start the service 
+- Run the following to check the service is running `sudo systemctl status picamera2-webui-lite.service`
+- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui-lite.service`
   
 ## Compatibilty
 
 - **Picamera2**
 
 Please check [Picamera installation Requirements](https://github.com/raspberrypi/picamera2?tab=readme-ov-file#installation). Your operating system may not be compatible with Picamera2. We have has reported issues with older versions (pre bookworm) not functioning due to libcamera not being updated in older versions. I recomend even on older pi's to use bookworm.
+
+There has been some reported issues with the PiCamera2 on older Raspberry Pi's: ```OSError: [Errno 12] Cannot allocate memory``` https://github.com/raspberrypi/picamera2/issues/972#issuecomment-1980573868
 
 - **Hardware**
 
@@ -102,11 +101,13 @@ Raspberry Pi Compatibilty:
 ## Features currently in BETA
 
 - Timelapse is an option with the current version but it can't be configured and is unstable
+- MultiCamera Support
 
 ## Known issues 
 
-- Resolution settings need a rework there is an issue between old and new cameras and saving settngs for both
-- If the camera is not connected the system will not load
+- ScalerCrop is not working correctly
+- Saving config is currently optimal and will be reworked for the next release
+- .gitignore was missing
   
 ## Copyright and license
-Code and documentation copyright 2024 the Picamera2 WebUI Authors. Code released under the MIT License. Docs released under Creative Commons.
+Code and documentation copyright 2024 the Picamera2 WebUI Lite Authors. Code released under the MIT License. Docs released under Creative Commons.
