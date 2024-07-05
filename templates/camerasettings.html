@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <div class="container-xxl">
     <div class="row">
         <div class="col-lg-8 pt-5">
@@ -673,6 +674,9 @@
             <ul class="list-group pt-3">
                 <li class="list-group-item active" aria-current="true">Settings Controls</li>
                 <li class="list-group-item">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#configModal">
+                        Load/Save Camera Settings
+                    </button>
                     <button type="button" class="btn btn-primary" onclick="resetsettings()" style="margin: 0.25rem 0.125rem;">Reset Default Settings</button>
                     <button type="button" class="btn btn-primary" onclick="saveSettings()" style="margin: 0.25rem 0.125rem;">Save Current Settings</button>
                 </li>
@@ -681,8 +685,70 @@
         
     </div>
 </div>
- 
-  
+<!-- Modal -->
+<div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="configModalLabel">Load/Save Camera Settings</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body">
+                    <!-- Bootstrap Alert -->
+                    <div class="alert alert-danger d-none" id="configAlert" role="alert"></div>
+
+                <div class="form-group">
+                    <label for="configFile">Load Settings file</label>
+                    <table class="table" id="configTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Select</th>
+                                <th scope="col">Filename</th>
+                                <th scope="col">Model</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if config_data %}
+                                {% for i, config in enumerate(config_data) %}
+                                    <tr>
+                                        <td>
+                                            <input type="radio" name="selectedConfig" value="{{ config.filename }}" data-model="{{ config.model }}" {% if config.is_selected %}checked{% endif %}>
+                                        </td>
+                                        <td>{{ config.filename }}</td>
+                                        <td>{{ config.model }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3">No configs saved</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <hr>
+                <div class="form-group mx-2">
+                    <input type="radio" name="selectedConfig" id="defaultConfig" value="default">
+                    <label for="defaultConfig">Set camera {{ camera_info.Model }} to default</label>
+                </div>
+                <hr>
+                <div class="form-group mx-2">
+                    <input type="radio" name="selectedConfig" id="saveNewConfig" value="new">
+                    <label for="saveNewConfig">Save current settings as new config file</label>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="saveConfigFile" placeholder="Enter filename" aria-label="filename" aria-describedby="save_filename">
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary ms-2" onclick="validateConfig()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
   
   
 
@@ -708,6 +774,7 @@ document.addEventListener('DOMContentLoaded', function () {
     updateUI(rotationSettings);
     updateUI(capture_settings);
     console.log(capture_settings);
+
 });
 
 // Function to show/hide sections based on checkbox values
@@ -760,6 +827,7 @@ document.addEventListener('visibilitychange', function() {
     const sliderSettings = ['LensPosition', 'ExposureValue', 'Brightness', 'Contrast', 'Saturation', 'Sharpness'];
     const inputSettings = ['ExposureTime', 'AeFlickerPeriod']
     const camera_num = {{ camera_num }};
+    const camera_info = {{ camera_info | tojson }};
 
 function setrange(settings_from_camera) {
     for (const key in settings_from_camera) {
@@ -839,7 +907,16 @@ function showContent(id) {
     }
 
 function updateUI(settings) {
+    console.log("Settings object:", settings);
+
+    // Ensure settings is an object
+    if (typeof settings !== 'object' || settings === null) {
+        console.error("Invalid settings object");
+        return;
+    }
     for (const key in settings) {
+        if (settings.hasOwnProperty(key)) {  // Check if the key is a direct property
+            console.log("Key:", key, "Value:", settings[key]);}
         if (checkboxSettings.includes(key)) {
                 console.log(settings[key]);
                 console.log(settings);
@@ -1027,16 +1104,129 @@ function adjustScalerCrop() {
             updateLiveSettings({'ScalerCrop':[x_offset, y_offset, width, height]})
 }
 
+// JavaScript to handle the radio button selection logic
+document.querySelectorAll('input[name="selectedConfig"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        if (this.id === 'defaultConfig' || this.id === 'saveNewConfig') {
+            document.querySelectorAll('input[name="selectedConfig"]').forEach(function(otherRadio) {
+                if (otherRadio !== radio) {
+                    otherRadio.checked = false;
+                }
+            });
+        }
+    });
+});
+
+// Function to validate and handle the save button click
+function validateConfig() {
+    const selectedConfig = document.querySelector('input[name="selectedConfig"]:checked');
+    const alertBox = document.getElementById('configAlert');
+    const newFilename = document.getElementById('saveConfigFile').value;
+    console.log(camera_info['Model'])
+
+    if (selectedConfig) {
+        if (selectedConfig.id === 'saveNewConfig') {
+            if (!newFilename.trim()) {
+                alertBox.textContent = 'Please enter a filename to save the new config.';
+                alertBox.classList.remove('d-none');
+                console.log('Please enter a filename to save the new config.');
+                return;
+            } else {
+                save_config_file(newFilename);
+            }
+        } else if (selectedConfig.id === 'defaultConfig') {
+            reset_default_settings_camera();
+        } else {
+            const selectedModel = selectedConfig.getAttribute('data-model');
+            const filename = selectedConfig.getAttribute('value');
+            if (selectedModel && selectedModel !== camera_info['Model']) {
+                alertBox.textContent = 'Cannot load config for another camera model.';
+                alertBox.classList.remove('d-none');
+                console.log('Cannot load config for another camera model.');
+                return;
+            } else if (selectedModel && selectedModel == camera_info['Model']) {
+                get_file_settings_camera(filename);
+            }
+        }
+        alertBox.classList.add('d-none');
+        console.log('Saving would be successful.');
+        // Implement the logic for saving/loading configs here
+    }
+}
+
+function save_config_file(newFilename) {
+    console.log(newFilename);
+    return fetch('/save_config_file_camera_' + camera_num, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newFilename),
+    })
+    .then(response => response.json())
+    .then(data => {
+       
+        return data;
+    })
+    .catch(error => {
+        console.error('Error updating settings:', error);
+        throw error;  // Re-throw the error for the next catch
+    });
+}
+
+function get_file_settings_camera(data) {
+    console.log(data);
+    return fetch('/get_file_settings_camera_' + camera_num, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Settings updated:', data);
+        const live_settings = data.live_settings;
+        const restart_settings = data.rotation_settings;
+        const capture_settings = data.capture_settings;
+        const resolutions = data.resolutions;
+
+        console.log(capture_settings)
+        console.log(resolutions)
+        // Update UI with live_settings
+        updateUI(live_settings);
+        updateUI(restart_settings);
+        updateUI(capture_settings);
+        refreshCameraFeed();
+        return data;
+    })
+    .catch(error => {
+        console.error('Error updating settings:', error);
+        throw error;  // Re-throw the error for the next catch
+    });
+}
+
+// Placeholder function for the save button
+function saveConfig() {
+    const selectedConfig = document.querySelector('input[name="selectedConfig"]:checked').value;
+    const newFilename = document.getElementById('saveConfigFile').value;
+
+    // Implement the logic for saving/loading configs here
+    console.log('Selected Config:', selectedConfig);
+    console.log('New Filename:', newFilename);
+    
+}
+
 // Function to update server settings and UI
-function resetsettings() {
-        fetch('/reset_default_live_settings')
+function reset_default_settings_camera() {
+        fetch('/reset_default_settings_camera_' + camera_num)
             .then(response => response.json())
             .then(data => {
         console.log('Settings received:', data);
 
         // Access live_settings and restart_settings
-        const live_settings = data.data1;
-        const restart_settings = data.data2;
+        const live_settings = data.live_settings;
+        const restart_settings = data.rotation_settings;
 
         console.log('Data 1:', live_settings);
         console.log('Data 2:', restart_settings);

@@ -153,6 +153,7 @@ class CameraObject:
     def load_settings_from_file(self, config_location):
         with open(os.path.join(CAMERA_CONFIG_FOLDER ,config_location), 'r') as file:
             return json.load(file)
+        
 
     def update_settings(self, new_settings):
         self.settings.update(new_settings)
@@ -207,6 +208,88 @@ class CameraObject:
         self.rotation_settings = self.rotation
         self.saved_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
 
+    def default_camera_settings(self):
+        
+        self.capture_settings = {
+            "Resize": False,
+            "makeRaw": False,
+            "Resolution": 0
+        }
+        self.rotation = {
+        "hflip": 0,
+        "vflip": 0
+        }
+        self.sensor_mode = 1
+        # If no config file use default generated from controls
+        self.live_settings = self.build_default_config()
+        # Parse the selected capture resolution for later
+        selected_resolution = self.capture_settings["Resolution"]
+        resolution = self.output_resolutions[selected_resolution]
+        print(f'\nCamera Settings:\n{self.capture_settings}\n')
+        print(f'\nCamera Set Resolution:\n{resolution}\n')
+        self.stop_streaming()
+        self.configure_camera()
+        # Get the sensor modes and pick from the the camera_config
+        mode = self.camera.sensor_modes[self.sensor_mode]
+        print(f'MODE Config:\n{mode}\n')
+        self.video_config = self.camera.create_video_configuration(main={'size':resolution})
+
+        # self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+        print(f'\nVideo Config:\n{self.video_config}\n')
+        self.camera.configure(self.video_config)
+        # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
+        self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
+        self.camera.set_controls(self.live_settings)
+        self.rotation_settings = self.rotation
+        self.configure_camera()
+        self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
+        self.start_streaming()
+        self.camera_info['Has_Config'] = False
+        self.camera_info['Config_Location'] = 'default.json'
+        self.update_camera_last_config()
+
+    def config_from_file(self, file):
+        newconfig = self.load_settings_from_file(file)
+        print(f"NEWCONFIG: {newconfig}")
+        self.live_config = newconfig
+        self.configure_camera()
+        self.stop_streaming()
+        selected_resolution = self.live_config['capture-settings']['Resolution']
+        resolution = self.output_resolutions[selected_resolution]
+        mode = self.camera.sensor_modes[self.live_config['sensor-mode']]
+        print(f'MODE Config:\n{mode}\n')
+        self.video_config = self.camera.create_video_configuration(main={'size':resolution})
+        self.apply_rotation(self.live_config['rotation'])
+        self.camera_info['Has_Config'] = True
+        self.camera_info['Config_Location'] = file
+        self.update_camera_last_config()
+        self.start_streaming()
+
+    def update_camera_last_config(self):
+        global camera_last_config
+        for cam in camera_last_config["cameras"]:
+            if cam["Num"] == self.camera_info['Num']:
+                cam["Has_Config"] = self.camera_info['Has_Config']
+                cam["Config_Location"] = self.camera_info['Config_Location']
+        with open(os.path.join(current_dir, 'camera-last-config.json'), 'w') as file:
+            json.dump(camera_last_config, file, indent=4)
+
+    def save_live_config(self, file):
+        print(f'FILENAME: {file}')
+        self.live_config['Model'] = self.camera_info['Model']
+        self.camera_info['Has_Config'] = True
+        if not file.endswith(".json"):
+            file += ".json"
+        self.camera_info['Config_Location'] = file
+        self.update_camera_last_config()
+        try:
+            with open(os.path.join(CAMERA_CONFIG_FOLDER, file), 'w') as file:
+                json.dump(self.live_config, file, indent=4)
+        except Exception as e:
+            print(e)
+        self.update_camera_last_config()
+        return success
+
     def update_live_config(self, data):
          # Update only the keys that are present in the data
         print(data)
@@ -220,7 +303,7 @@ class CameraObject:
                     elif key in ('AeEnable', 'AwbEnable', 'ScalerCrop'):
                         self.live_config['controls'][key] = data[key]
                     # Update the configuration of the video feed
-                    self.configure_camera()
+                    
                     success = True
                     settings = self.live_config['controls']
                     print(settings)
@@ -363,8 +446,9 @@ for camera_info in global_cameras:
 # Print the new config for debug
 print(f'\nCurrent detected compatible Cameras:\n{camera_new_config}\n')
 # Write config to last config file for next reboot
+camera_last_config = camera_new_config
 with open(os.path.join(current_dir, 'camera-last-config.json'), 'w') as file:
-    json.dump(camera_new_config, file, indent=4)
+    json.dump(camera_last_config, file, indent=4)
 
 def get_camera_info(camera_model, camera_module_info):
     return next(
@@ -391,8 +475,24 @@ def control_camera(camera_num):
     camera = cameras.get(camera_num)
     resolutions = camera.available_resolutions()
     print(camera.live_config.get('capture-settings'))
+    config_files = [f for f in os.listdir(CAMERA_CONFIG_FOLDER) if os.path.isfile(os.path.join(CAMERA_CONFIG_FOLDER, f))]
+    config_data = []
+    for file in config_files:
+        with open(os.path.join(CAMERA_CONFIG_FOLDER, file), 'r') as f:
+            config = json.load(f)
+            camera_model = config.get('Model', 'Unknown')
+            is_selected = False
+            print(f'CAMERA INFO: {camera.camera_info}')
+            if camera.camera_info['Has_Config']:
+                if camera.camera_info['Config_Location'] == file:
+                    is_selected = True
+            config_data.append({
+                'filename': file,
+                'model': camera_model,
+                'is_selected': is_selected
+            })
     if camera:
-        return render_template("camerasettings.html", title="Picamera2 WebUI - Camera <int:camera_num>", cameras_data=cameras_data, camera_num=camera_num, live_settings=camera.live_config.get('controls'), rotation_settings=camera.live_config.get('rotation'), settings_from_camera=camera.settings, capture_settings=camera.live_config.get('capture-settings'), resolutions=resolutions, enumerate=enumerate, active_page='control_camera')
+        return render_template("camerasettings.html", title="Picamera2 WebUI - Camera <int:camera_num>", cameras_data=cameras_data, camera_num=camera_num, live_settings=camera.live_config.get('controls'), rotation_settings=camera.live_config.get('rotation'), settings_from_camera=camera.settings, capture_settings=camera.live_config.get('capture-settings'), resolutions=resolutions, enumerate=enumerate, camera_info=camera.camera_info, config_data=config_data, active_page='control_camera')
     else:
         abort(404)
 
@@ -409,11 +509,57 @@ def camera_info(camera_num):
     # If connected camera is not found, select the "Unknown" camera
     if connected_camera_data is None:
         connected_camera_data = next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
-    print(cameras_data)
     if connected_camera_data:
         return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info')
     else:
         return jsonify(error="Camera module data not found")
+
+@app.route('/reset_default_settings_camera_<int:camera_num>', methods=['GET'])
+def reset_default_settings_camera(camera_num):
+    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+    camera = cameras.get(camera_num)
+    try:
+        camera.default_camera_settings()
+        resolutions = camera.available_resolutions()
+        response_data = {
+        'live_settings': camera.live_config.get('controls'),
+        'rotation_settings': camera.live_config.get('rotation')
+        }
+        return jsonify(response_data)
+    except Exception as e:
+        return jsonify(error=str(e))
+
+@app.route('/get_file_settings_camera_<int:camera_num>', methods=['POST'])
+def get_file_settings_camera(camera_num):
+    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+    camera = cameras.get(camera_num)
+    try:
+        # Parse JSON data from the request
+        filename = request.get_json()
+        camera.config_from_file(filename)
+        resolutions = camera.available_resolutions()
+        response_data = {
+        'live_settings': camera.live_config.get('controls'),
+        'rotation_settings': camera.live_config.get('rotation'),
+        'capture_settings': camera.live_config.get('capture-settings'), 
+        'resolutions': camera.available_resolutions()
+        }
+        return jsonify(response_data)
+    except Exception as e:
+        return jsonify(error=str(e))
+
+@app.route('/save_config_file_camera_<int:camera_num>', methods=['POST'])
+def save_config_file(camera_num):
+    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+    camera = cameras.get(camera_num)
+    try:
+        filename = request.get_json()
+        print(filename)
+        response_data = camera.save_live_config(filename)
+        print(response_data)
+        return jsonify(response_data)
+    except Exception as e:
+        return jsonify(error=str(e))
 
 @app.route('/capture_photo_<int:camera_num>', methods=['POST'])
 def capture_photo(camera_num):
@@ -440,7 +586,6 @@ def video_feed(camera_num):
         return Response(generate_stream(camera), mimetype='multipart/x-mixed-replace; boundary=frame')
     else:
         abort(404)
-
 
 @app.route('/snapshot_<int:camera_num>')
 def snapshot(camera_num):
