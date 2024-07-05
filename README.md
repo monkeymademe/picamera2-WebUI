@@ -1,5 +1,9 @@
 # Picamera2 WebUI
 
+## HOT OFF THE PRESS!
+
+v0.1.0-beta has been setup as prerelease Please check it out and make any reports of issues. Jist is Pi5 Multicam support and better saving of config - https://github.com/monkeymademe/picamera2-WebUI/releases/tag/v0.1.0-beta
+
 ## Overview
 
 Picamera2 WebUI is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 Python library and using Flask. This project provides a user interface to configure camera settings, capture photos, and manage images in a basic gallery.
