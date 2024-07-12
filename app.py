@@ -716,6 +716,28 @@ def image_gallery():
         logging.error(f"Error loading image gallery: {e}")
         return render_template('error.html', error=str(e), cameras_data=cameras_data, camera_list=camera_list)
 
+@app.route('/delete_image/<filename>', methods=['DELETE'])
+def delete_image(filename):
+    try:
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        os.remove(filepath)
+        return jsonify(success=True, message="Image deleted successfully")
+    except Exception as e:
+        return jsonify(success=False, message=str(e))
+
+@app.route('/view_image/<filename>', methods=['GET'])
+def view_image(filename):
+    # Pass the filename or any other necessary information to the template
+    return render_template('view_image.html', filename=filename)
+
+@app.route('/download_image/<filename>', methods=['GET'])
+def download_image(filename):
+    try:
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        return send_file(image_path, as_attachment=True)
+    except Exception as e:
+        print(f"Error downloading image: {e}")
+        abort(500)
 
 if __name__ == "__main__":
 
