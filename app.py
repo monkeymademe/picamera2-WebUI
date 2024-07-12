@@ -135,7 +135,7 @@ class CameraObject:
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
             request = self.camera.capture_request()
             request.save("main", f'{filepath}.jpg')
-            if self.self.live_config['controls']['capture-settings']["makeRaw"]:
+            if self.live_config['capture-settings']["makeRaw"]:
                 request.save_dng(f'{filepath}.dng')
             request.release()
             logging.info(f"Image captured successfully. Path: {filepath}")
