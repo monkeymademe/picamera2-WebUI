@@ -278,17 +278,20 @@ class CameraObject:
         print(f'FILENAME: {file}')
         self.live_config['Model'] = self.camera_info['Model']
         self.camera_info['Has_Config'] = True
+        
         if not file.endswith(".json"):
             file += ".json"
+        
         self.camera_info['Config_Location'] = file
-        self.update_camera_last_config()
+        
         try:
-            with open(os.path.join(CAMERA_CONFIG_FOLDER, file), 'w') as file:
-                json.dump(self.live_config, file, indent=4)
+            with open(os.path.join(CAMERA_CONFIG_FOLDER, file), 'w') as f:
+                json.dump(self.live_config, f, indent=4)
+            self.update_camera_last_config()
+            return file  # Return the filename on success
         except Exception as e:
             print(e)
-        self.update_camera_last_config()
-        return success
+            return None  # Return None or raise an exception on failure
 
     def update_live_config(self, data):
          # Update only the keys that are present in the data
@@ -531,35 +534,50 @@ def reset_default_settings_camera(camera_num):
 
 @app.route('/get_file_settings_camera_<int:camera_num>', methods=['POST'])
 def get_file_settings_camera(camera_num):
-    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
-    camera = cameras.get(camera_num)
     try:
         # Parse JSON data from the request
-        filename = request.get_json()
+        filename = request.get_json().get('filename')
+        camera = cameras.get(camera_num)
+        if not camera:
+            return jsonify(success=False, error="Camera not found.")
+        
         camera.config_from_file(filename)
         resolutions = camera.available_resolutions()
         response_data = {
-        'live_settings': camera.live_config.get('controls'),
-        'rotation_settings': camera.live_config.get('rotation'),
-        'capture_settings': camera.live_config.get('capture-settings'), 
-        'resolutions': camera.available_resolutions()
+            'live_settings': camera.live_config.get('controls'),
+            'rotation_settings': camera.live_config.get('rotation'),
+            'capture_settings': camera.live_config.get('capture-settings'), 
+            'resolutions': camera.available_resolutions(),
+            'success': True
         }
         return jsonify(response_data)
     except Exception as e:
-        return jsonify(error=str(e))
+        return jsonify(success=False, error=str(e))
 
 @app.route('/save_config_file_camera_<int:camera_num>', methods=['POST'])
 def save_config_file(camera_num):
-    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
-    camera = cameras.get(camera_num)
     try:
-        filename = request.get_json()
-        print(filename)
+        # Fetch the filename from the request
+        filename = request.get_json().get('filename')
+        print(f'Received filename: {filename}')
+        
+        # Fetch the camera object from the global 'cameras' dictionary
+        camera = cameras.get(camera_num)
+        if not camera:
+            raise ValueError(f'Camera with number {camera_num} not found')
+        
+        # Call the save_live_config method on the camera object
         response_data = camera.save_live_config(filename)
-        print(response_data)
-        return jsonify(response_data)
+        if response_data is not None:
+            print(f'Saved config data: {response_data}')
+            # Return the success response with the filename and model
+            return jsonify(success=True, filename=response_data, model=camera.camera_info['Model'])
+        else:
+            return jsonify(success=False, error="Failed to save config file")
     except Exception as e:
-        return jsonify(error=str(e))
+        # Log the error and return an error response
+        print(f'ERROR: {e}')
+        return jsonify(success=False, error=str(e))
 
 @app.route('/capture_photo_<int:camera_num>', methods=['POST'])
 def capture_photo(camera_num):

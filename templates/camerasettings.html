@@ -696,56 +696,87 @@
                     <!-- Bootstrap Alert -->
                     <div class="alert alert-danger d-none" id="configAlert" role="alert"></div>
 
-                <div class="form-group">
-                    <label for="configFile">Load Settings file</label>
-                    <table class="table" id="configTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Select</th>
-                                <th scope="col">Filename</th>
-                                <th scope="col">Model</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if config_data %}
-                                {% for i, config in enumerate(config_data) %}
-                                    <tr>
-                                        <td>
-                                            <input type="radio" name="selectedConfig" value="{{ config.filename }}" data-model="{{ config.model }}" {% if config.is_selected %}checked{% endif %}>
-                                        </td>
-                                        <td>{{ config.filename }}</td>
-                                        <td>{{ config.model }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="3">No configs saved</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-                <hr>
-                <div class="form-group mx-2">
-                    <input type="radio" name="selectedConfig" id="defaultConfig" value="default">
-                    <label for="defaultConfig">Set camera {{ camera_info.Model }} to default</label>
-                </div>
-                <hr>
-                <div class="form-group mx-2">
-                    <input type="radio" name="selectedConfig" id="saveNewConfig" value="new">
-                    <label for="saveNewConfig">Save current settings as new config file</label>
+                    <div class="accordion" id="accordionLoadSave">
+                        <div class="accordion-item">
+                          <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLoadFile" aria-expanded="false" aria-controls="collapseLoadFile">
+                              Load camera settings from file:
+                            </button>
+                          </h2>
+                          <div id="collapseLoadFile" class="accordion-collapse collapse" data-bs-parent="#accordionLoadSave">
+                            <div class="accordion-body">
+                                <div class="form-group">
+                                <table class="table" id="configTable">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Select</th>
+                                            <th scope="col">Filename</th>
+                                            <th scope="col">Model</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if config_data %}
+                                            {% for i, config in enumerate(config_data) %}
+                                                <tr>
+                                                    <td>
+                                                        <input type="radio" name="selectedConfig" value="{{ config.filename }}" data-model="{{ config.model }}" {% if config.is_selected %}checked{% endif %}>
+                                                    </td>
+                                                    <td>{{ config.filename }}</td>
+                                                    <td>{{ config.model }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="3">No configs saved</td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-primary" onclick="loadConfigFile()">Load Selected Config</button>
+                            </div>
+                            </div>
+                            </div>
+                          </div>
+                        <div class="accordion-item">
+                          <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDefaultSystem" aria-expanded="false" aria-controls="collapseDefaultSystem">
+                              Save current settings as new file:
+                            </button>
+                          </h2>
+                          <div id="collapseDefaultSystem" class="accordion-collapse collapse" data-bs-parent="#accordionLoadSave">
+                            <div class="accordion-body">
+                                <p>Enter filename you wish to use:</p>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" id="saveConfigFile" placeholder="Enter filename" aria-label="filename" aria-describedby="save_filename">
+                        <div class="form-text">Using a filename that already exists will overwrite that file.</div>
                     </div>
-                </div>
-                <hr>
-                <div class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary ms-2" onclick="validateConfig()">Save</button>
-                </div>
+                    <button type="button" class="btn btn-primary" onclick="save_config_file()">Submit</button>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="accordion-item">
+                          <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSaveFile" aria-expanded="false" aria-controls="collapseSaveFile">
+                              Reset settings to camera default:
+                            </button>
+                          </h2>
+                          <div id="collapseSaveFile" class="accordion-collapse collapse" data-bs-parent="#accordionLoadSave">
+                            <div class="accordion-body">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="mb-1">Just checking, are you sure?</p>
+                                  </div>
+                                  <button type="button" class="btn btn-danger" onclick="reset_default_settings_camera()">Set Settings to Default</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    
+
+                
             </div>
         </div>
     </div>
+  </div>
 </div>
   
   
@@ -1115,60 +1146,141 @@ document.querySelectorAll('input[name="selectedConfig"]').forEach(function(radio
     });
 });
 
-// Function to validate and handle the save button click
-function validateConfig() {
+function loadConfigFile() {
     const selectedConfig = document.querySelector('input[name="selectedConfig"]:checked');
     const alertBox = document.getElementById('configAlert');
-    const newFilename = document.getElementById('saveConfigFile').value;
-    console.log(camera_info['Model'])
+    const configModal = document.getElementById('configModal');
 
     if (selectedConfig) {
-        if (selectedConfig.id === 'saveNewConfig') {
-            if (!newFilename.trim()) {
-                alertBox.textContent = 'Please enter a filename to save the new config.';
-                alertBox.classList.remove('d-none');
-                console.log('Please enter a filename to save the new config.');
-                return;
-            } else {
-                save_config_file(newFilename);
-            }
-        } else if (selectedConfig.id === 'defaultConfig') {
-            reset_default_settings_camera();
+        const selectedModel = selectedConfig.getAttribute('data-model');
+        const filename = selectedConfig.getAttribute('value');
+
+        if (selectedModel && selectedModel !== camera_info['Model']) {
+            alertBox.textContent = 'Cannot load config for another camera model.';
+            alertBox.classList.remove('d-none');
+            console.log('Cannot load config for another camera model.');
+            return;
         } else {
-            const selectedModel = selectedConfig.getAttribute('data-model');
-            const filename = selectedConfig.getAttribute('value');
-            if (selectedModel && selectedModel !== camera_info['Model']) {
-                alertBox.textContent = 'Cannot load config for another camera model.';
+            fetch(`/get_file_settings_camera_${camera_num}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ filename: filename }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alertBox.classList.add('d-none');
+                    console.log('Config loaded successfully:', data);
+                    
+                    const live_settings = data.live_settings;
+                    const restart_settings = data.rotation_settings;
+                    const capture_settings = data.capture_settings;
+                    const resolutions = data.resolutions;
+
+                    updateUI(live_settings);
+                    updateUI(restart_settings);
+                    updateUI(capture_settings);
+                    refreshCameraFeed();
+
+                    // Close the modal
+                    const modalInstance = bootstrap.Modal.getInstance(configModal);
+                    modalInstance.hide();
+                } else {
+                    alertBox.textContent = `Error: ${data.error}`;
+                    alertBox.classList.remove('d-none');
+                    console.error('Error loading config:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading config:', error);
+                alertBox.textContent = `Error: ${error.message}`;
                 alertBox.classList.remove('d-none');
-                console.log('Cannot load config for another camera model.');
-                return;
-            } else if (selectedModel && selectedModel == camera_info['Model']) {
-                get_file_settings_camera(filename);
-            }
+            });
         }
-        alertBox.classList.add('d-none');
-        console.log('Saving would be successful.');
-        // Implement the logic for saving/loading configs here
+    }
+}
+ 
+function save_config_file() {
+    const newFilename = document.getElementById('saveConfigFile').value;
+    const alertBox = document.getElementById('configAlert');
+    const configModal = document.getElementById('configModal');
+    
+    if (!newFilename.trim()) {
+        alertBox.textContent = 'Please enter a filename to save the new config.';
+        alertBox.classList.remove('d-none');
+        console.log('Please enter a filename to save the new config.');
+        return;
+    } else {
+        fetch('/save_config_file_camera_' + camera_num, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ filename: newFilename }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alertBox.classList.add('d-none');
+                console.log('Saving was successful:', data);
+                
+                // Check if the filename already exists in the table
+                const existingRow = document.querySelector(`#configTable tbody tr td:first-child input[value="${data.filename}"]`);
+                
+                if (!existingRow) {
+                    // If the filename does not exist, add it to the table
+                    addConfigToTable(data.filename, data.model);
+                } else {
+                    // If the filename exists, select the existing row
+                    existingRow.checked = true;
+                    
+                    // Uncheck all other radio buttons
+                    const radioButtons = document.querySelectorAll('#configTable tbody input[name="selectedConfig"]');
+                    radioButtons.forEach(radio => {
+                        if (radio.value !== data.filename) {
+                            radio.checked = false;
+                        }
+                    });
+                }
+
+                // Close the modal
+                const modalInstance = bootstrap.Modal.getInstance(configModal);
+                modalInstance.hide();
+            } else {
+                alertBox.textContent = `Error: ${data.error}`;
+                alertBox.classList.remove('d-none');
+                console.error('Error updating settings:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating settings:', error);
+            alertBox.textContent = `Error: ${error.message}`;
+            alertBox.classList.remove('d-none');
+        });
     }
 }
 
-function save_config_file(newFilename) {
-    console.log(newFilename);
-    return fetch('/save_config_file_camera_' + camera_num, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newFilename),
-    })
-    .then(response => response.json())
-    .then(data => {
-       
-        return data;
-    })
-    .catch(error => {
-        console.error('Error updating settings:', error);
-        throw error;  // Re-throw the error for the next catch
+function addConfigToTable(filename, model) {
+    const tableBody = document.querySelector('#configTable tbody');
+    const newRow = document.createElement('tr');
+    
+    newRow.innerHTML = `
+        <td><input type="radio" name="selectedConfig" value="${filename}" data-model="${model}" checked></td>
+        <td>${filename}</td>
+        <td>${model}</td>
+    `;
+    
+    // Append the new row to the table body
+    tableBody.appendChild(newRow);
+
+    // Uncheck all other radio buttons
+    const radioButtons = tableBody.querySelectorAll('input[name="selectedConfig"]');
+    radioButtons.forEach(radio => {
+        if (radio.value !== filename) {
+            radio.checked = false;
+        }
     });
 }
 
@@ -1232,6 +1344,9 @@ function reset_default_settings_camera() {
         updateUI(live_settings);
         updateUI(restart_settings);
         refreshCameraFeed();
+        // Close the modal
+        const modalInstance = bootstrap.Modal.getInstance(configModal);
+        modalInstance.hide();
     })
     .catch(error => {
         console.error('Error updating settings:', error);
