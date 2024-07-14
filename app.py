@@ -197,7 +197,7 @@ class CameraObject:
         # Get the sensor modes and pick from the the camera_config
         mode = self.camera.sensor_modes[self.sensor_mode]
         print(f'MODE Config:\n{mode}\n')
-        self.video_config = self.camera.create_video_configuration(main={'size':resolution})
+        self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
 
         # self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
         print(f'\nVideo Config:\n{self.video_config}\n')
@@ -232,7 +232,7 @@ class CameraObject:
         # Get the sensor modes and pick from the the camera_config
         mode = self.camera.sensor_modes[self.sensor_mode]
         print(f'MODE Config:\n{mode}\n')
-        self.video_config = self.camera.create_video_configuration(main={'size':resolution})
+        self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
 
         # self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
         print(f'\nVideo Config:\n{self.video_config}\n')
@@ -258,7 +258,7 @@ class CameraObject:
         resolution = self.output_resolutions[selected_resolution]
         mode = self.camera.sensor_modes[self.live_config['sensor-mode']]
         print(f'MODE Config:\n{mode}\n')
-        self.video_config = self.camera.create_video_configuration(main={'size':resolution})
+        self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
         self.apply_rotation(self.live_config['rotation'])
         self.camera_info['Has_Config'] = True
         self.camera_info['Config_Location'] = file
@@ -295,6 +295,8 @@ class CameraObject:
 
     def update_live_config(self, data):
          # Update only the keys that are present in the data
+
+        print(self.live_config)
         print(data)
         for key in data:
             if key in self.live_config['controls']:
@@ -320,7 +322,10 @@ class CameraObject:
                     resolution = self.output_resolutions[selected_resolution]
                     mode = self.camera.sensor_modes[self.sensor_mode]
                     self.stop_streaming()
+                    print("UPDATING RESOLUTION")
+                    print(self.live_config['rotation'])
                     self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                    self.apply_rotation(self.live_config['rotation'])
                     self.camera.configure(self.video_config)
                     self.start_streaming()
                     success = True
