@@ -103,8 +103,8 @@
                   <div class="list-group list-group-radio d-grid gap-2 border-0">
                     {% for mode in camera_modes %}
                     <div class="position-relative">
-                      <input class="form-check-input position-absolute top-50 end-0 me-3 fs-5" type="radio" name="sensor_mode" id="sensor_mode{{ loop.index0 }}" onclick="adjustCheckboxSetting('sensor_mode', '{{ loop.index0 }}')">
-                      <label class="list-group-item py-3 pe-5" for="sensor_mode{{ loop.index0 }}">
+                      <input class="form-check-input position-absolute top-50 end-0 me-3 fs-5" type="radio" name="sensor-mode" id="sensor-mode{{ loop.index0 }}" onclick="adjustCheckboxSetting('sensor-mode', '{{ loop.index0 }}')">
+                      <label class="list-group-item py-3 pe-5" for="sensor-mode{{ loop.index0 }}">
                         <strong class="fw-semibold">Mode {{ loop.index0 }}</strong>
                         <span class="d-block small opacity-75">Resolution: {{ mode['size'] }}</span>
                         <span class="d-block small opacity-75">FPS: {{ mode['fps'] }}</span>
@@ -202,11 +202,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Parse the JSON string into a JavaScript object
     var sensor_mode = {{ sensor_mode | tojson }};
     
-    updateUI({ 'sensor_mode': sensor_mode });
+    console.log(camera_num);
+    
+    updateUI({ 'sensor-mode': sensor_mode });
 
 });
 
-const checkboxSettings = ['sensor_mode'];
+const checkboxSettings = ['sensor-mode'];
+var camera_num = {{ camera_num }}
 
 
 function updateUI(settings) {
@@ -241,7 +244,7 @@ function adjustCheckboxSetting(settingId, selection) {
 // Function to update server settings and UI
 function updateLiveSettings(data) {
     console.log(data);
-    return fetch('/update_live_settings', {
+    return fetch('/update_live_settings_' + camera_num, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
