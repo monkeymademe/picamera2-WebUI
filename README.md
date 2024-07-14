@@ -58,24 +58,24 @@ python app.py
 
 - Run the following command and note down the location for python which python should look like "/usr/bin/python" `which python`
 - Goto the following directory `cd /etc/systemd/system/`
-- Create and edit the following file `sudo nano picamera2-webui-lite.service`
+- Create and edit the following file `sudo nano picamera2-webui.service`
 - Paste this into the file, in the line "ExecStart" the 1st part should be the result of your "which python" command we did at the start (if its the same then its all good) the 2nd path is the location of the cloned repo with the app.py
   
 ```bash
 [Unit]
-Description=Picamera2 WebUI Lite Server
+Description=Picamera2 WebUI Server
 After=network.target
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /home/pi/picamera2-WebUI-Lite/app.py
+ExecStart=/usr/bin/python /home/pi/picamera2-WebUI/app.py
 Restart=always
 [Install]
 WantedBy=multi-user.target
 ```
 - Save the file
-- Run `sudo systemctl start picamera2-webui-lite.service` to start the service 
-- Run the following to check the service is running `sudo systemctl status picamera2-webui-lite.service`
-- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui-lite.service`
+- Run `sudo systemctl start picamera2-webui.service` to start the service 
+- Run the following to check the service is running `sudo systemctl status picamera2-webui.service`
+- Run the following to enable the service to its running on reboot `sudo systemctl enable picamera2-webui.service`
   
 ## Compatibilty
 
