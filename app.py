@@ -295,8 +295,6 @@ class CameraObject:
 
     def update_live_config(self, data):
          # Update only the keys that are present in the data
-
-        print(self.live_config)
         print(data)
         for key in data:
             if key in self.live_config['controls']:
@@ -359,6 +357,7 @@ class CameraObject:
                 success = True
                 settings = self.live_config['sensor-mode']
                 return success, settings
+        
 
     def apply_rotation(self,data):
         self.stop_streaming()
@@ -650,7 +649,8 @@ def update_settings(camera_num):
         print(data)
 
         success, settings = camera.update_live_config(data)
-        print(settings)
+        if success:
+            camera.configure_camera()
         return jsonify(success=success, message="Settings updated successfully", settings=settings)
     except Exception as e:
         return jsonify(success=False, message=str(e))
