@@ -336,14 +336,17 @@ class CameraObject:
                     return success, settings
             elif key == 'sensor-mode':
                 self.sensor_mode = sensor_mode = int(data[key])
+                selected_resolution = self.live_config['capture-settings']['Resolution']
+                resolution = self.output_resolutions[selected_resolution]
                 mode = self.camera.sensor_modes[self.sensor_mode]
                 print("MODE")
                 print(mode)
                 self.live_config['sensor-mode'] = int(data[key])
-                resolution = mode['size']
                 self.stop_streaming()
                 try:
-                    self.video_config = self.camera.create_video_configuration(main={'size': resolution})
+                    self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                    self.apply_rotation(self.live_config['rotation'])
+
                 except Exception as e:
                     # Log the exception
                     logging.error("An error occurred while configuring the camera: %s", str(e))
