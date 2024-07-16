@@ -88,10 +88,8 @@ class CameraObject:
         self.output = None
         # need an if statment for checking if there is config or load a default template for now this is ok cause config is assumed        
         #self.saved_config = self.load_settings_from_file(camera_info['Config_Location'])
-        self.init_camera()
-        print(f'\nSaved Config:\n{self.saved_config}\n')
         self.live_config = {}
-        self.live_config = self.saved_config
+        self.init_camera()
         print(f'\nLive Config:\n{self.live_config}\n')
         print(f"\nSensor Mode:\n{self.live_config['sensor-mode']}\n")
 
@@ -177,40 +175,40 @@ class CameraObject:
             print(f"An error occurred: {str(e)}")
 
     def init_camera(self):
-        self.capture_settings = {
-            "Resize": False,
-            "makeRaw": False,
-            "Resolution": 0
-        }
-        self.rotation = {
-        "hflip": 0,
-        "vflip": 0
-        }
-        self.sensor_mode = 1
-        # If no config file use default generated from controls
-        self.live_settings = self.build_default_config()
-        # Parse the selected capture resolution for later
-        selected_resolution = self.capture_settings["Resolution"]
-        resolution = self.output_resolutions[selected_resolution]
-        print(f'\nCamera Settings:\n{self.capture_settings}\n')
-        print(f'\nCamera Set Resolution:\n{resolution}\n')
+        if self.camera_info['Has_Config']:
+            self.config_from_file(self.camera_info['Config_Location'])
+        else:
+            self.capture_settings = {
+                "Resize": False,
+                "makeRaw": False,
+                "Resolution": 0
+            }
+            self.rotation = {
+            "hflip": 0,
+            "vflip": 0
+            }
+            self.sensor_mode = 1
+            # If no config file use default generated from controls
+            self.live_settings = self.build_default_config()
+            # Parse the selected capture resolution for later
+            selected_resolution = self.capture_settings["Resolution"]
+            resolution = self.output_resolutions[selected_resolution]
+            print(f'\nCamera Settings:\n{self.capture_settings}\n')
+            print(f'\nCamera Set Resolution:\n{resolution}\n')
 
-        # Get the sensor modes and pick from the the camera_config
-        mode = self.camera.sensor_modes[self.sensor_mode]
-        print(f'MODE Config:\n{mode}\n')
-        self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-
-        # self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-        print(f'\nVideo Config:\n{self.video_config}\n')
-        self.camera.configure(self.video_config)
-        # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
-        self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
-        self.camera.set_controls(self.live_settings)
-        self.rotation_settings = self.rotation
-        self.saved_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
+            # Get the sensor modes and pick from the the camera_config
+            mode = self.camera.sensor_modes[self.sensor_mode]
+            print(f'MODE Config:\n{mode}\n')
+            self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+            print(f'\nVideo Config:\n{self.video_config}\n')
+            self.camera.configure(self.video_config)
+            # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
+            self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
+            self.camera.set_controls(self.live_settings)
+            self.rotation_settings = self.rotation
+            self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
 
     def default_camera_settings(self):
-        
         self.capture_settings = {
             "Resize": False,
             "makeRaw": False,
@@ -229,7 +227,6 @@ class CameraObject:
         print(f'\nCamera Settings:\n{self.capture_settings}\n')
         print(f'\nCamera Set Resolution:\n{resolution}\n')
         self.stop_streaming()
-        self.configure_camera()
         # Get the sensor modes and pick from the the camera_config
         mode = self.camera.sensor_modes[self.sensor_mode]
         print(f'MODE Config:\n{mode}\n')
@@ -242,9 +239,9 @@ class CameraObject:
         self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
         self.camera.set_controls(self.live_settings)
         self.rotation_settings = self.rotation
-        self.configure_camera()
         self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
         self.start_streaming()
+        self.configure_camera()
         self.camera_info['Has_Config'] = False
         self.camera_info['Config_Location'] = 'default.json'
         self.update_camera_last_config()
@@ -253,7 +250,6 @@ class CameraObject:
         newconfig = self.load_settings_from_file(file)
         print(f"NEWCONFIG: {newconfig}")
         self.live_config = newconfig
-        self.configure_camera()
         self.stop_streaming()
         selected_resolution = self.live_config['capture-settings']['Resolution']
         resolution = self.output_resolutions[selected_resolution]
@@ -265,6 +261,7 @@ class CameraObject:
         self.camera_info['Config_Location'] = file
         self.update_camera_last_config()
         self.start_streaming()
+        self.configure_camera()
 
     def update_camera_last_config(self):
         global camera_last_config
