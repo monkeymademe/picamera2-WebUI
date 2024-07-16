@@ -2,6 +2,7 @@ import os, io, logging, json, time, re
 from datetime import datetime
 from threading import Condition
 import threading
+import argparse
 
 
 from flask import Flask, render_template, request, jsonify, Response, send_file, abort
@@ -748,6 +749,9 @@ def download_image(filename):
         abort(500)
 
 if __name__ == "__main__":
-
-    # Start the Flask application
-    app.run(debug=False, host='0.0.0.0', port=8080)
+    # Parse any argument passed from command line
+    parser = argparse.ArgumentParser(description='PiCamera2 WebUI')
+    parser.add_argument('--port', type=int, default=8080, help='Port number to run the web server on')
+    args = parser.parse_args()
+    
+    app.run(host='0.0.0.0', port=args.port)
