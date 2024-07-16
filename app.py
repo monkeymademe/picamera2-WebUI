@@ -295,8 +295,6 @@ class CameraObject:
 
     def update_live_config(self, data):
          # Update only the keys that are present in the data
-
-        print(self.live_config)
         print(data)
         for key in data:
             if key in self.live_config['controls']:
@@ -338,14 +336,17 @@ class CameraObject:
                     return success, settings
             elif key == 'sensor-mode':
                 self.sensor_mode = sensor_mode = int(data[key])
+                selected_resolution = self.live_config['capture-settings']['Resolution']
+                resolution = self.output_resolutions[selected_resolution]
                 mode = self.camera.sensor_modes[self.sensor_mode]
                 print("MODE")
                 print(mode)
                 self.live_config['sensor-mode'] = int(data[key])
-                resolution = mode['size']
                 self.stop_streaming()
                 try:
-                    self.video_config = self.camera.create_video_configuration(main={'size': resolution})
+                    self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
+                    self.apply_rotation(self.live_config['rotation'])
+
                 except Exception as e:
                     # Log the exception
                     logging.error("An error occurred while configuring the camera: %s", str(e))
@@ -359,6 +360,7 @@ class CameraObject:
                 success = True
                 settings = self.live_config['sensor-mode']
                 return success, settings
+        
 
     def apply_rotation(self,data):
         self.stop_streaming()
@@ -650,7 +652,8 @@ def update_settings(camera_num):
         print(data)
 
         success, settings = camera.update_live_config(data)
-        print(settings)
+        if success:
+            camera.configure_camera()
         return jsonify(success=success, message="Settings updated successfully", settings=settings)
     except Exception as e:
         return jsonify(success=False, message=str(e))
