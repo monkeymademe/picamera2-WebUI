@@ -745,9 +745,13 @@
                           <div id="collapseDefaultSystem" class="accordion-collapse collapse" data-bs-parent="#accordionLoadSave">
                             <div class="accordion-body">
                                 <p>Enter filename you wish to use:</p>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="saveConfigFile" placeholder="Enter filename" aria-label="filename" aria-describedby="save_filename">
-                        <div class="form-text">Using a filename that already exists will overwrite that file.</div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <input type="text" class="form-control" id="saveConfigFile" placeholder="Enter filename" aria-label="filename" aria-describedby="save_filename">
+                        </div>
+                        <div class="row">
+                            <div class="form-text">Using a filename that already exists will overwrite that file.</div>
+                        </div>
                     </div>
                     <button type="button" class="btn btn-primary" onclick="save_config_file()">Submit</button>
                             </div>
@@ -769,9 +773,6 @@
                           </div>
                         </div>
                       </div>
-                    
-
-                
             </div>
         </div>
     </div>
