@@ -187,7 +187,7 @@ class CameraObject:
             "hflip": 0,
             "vflip": 0
             }
-            self.sensor_mode = 1
+            self.sensor_mode = 0
             # If no config file use default generated from controls
             self.live_settings = self.build_default_config()
             # Parse the selected capture resolution for later
@@ -218,7 +218,7 @@ class CameraObject:
         "hflip": 0,
         "vflip": 0
         }
-        self.sensor_mode = 1
+        self.sensor_mode = 0
         # If no config file use default generated from controls
         self.live_settings = self.build_default_config()
         # Parse the selected capture resolution for later
