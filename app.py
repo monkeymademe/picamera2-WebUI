@@ -201,40 +201,22 @@ class CameraObject:
             # Log the exception
             logging.error("An error occurred while configuring the camera: %s", str(e))
             print(f"An error occurred: {str(e)}")
+    
+    def file_exists(self, file_name, file_path):
+        file = os.path.join(file_path ,file_name)
+        return os.path.exists(file)
 
     def init_camera(self):
         if self.camera_info['Has_Config']:
-            self.config_from_file(self.camera_info['Config_Location'])
+            file_name = self.camera_info['Config_Location']
+            if self.file_exists(file_name, CAMERA_CONFIG_FOLDER):
+                self.config_from_file(file_name)
+                print("LOADING FILE")
+            else:
+                self.default_camera_settings()
         else:
-            self.capture_settings = {
-                "Resize": False,
-                "makeRaw": False,
-                "Resolution": 0
-            }
-            self.rotation = {
-            "hflip": 0,
-            "vflip": 0
-            }
-            self.sensor_mode = 0
-            # If no config file use default generated from controls
-            self.live_settings = self.build_default_config()
-            # Parse the selected capture resolution for later
-            selected_resolution = self.capture_settings["Resolution"]
-            resolution = self.output_resolutions[selected_resolution]
-            print(f'\nCamera Settings:\n{self.capture_settings}\n')
-            print(f'\nCamera Set Resolution:\n{resolution}\n')
+            self.default_camera_settings()
 
-            # Get the sensor modes and pick from the the camera_config
-            mode = self.camera.sensor_modes[self.sensor_mode]
-            print(f'MODE Config:\n{mode}\n')
-            self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-            print(f'\nVideo Config:\n{self.video_config}\n')
-            self.camera.configure(self.video_config)
-            # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
-            self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
-            self.camera.set_controls(self.live_settings)
-            self.rotation_settings = self.rotation
-            self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
 
     def default_camera_settings(self):
         self.capture_settings = {
@@ -485,6 +467,8 @@ print(f'\nCurrent detected compatible Cameras:\n{camera_new_config}\n')
 camera_last_config = camera_new_config
 with open(os.path.join(current_dir, 'camera-last-config.json'), 'w') as file:
     json.dump(camera_last_config, file, indent=4)
+
+
 
 def get_camera_info(camera_model, camera_module_info):
     return next(
