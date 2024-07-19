@@ -711,8 +711,13 @@ def image_gallery():
             dng_file = os.path.splitext(image_file)[0] + '.dng'
             has_dng = os.path.exists(os.path.join(UPLOAD_FOLDER, dng_file))
 
+            # Get the image resolution
+            img = Image.open(os.path.join(UPLOAD_FOLDER, image_file))
+            width, height = img.size
+            img.close()
+
             # Appending dictionary to the list
-            files_and_timestamps.append({'filename': image_file, 'timestamp': timestamp, 'has_dng': has_dng, 'dng_file': dng_file})
+            files_and_timestamps.append({'filename': image_file, 'timestamp': timestamp, 'has_dng': has_dng, 'dng_file': dng_file, 'width': width, 'height': height})
 
         # Sorting the list based on Unix timestamp
         files_and_timestamps.sort(key=lambda x: x['timestamp'], reverse=True)
