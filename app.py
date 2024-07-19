@@ -31,13 +31,41 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Define the path to the camera-config.json file
 camera_config_path = os.path.join(current_dir, 'camera-config.json')
 
+last_config_file_path = os.path.join(current_dir, 'camera-last-config.json')
+
+
 # Load the camera-module-info.json file
 with open(os.path.join(current_dir, 'camera-module-info.json'), 'r') as file:
     camera_module_info = json.load(file)
 
-# Load the JSON configuration file
-with open(os.path.join(current_dir, 'camera-last-config.json'), 'r') as file:
-    camera_last_config = json.load(file)
+# Define the minimum required configuration
+minimum_last_config = {
+    "cameras": []
+}
+
+# Function to load or initialize configuration
+def load_or_initialize_config(file_path, default_config):
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            try:
+                config = json.load(file)
+                if not config:  # Check if the file is empty
+                    raise ValueError("Empty configuration file")
+            except (json.JSONDecodeError, ValueError):
+                # If file is empty or invalid, create new config
+                with open(file_path, 'w') as file:
+                    json.dump(default_config, file, indent=4)
+                config = default_config
+    else:
+        # Create the file with minimum configuration if it doesn't exist
+        with open(file_path, 'w') as file:
+            json.dump(default_config, file, indent=4)
+        config = default_config
+    return config
+
+# Load or initialize the configuration
+camera_last_config = load_or_initialize_config(last_config_file_path, minimum_last_config)
+
 
 # Set the path where the images will be stored
 CAMERA_CONFIG_FOLDER = os.path.join(current_dir, 'static/camera_config')
