@@ -117,4 +117,5 @@ Raspberry Pi Compatibilty:
 - .gitignore was missing
   
 ## Copyright and license
-Code and documentation copyright 2024 the Picamera2 WebUI Lite Authors. Code released under the MIT License. Docs released under Creative Commons.
+
+Code and documentation copyright 2024 the Picamera2 WebUI Authors. Code released under the MIT License. Docs released under Creative Commons.
