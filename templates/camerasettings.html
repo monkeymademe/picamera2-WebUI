@@ -653,8 +653,8 @@
 
                                             {% for i, resolution in enumerate(resolutions) %}
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution{{ i }}" onclick="adjustResolution('Resolution', '{{ i }}')">
-                                                <label class="form-check-label" for="Resolution{{ i }}">{{ resolution[0] }}, {{ resolution[1] }}</label>
+                                                <input class="form-check-input" type="checkbox" name="Resolution" id="Resolution{{ i }}" onclick="adjustResolution('Resolution', '{{ i }}',{{ resolution[0] }}, {{ resolution[1] }})">
+                                                <label class="form-check-label" for="Resolution{{ i }}">{{ resolution[0] }} x {{ resolution[1] }}</label>
                                             </div>
                                             {% endfor %}
                                         <hr></hr>
@@ -1547,6 +1547,18 @@ function updateRestartSettings(data) {
         throw error;  // Re-throw the error for the next catch
     });
 }
+
+function resizeImageElement(fullResolutionWidth, fullResolutionHeight) {
+  const imageElement = document.getElementById('cameraImage');
+  if (imageElement) {
+    // Set the width to the full resolution width
+    imageElement.style.width = `${fullResolutionWidth}px`;
+    // Calculate the height based on the aspect ratio and set it
+
+    cameraImage.src = `${cameraImage.src.split('?')[0]}?${new Date().getTime()}`;
+  }
+}
+
 // Function to refresh the camera feed
 function refreshCameraFeed() {
   const imageElement = document.getElementById('cameraImage');
@@ -1566,12 +1578,13 @@ function refreshCameraFeed() {
   }
 }
 
-function adjustResolution(settingId, selection) {
+function adjustResolution(settingId, selection, fullResolutionWidth, fullResolutionHeight) {
     // Call adjustCheckboxSetting
     adjustCheckboxSetting(settingId, selection)
         .then(() => {
             // The asynchronous part is done, now you can perform other tasks
-            refreshCameraFeed();
+            resizeImageElement(fullResolutionWidth, fullResolutionHeight);
+            
         })
         .catch(error => {
             console.error('Error updating server settings:', error);
