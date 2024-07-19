@@ -4,8 +4,9 @@
 
 Picamera2 WebUI is a lightweight web interface for the Raspberry Pi camera module, built on the Picamera2 Python library and using Flask. This project provides a user interface to configure camera settings, capture photos, and manage images in a basic gallery.
 
-[![Watch the Demo here](https://img.youtube.com/vi/K_pSdu5fv1M/0.jpg)](https://www.youtube.com/watch?v=K_pSdu5fv1M)
+### Demo
 
+[![Watch the Demo here](https://img.youtube.com/vi/K_pSdu5fv1M/0.jpg)](https://www.youtube.com/watch?v=K_pSdu5fv1M)
 
 ## Features
 
@@ -28,13 +29,15 @@ For more information about Picamera2, visit [Picamera2 GitHub Repository](https:
 
 ## Getting Started
 
-Preinstalls
+Note: Please also see [Compatibility](#compatibilty) below
 
-You will need to install the following:
+### Preinstalls / Dependencies
+
+As of March 2024 the Bookworm version of Raspberry Pi OS (Desktop) has the required dependencies preinstalled, so you can skip to **Installation** below. If you are using the Lite version you will need to install the following:
 - [flask](https://flask.palletsprojects.com/en/3.0.x/installation/#install-flask)
 - [Picamera2](https://github.com/raspberrypi/picamera2)
 
-As of March the bookworm version of Raspberry Pi OS (Desktop) has come preinstalled with both flask and Picamera2 meaning all you need to do is install git and clone the repo. If you are using Lite you will need to install flask and Picamera2.
+### Installation
 
 1. Update Raspberry Pi OS: 
 ```bash
@@ -79,9 +82,13 @@ WantedBy=multi-user.target
   
 ## Compatibilty
 
+- **Raspberry Pi OS / Debian**
+
+Please be aware that due to dependencies on newer versions of Picamera2 (see below) and Libcamera this project only works on Raspberry Pi OS Bookworm (or newer). Issues have been reported with older versions (e.g. Bullseye) not functioning due to libcamera no longer being updated on older versions of the Raspberry Pi OS. The recommendation, even on older Pi's, is to use Bookworm (or newer).
+
 - **Picamera2**
 
-Please check [Picamera installation Requirements](https://github.com/raspberrypi/picamera2?tab=readme-ov-file#installation). Your operating system may not be compatible with Picamera2. We have has reported issues with older versions (pre bookworm) not functioning due to libcamera not being updated in older versions. I recomend even on older pi's to use bookworm.
+Please check [Picamera installation Requirements](https://github.com/raspberrypi/picamera2?tab=readme-ov-file#installation). Your operating system may not be compatible with Picamera2.
 
 There has been some reported issues with the PiCamera2 on older Raspberry Pi's: ```OSError: [Errno 12] Cannot allocate memory``` https://github.com/raspberrypi/picamera2/issues/972#issuecomment-1980573868
 
@@ -110,4 +117,5 @@ Raspberry Pi Compatibilty:
 - .gitignore was missing
   
 ## Copyright and license
-Code and documentation copyright 2024 the Picamera2 WebUI Lite Authors. Code released under the MIT License. Docs released under Creative Commons.
+
+Code and documentation copyright 2024 the Picamera2 WebUI Authors. Code released under the MIT License. Docs released under Creative Commons.
