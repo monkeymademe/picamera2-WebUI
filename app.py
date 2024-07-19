@@ -331,8 +331,8 @@ class CameraObject:
                     print("UPDATING RESOLUTION")
                     print(self.live_config['rotation'])
                     self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-                    self.apply_rotation(self.live_config['rotation'])
                     self.camera.configure(self.video_config)
+                    self.apply_rotation(self.live_config['rotation'])
                     self.start_streaming()
                     success = True
                     settings = self.live_config['capture-settings']
