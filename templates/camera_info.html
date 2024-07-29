@@ -86,7 +86,7 @@
         <h2 class="pb-2 border-bottom">Connected Camera Information</h2>
         
             <div class="row row-cols-1 row-cols-md-2 g-5 py-5">
-              <div class="col d-flex flex-column align-items-start flex-column align-items-center justify-content-center" style="margin-top:0px;">
+              <div class="col d-flex flex-column align-items-start flex-column align-items-center" style="margin-top:0px;">
                 <div class="card mb-3" style="width: 18rem;" >
                  <img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image" >
                 
@@ -119,73 +119,116 @@
               </div>
 
               <div class="col" style="margin-top: 0px;">
-                <div class="row row-cols-1 row-cols-sm-2 g-4">
-                  <table class="table">
-                    <tbody>
-                        <tr>
-                            <th scope="row">Megapixels</th>
-                            <td>{{ connected_camera_data.megapixels }}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Sensor Resolution</th>
-                            <td>{{ connected_camera_data.sensor_resolution }}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Video Modes</th>
-                            <td>{{ connected_camera_data.video_modes }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Sensor Image Area</th>
-                          <td>{{ connected_camera_data.sensor_image_area }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Pixel Size</th>
-                          <td>{{ connected_camera_data.pixel_size }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Optical Size</th>
-                          <td>{{ connected_camera_data.optical_size }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Focus</th>
-                          <td>{{ connected_camera_data.focus }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Depth of field</th>
-                          <td>{{ connected_camera_data.dof }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Focal Length</th>
-                          <td>{{ connected_camera_data.focal_length }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Horizontal Field of View (FoV)</th>
-                          <td>{{ connected_camera_data.horizontal_fov }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Vertical Field of View (FoV)</th>
-                          <td>{{ connected_camera_data.vertical_fov }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Focal ratio (F-Stop)</th>
-                          <td>{{ connected_camera_data.f_stop }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Maximum exposure times (seconds)</th>
-                          <td>{{ connected_camera_data.max_exposure_time }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">Lens Mount</th>
-                          <td>{{ connected_camera_data.lens_mount }}</td>
-                        </tr>
-                        <tr>
-                          <th scope="row">NoIR version available?</th>
-                          <td>{{ connected_camera_data.got_noir }}</td>
-                        </tr>
-                        <!-- Add more rows for additional properties -->
-                    </tbody>
-                </table>
-                </div>
+                <div class="row row-cols-1 g-4">
+                  
+                    <ul id="myTab" class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a href="#tech_info" class="nav-link active" data-bs-toggle="tab">Camera Spec</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#url" class="nav-link" data-bs-toggle="tab">Camera Links</a>
+                        </li>
+                      <!--<li class="nav-item">
+                            <a href="#messages" class="nav-link" data-bs-toggle="tab">Messages</a>
+                        </li>-->
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tech_info">
+                          <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Megapixels</th>
+                                    <td>{{ connected_camera_data.megapixels }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Sensor Resolution</th>
+                                    <td>{{ connected_camera_data.sensor_resolution }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Video Modes</th>
+                                    <td>{{ connected_camera_data.video_modes }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Sensor Image Area</th>
+                                  <td>{{ connected_camera_data.sensor_image_area }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Pixel Size</th>
+                                  <td>{{ connected_camera_data.pixel_size }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Optical Size</th>
+                                  <td>{{ connected_camera_data.optical_size }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Focus</th>
+                                  <td>{{ connected_camera_data.focus }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Depth of field</th>
+                                  <td>{{ connected_camera_data.dof }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Focal Length</th>
+                                  <td>{{ connected_camera_data.focal_length }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Horizontal Field of View (FoV)</th>
+                                  <td>{{ connected_camera_data.horizontal_fov }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Vertical Field of View (FoV)</th>
+                                  <td>{{ connected_camera_data.vertical_fov }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Focal ratio (F-Stop)</th>
+                                  <td>{{ connected_camera_data.f_stop }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Maximum exposure times (seconds)</th>
+                                  <td>{{ connected_camera_data.max_exposure_time }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Lens Mount</th>
+                                  <td>{{ connected_camera_data.lens_mount }}</td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">NoIR version available?</th>
+                                  <td>{{ connected_camera_data.got_noir }}</td>
+                                </tr>
+                                <!-- Add more rows for additional properties -->
+                            </tbody>
+                        </table>
+                        </div>
+                        <div class="tab-pane fade" id="url">
+                          <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Video Feed</th>
+                                    <td><a href="{{ url_for('video_feed', camera_num=camera_num) }}">{{ full_url }}{{ url_for('video_feed', camera_num=camera_num) }}</a></td>
+                                </tr>
+                                <tr>
+                                  <th scope="row">Snapshot Link</th>
+                                  <td><a href="{{ url_for('snapshot', camera_num=camera_num) }}">{{ full_url }}{{ url_for('snapshot', camera_num=camera_num) }}</a></td>
+                              </tr>
+                                <!-- Add more rows for additional properties -->
+                            </tbody>
+                        </table>
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                          <i class="bi bi-info-circle mr-2 ml-2"></i>
+                          <div>
+                            &nbsp;These links work in VLC Player, OBS and Octoprint
+                          </div>
+                      </div>
+                        </div>
+                       <!--  <div class="tab-pane fade" id="messages">
+                            <h4 class="mt-2">Messages tab content</h4>
+                            <p>Donec vel placerat quam, ut euismod risus. Sed a mi suscipit, elementum sem a, hendrerit velit. Donec at erat magna. Sed dignissim orci nec eleifend egestas. Donec eget mi consequat massa vestibulum laoreet. Mauris et ultrices nulla, malesuada volutpat ante. Fusce ut orci lorem. Donec molestie libero in tempus imperdiet. Cum sociis natoque penatibus et magnis.</p>
+                        </div> -->
+                    </div>
+                  </div>
+                
+                  
               </div>
             </div>
             {% else %}
@@ -208,6 +251,11 @@ document.addEventListener('DOMContentLoaded', function () {
     updateUI({ 'sensor-mode': sensor_mode });
 
 });
+
+$(document).ready(function(){
+    $('a[data-bs-toggle="tab"]').on("shown.bs.tab", function(e){
+    });
+}); 
 
 const checkboxSettings = ['sensor-mode'];
 var camera_num = {{ camera_num }}

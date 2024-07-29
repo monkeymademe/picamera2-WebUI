@@ -522,6 +522,7 @@ def beta():
 
 @app.route("/camera_info_<int:camera_num>")
 def camera_info(camera_num):
+    full_url = request.url_root.rstrip('/')
     cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
     camera = cameras.get(camera_num)
     connected_camera = camera.camera_info['Model']
@@ -530,7 +531,7 @@ def camera_info(camera_num):
     if connected_camera_data is None:
         connected_camera_data = next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
     if connected_camera_data:
-        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info')
+        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info', full_url=full_url)
     else:
         return jsonify(error="Camera module data not found")
 
