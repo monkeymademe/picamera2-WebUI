@@ -77,8 +77,70 @@
   filter: none;
   opacity: .5;
 }
-
-
+/* Custom CSS for the GPIO */
+.gpio-layout {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 5px;
+    max-width: 300px;
+    margin: 10px auto;
+}
+.gpio-pin {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+}
+.gpio-pin.round {
+    border-radius: 50%;
+}
+.gpio-label {
+    font-size: 14px;
+    color: #666;
+    margin: 0 10px;
+}
+.gpio-label.left {
+    margin-right: auto;
+}
+.gpio-label.right {
+    margin-left: auto;
+}
+.gpio-wrapper {
+    display: flex;
+    align-items: center;
+    border-radius: 15px;
+    transition: background-color 0.3s;
+}
+.gpio-wrapper.right {
+    flex-direction: row-reverse;
+}
+.gpio-wrapper.left {
+    flex-direction: row;
+}
+.gpio-wrapper.selected {
+    background-color: #a1a1a1;
+}
+.gpio-number.left {
+    margin-right:5px;
+}
+.gpio-number.right {
+  margin-left:5px;
+}
+.btn-purple {
+  background-color: #6f42c1;
+}
+.btn-purple:hover {
+  background-color: #59349e;
+}
+.btn-pink {
+  background-color: #d63384;
+}
+.btn-pink:hover  {
+  background-color: #a22764;
+}
 </style>
 <div class="container-xxl">
     <div class="container px-4 py-5 pt-5 pb-0 mt-4" id="custom-cards">
@@ -127,6 +189,9 @@
                         </li>
                         <li class="nav-item">
                             <a href="#url" class="nav-link" data-bs-toggle="tab">Camera Links</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#controls" class="nav-link" data-bs-toggle="tab">Pysical Controls</a>
                         </li>
                       <!--<li class="nav-item">
                             <a href="#messages" class="nav-link" data-bs-toggle="tab">Messages</a>
@@ -223,6 +288,72 @@
                           </div>
                       </div>
                         </div>
+                        <div class="tab-pane fade" id="controls">
+                          <div class="mb-3">
+                            <!-- Enable GPIO Button -->
+                            <div class="form-check form-switch">
+                              <input class="form-check-input" type="checkbox" role="switch" id="enableGPIO" onchange="adjustSwitchSetting('enableGPIO')">
+                              <label for="enableGPIO" >Enable: Using button to tigger camera</label>
+                          </div>
+                            <div class="accordion accordion-flush" id="accordionFlushExample">
+                              <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                    Select GPIO Pin for button
+                                  </button>
+                                </h2>
+                                <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                  <div class="accordion-body">
+                                    <div class="container">
+                                      <div class="gpio-layout text-center">
+                                        {% for gpio in gpio_template %}
+                                        <div class="gpio-wrapper gpio-button {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}" id="gpio-{{ gpio.pin }}-button">
+                                          <div class="gpio-label {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}">{{ gpio.label }}</div>
+                                            <span class="gpio-number {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}">{{ gpio.pin }}</span>
+                                            <div class="gpio-pin btn btn-{{ gpio.color }} {{ gpio.status }} round" data-pin="{{ gpio.pin }}" onclick="selectPin('button',{{ gpio.pin }})"></div>
+                                        </div>
+                                        {% endfor %}
+                                     </div>
+                                   </div>
+
+
+                                </div>
+                              </div>
+                              <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                                    Select GPIO Pin for LED
+                                  </button>
+                                </h2>
+                                <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                  <div class="accordion-body">
+                                    <div class="container">
+                                      <div class="gpio-layout text-center">
+                                        {% for gpio in gpio_template %}
+                                        <div class="gpio-wrapper gpio-led {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}" id="gpio-{{ gpio.pin }}-led">
+                                          <div class="gpio-label {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}">{{ gpio.label }}</div>
+                                            <span class="gpio-number {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}">{{ gpio.pin }}</span>
+                                            <div class="gpio-pin btn btn-{{ gpio.color }} {{ gpio.status }} round" data-pin="{{ gpio.pin }}" onclick="selectPin('led',{{ gpio.pin }})"></div>
+                                        </div>
+                                        {% endfor %}
+                                     </div>
+                                   </div>
+
+                                  </div>
+                                </div>
+                              </div>
+                          
+
+
+                          </div>
+</div>
+
+
+
+
+                          </div>    
+                        </div>
+
                        <!--  <div class="tab-pane fade" id="messages">
                             <h4 class="mt-2">Messages tab content</h4>
                             <p>Donec vel placerat quam, ut euismod risus. Sed a mi suscipit, elementum sem a, hendrerit velit. Donec at erat magna. Sed dignissim orci nec eleifend egestas. Donec eget mi consequat massa vestibulum laoreet. Mauris et ultrices nulla, malesuada volutpat ante. Fusce ut orci lorem. Donec molestie libero in tempus imperdiet. Cum sociis natoque penatibus et magnis.</p>
@@ -239,20 +370,26 @@
   </div>
 </div>
  
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM content loaded');
 
     // Parse the JSON string into a JavaScript object
     var sensor_mode = {{ sensor_mode | tojson }};
+    var gpio_settings = {{ gpio_settings | tojson }};
     
     console.log(camera_num);
     
     updateUI({ 'sensor-mode': sensor_mode });
+    updateUI( gpio_settings );
+    for (const key in gpio_settings) {
+        const setting = gpio_settings[key];
+        console.log(setting)
+    }
 
 });
+
+const switchSettings = ['enableGPIO'];
 
 $(document).ready(function(){
     $('a[data-bs-toggle="tab"]').on("shown.bs.tab", function(e){
@@ -260,6 +397,7 @@ $(document).ready(function(){
 }); 
 
 const checkboxSettings = ['sensor-mode'];
+const gpioSettings = ['button','led']
 var camera_num = {{ camera_num }}
 
 $(document).ready(function(){
@@ -278,11 +416,42 @@ function updateUI(settings) {
                     const checkboxValue = parseInt(checkbox.id.replace(key, ''));
                     checkbox.checked = settings[key] === checkboxValue;
                 });
+              } else if (switchSettings.includes(key)) {
+                // Update the switch state
+                const switchbox = document.getElementById(key);
+                if (switchbox) {
+                    switchbox.checked = settings[key];
+                }
+            } else if (gpioSettings.includes(key)){
+                pin = settings[key]
+
+                 // Find the element by its ID
+                document.getElementById(`gpio-${pin}-${key}`).classList.add('selected')
             } else {
                 console.log(`Skipping unknown setting: ${key}`);
             }
     }
-}
+};
+
+function selectPin(type, pin) {
+    console.log(pin)
+    if (type === 'button') {
+      console.log(type)
+            // Remove selection from other wrappers
+            document.querySelectorAll('.gpio-button').forEach(wrapper => wrapper.classList.remove('selected'));
+            // Add selection to the clicked
+            document.getElementById(`gpio-${pin}-button`).classList.add('selected');
+            updateLiveSettings({ button : pin });  
+        }
+    if (type === 'led') {
+      console.log(type)
+            // Remove selection from other wrappers
+            document.querySelectorAll('.gpio-led').forEach(wrapper => wrapper.classList.remove('selected'));
+            // Add selection to the clicked
+            document.getElementById(`gpio-${pin}-led`).classList.add('selected');
+            updateLiveSettings({ led : pin });
+        }
+  };
 
 function adjustCheckboxSetting(settingId, selection) {
     // Convert settingValue to an integer
@@ -293,7 +462,17 @@ function adjustCheckboxSetting(settingId, selection) {
     updateLiveSettings({ [settingId]: settingValue });
     // Notify console
     console.log(settingId, 'changed:', settingValue);
-}
+};
+
+function adjustSwitchSetting(settingId) {
+    // Get the current state of the switch
+    const inputElement = document.getElementById(settingId);
+    const selection = inputElement.checked;
+    // Update server settings
+    updateLiveSettings({ [settingId]: selection });
+    // Notify console
+    console.log(settingId, 'changed:', selection);
+};
 
 // Function to update server settings and UI
 function updateLiveSettings(data) {

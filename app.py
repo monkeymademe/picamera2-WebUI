@@ -9,6 +9,8 @@ from flask import Flask, render_template, request, jsonify, Response, send_file,
 
 from PIL import Image
 
+from gpiozero import Button, LED
+
 from picamera2 import Picamera2
 #from picamera2.encoders import JpegEncoder
 from picamera2.encoders import MJPEGEncoder
@@ -18,19 +20,16 @@ from libcamera import Transform, controls
 
 # Init Flask
 app = Flask(__name__)
-
 Picamera2.set_logging(Picamera2.DEBUG)
 
 # Get global camera information
 global_cameras = Picamera2.global_camera_info()
 # global_cameras = [global_cameras[0]]
 
-
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Define the path to the camera-config.json file
 camera_config_path = os.path.join(current_dir, 'camera-config.json')
-
 last_config_file_path = os.path.join(current_dir, 'camera-last-config.json')
 
 
@@ -42,6 +41,49 @@ with open(os.path.join(current_dir, 'camera-module-info.json'), 'r') as file:
 minimum_last_config = {
     "cameras": []
 }
+
+gpio_template = [
+    {'pin': 1, 'label': '3v3 Power', 'status': 'disabled', 'color': 'warning'},
+    {'pin': 2, 'label': '5v Power', 'status': 'disabled', 'color': 'danger'},
+    {'pin': 3, 'label': 'GPIO 2', 'status': '', 'color': 'primary'},
+    {'pin': 4, 'label': '5v Power', 'status': 'disabled', 'color': 'danger'},
+    {'pin': 5, 'label': 'GPIO 3', 'status': '', 'color': 'primary'},
+    {'pin': 6, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 7, 'label': 'GPIO 4', 'status': '', 'color': 'success'},
+    {'pin': 8, 'label': 'GPIO 14', 'status': '', 'color': 'purple'},
+    {'pin': 9, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 10, 'label': 'GPIO 10', 'status': '', 'color': 'purple'},
+    {'pin': 11, 'label': 'GPIO 17', 'status': '', 'color': 'success'},
+    {'pin': 12, 'label': 'GPIO 18', 'status': '', 'color': 'info'},
+    {'pin': 13, 'label': 'GPIO 27', 'status': '', 'color': 'success'},
+    {'pin': 14, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 15, 'label': 'GPIO 22', 'status': '', 'color': 'success'},
+    {'pin': 16, 'label': 'GPIO 23', 'status': '', 'color': 'success'},
+    {'pin': 17, 'label': '3v3 Power', 'status': 'disabled', 'color': 'warning'},
+    {'pin': 18, 'label': 'GPIO 24', 'status': '', 'color': 'success'},
+    {'pin': 19, 'label': 'GPIO 10', 'status': '', 'color': 'pink'},
+    {'pin': 20, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 21, 'label': 'GPIO 9', 'status': '', 'color': 'pink'},
+    {'pin': 22, 'label': 'GPIO 25', 'status': '', 'color': 'success'},
+    {'pin': 23, 'label': 'GPIO 11', 'status': '', 'color': 'pink'},
+    {'pin': 24, 'label': 'GPIO 8', 'status': '', 'color': 'pink'},
+    {'pin': 25, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 26, 'label': 'GPIO 7', 'status': '', 'color': 'pink'},
+    {'pin': 27, 'label': 'GPIO 0', 'status': '', 'color': 'primary'},
+    {'pin': 28, 'label': 'GPIO 1', 'status': '', 'color': 'primary'},
+    {'pin': 29, 'label': 'GPIO 5', 'status': '', 'color': 'success'},
+    {'pin': 30, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 31, 'label': 'GPIO 6', 'status': '', 'color': 'success'},
+    {'pin': 32, 'label': 'GPIO 12', 'status': '', 'color': 'success'},
+    {'pin': 33, 'label': 'GPIO 13', 'status': '', 'color': 'success'},
+    {'pin': 34, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 35, 'label': 'GPIO 19', 'status': '', 'color': 'info'},
+    {'pin': 36, 'label': 'GPIO 16', 'status': '', 'color': 'success'},
+    {'pin': 37, 'label': 'GPIO 27', 'status': '', 'color': 'success'},
+    {'pin': 38, 'label': 'GPIO 20', 'status': '', 'color': 'info'},
+    {'pin': 39, 'label': 'Ground', 'status': 'disabled', 'color': 'dark'},
+    {'pin': 40, 'label': 'GPIO 21', 'status': '', 'color': 'info'}  
+]
 
 # Function to load or initialize configuration
 def load_or_initialize_config(file_path, default_config):
@@ -112,7 +154,6 @@ class CameraObject:
         self.output_resolutions = self.available_resolutions()
         
 
-
         self.output = None
         # need an if statment for checking if there is config or load a default template for now this is ok cause config is assumed        
         #self.saved_config = self.load_settings_from_file(camera_info['Config_Location'])
@@ -139,8 +180,20 @@ class CameraObject:
                     default_value = list(min_value)  # Convert to list if needed
                 
                 default_config[control] = default_value
-                
         return default_config
+    
+    def setbutton(self):
+        if self.live_config['GPIO']['enableGPIO']:
+            if self.live_config['GPIO']['button'] >= 1:
+                self.button = Button(f'BOARD{self.live_config["GPIO"]["button"]}', bounce_time = 0.1)
+                self.button.when_pressed = self.take_photo
+                self.current_button = self.live_config["GPIO"]["button"]
+                
+    def setled(self):
+        if self.live_config['GPIO']['enableGPIO']:
+            if self.live_config['GPIO']['led'] >= 1:
+                self.led = LED(f'BOARD{self.live_config["GPIO"]["led"]}')
+                self.led.on()
 
     def available_resolutions(self):
         # Use a set to collect unique resolutions
@@ -158,7 +211,7 @@ class CameraObject:
     def take_photo(self):
         try:
             timestamp = int(datetime.timestamp(datetime.now()))
-            image_name = f'pimage_{timestamp}'
+            image_name = f'pimage_cam_{self.camera_info["Num"]}_{timestamp}'
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
             request = self.camera.capture_request()
             request.save("main", f'{filepath}.jpg')
@@ -225,8 +278,13 @@ class CameraObject:
             "Resolution": 0
         }
         self.rotation = {
-        "hflip": 0,
-        "vflip": 0
+            "hflip": 0,
+            "vflip": 0
+        }
+        self.gpio = {
+            "enableGPIO": False,
+            "button": 0,
+            "led": 0
         }
         self.sensor_mode = 0
         # If no config file use default generated from controls
@@ -249,11 +307,13 @@ class CameraObject:
         self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
         self.camera.set_controls(self.live_settings)
         self.rotation_settings = self.rotation
-        self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings}
+        self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings, 'GPIO':self.gpio}
         self.start_streaming()
         self.configure_camera()
         self.camera_info['Has_Config'] = False
         self.camera_info['Config_Location'] = 'default.json'
+        self.setbutton()
+        self.setled()
         self.update_camera_last_config()
 
     def config_from_file(self, file):
@@ -270,6 +330,8 @@ class CameraObject:
         self.camera_info['Has_Config'] = True
         self.camera_info['Config_Location'] = file
         self.update_camera_last_config()
+        self.setbutton()
+        self.setled()
         self.start_streaming()
         self.configure_camera()
 
@@ -303,7 +365,8 @@ class CameraObject:
 
     def update_live_config(self, data):
          # Update only the keys that are present in the data
-        print(data)
+        print(self.live_config)
+        print(self.live_config['GPIO'])
         for key in data:
             if key in self.live_config['controls']:
                 try:
@@ -341,6 +404,26 @@ class CameraObject:
                     self.live_config['capture-settings'][key] = data[key]
                     success = True
                     settings = self.live_config['capture-settings']
+                    return success, settings
+            elif key in self.live_config['GPIO']:
+                if key in ('button'):
+                    self.live_config['GPIO'][key] = int(data[key])
+                    print(self.live_config)
+                    success = True
+                    settings = self.live_config['GPIO']
+                    self.setbutton()
+                    return success, settings
+                elif key == 'led':
+                    self.live_config['GPIO'][key] = int(data[key])
+                    print(self.live_config)
+                    success = True
+                    settings = self.live_config['GPIO']
+                    self.setled()
+                elif key == 'enableGPIO':
+                    print("GPIOTrue")
+                    self.live_config['GPIO'][key] = data[key]
+                    success = True
+                    settings = self.live_config['GPIO']
                     return success, settings
             elif key == 'sensor-mode':
                 self.sensor_mode = sensor_mode = int(data[key])
@@ -531,7 +614,7 @@ def camera_info(camera_num):
     if connected_camera_data is None:
         connected_camera_data = next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
     if connected_camera_data:
-        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info', full_url=full_url)
+        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info', full_url=full_url, gpio_template=gpio_template, gpio_settings=camera.live_config.get('GPIO'))
     else:
         return jsonify(error="Camera module data not found")
 
