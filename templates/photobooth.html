@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    body, html {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #000;
+    }
+    .camera-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    #camera-feed {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 10rem;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .flash {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        opacity: 0;
+        pointer-events: none;
+    }
+</style>
+
+<div class="camera-container">
+    <img id="cameraImage" alt="Camera Feed">
+    <div id="countdown-overlay" class="overlay display-1"></div>
+    <div id="flash-overlay" class="flash"></div>
+</div>
+
+<button id="capture-btn" class="btn btn-primary">Capture Image</button>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+        // Get the image element
+        const cameraImage = document.getElementById('cameraImage');
+
+        // Set the source attribute to start loading the image
+        
+        cameraImage.src = "{{ url_for('video_feed', camera_num=camera_num) }}";
+    });
+
+document.getElementById('capture-btn').addEventListener('click', function() {
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const flashOverlay = document.getElementById('flash-overlay');
+    let countdown = 3;
+
+    countdownOverlay.style.opacity = 1;
+    countdownOverlay.textContent = countdown;
+
+    const countdownInterval = setInterval(() => {
+        countdown -= 1;
+        if (countdown > 0) {
+            countdownOverlay.textContent = countdown;
+        } else {
+            clearInterval(countdownInterval);
+            countdownOverlay.style.opacity = 0;
+            triggerFlash();
+            takePicture();
+        }
+    }, 1000);
+});
+
+function triggerFlash() {
+    const flashOverlay = document.getElementById('flash-overlay');
+    flashOverlay.style.opacity = 1;
+    setTimeout(() => {
+        flashOverlay.style.opacity = 0;
+    }, 200);
+}
+
+function takePicture() {
+    // This function would send a request to capture the image from the camera
+    console.log('Picture taken');
+}
+</script>
+
+{% endblock%}

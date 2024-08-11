@@ -188,6 +188,7 @@ class CameraObject:
                 self.button = Button(f'BOARD{self.live_config["GPIO"]["button"]}', bounce_time = 0.1)
                 self.button.when_pressed = self.take_photo
                 self.current_button = self.live_config["GPIO"]["button"]
+        return start_countdown()
                 
     def setled(self):
         if self.live_config['GPIO']['enableGPIO']:
@@ -617,6 +618,13 @@ def camera_info(camera_num):
         return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info', full_url=full_url, gpio_template=gpio_template, gpio_settings=camera.live_config.get('GPIO'))
     else:
         return jsonify(error="Camera module data not found")
+
+@app.route("/photobooth_camera_<int:camera_num>")
+def photobooth(camera_num):
+    full_url = request.url_root.rstrip('/')
+    cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+    camera = cameras.get(camera_num)
+    return render_template("photobooth.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, full_url=full_url)
 
 @app.route('/reset_default_settings_camera_<int:camera_num>', methods=['GET'])
 def reset_default_settings_camera(camera_num):
