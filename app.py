@@ -4,7 +4,6 @@ from threading import Condition
 import threading
 import argparse
 
-
 from flask import Flask, render_template, request, jsonify, Response, send_file, abort
 
 from PIL import Image
@@ -17,6 +16,9 @@ from picamera2.encoders import MJPEGEncoder
 #from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 from libcamera import Transform, controls
+
+# Optional Thermal printer functions
+from thermal_printer.printer_functions import print_single_image ,feed_paper, print_text
 
 # Init Flask
 app = Flask(__name__)
@@ -120,6 +122,23 @@ os.makedirs(app.config['CAMERA_CONFIG_FOLDER'], exist_ok=True)
 UPLOAD_FOLDER = os.path.join(current_dir, 'static/gallery')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Class to manage the event data
+class EventManager:
+    def __init__(self):
+        self.event_data = ""
+
+    def trigger_event(self, data):
+        self.event_data = f"data: {data}\n\n"
+        print(self.event_data)
+
+    def get_event_data(self):
+        data = self.event_data
+        self.event_data = ""  # Clear event data after sending
+        return data
+
+# Instantiate the EventManager
+event_manager = EventManager()
+
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
@@ -186,10 +205,16 @@ class CameraObject:
         if self.live_config['GPIO']['enableGPIO']:
             if self.live_config['GPIO']['button'] >= 1:
                 self.button = Button(f'BOARD{self.live_config["GPIO"]["button"]}', bounce_time = 0.1)
-                self.button.when_pressed = self.take_photo
+                self.button.when_pressed = self.button_pressed
                 self.current_button = self.live_config["GPIO"]["button"]
-        return start_countdown()
-                
+        return 
+
+
+    # Function to be triggered (example)
+    def button_pressed(self):
+        event_manager.trigger_event("Testing")
+
+
     def setled(self):
         if self.live_config['GPIO']['enableGPIO']:
             if self.live_config['GPIO']['led'] >= 1:
@@ -222,6 +247,22 @@ class CameraObject:
             logging.info(f"Image captured successfully. Path: {filepath}")
         except Exception as e:
             logging.error(f"Error capturing image: {e}")
+
+    def take_photo_and_print(self):
+        try:
+            timestamp = int(datetime.timestamp(datetime.now()))
+            image_name = f'pimage_cam_{self.camera_info["Num"]}_{timestamp}'
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], image_name)
+            request = self.camera.capture_request()
+            request.save("main", f'{filepath}.jpg')
+            if self.live_config['capture-settings']["makeRaw"]:
+                request.save_dng(f'{filepath}.dng')
+            request.release()
+            logging.info(f"Image captured successfully. Path: {filepath}")
+            self.print_to_thermal(f'{filepath}.jpg')
+        except Exception as e:
+            logging.error(f"Error capturing image: {e}")
+        
 
     def start_streaming(self):
         self.output = StreamingOutput()
@@ -492,6 +533,23 @@ class CameraObject:
             return f'{filepath}.jpg'
         except Exception as e:
             logging.error(f"Error capturing image: {e}")
+        
+    def print_to_thermal(self,image):
+        print(f"Printing Logo...")
+        logo = "/home/pi/picamera2-WebUI/static/img/RaspberryJam_Logo_thermal.png"
+        print_single_image(logo)
+        if os.path.isfile(image):
+            print(f"Printing {image}...") 
+            print_single_image(image)   
+        else:
+            print(f"File {image} does not exist, skipping...")
+        print(f"Printing URL...")
+        url = "http://raspberryjamberlin.de"    
+        print_text(url)
+        print(f"Printing Message...")
+        message = "Thanks for joining us at\nMaker Faire Hannover!"
+        print_text(message)
+        feed_paper()
 
 # Init dictionary to store camera instances
 cameras = {}
@@ -619,6 +677,23 @@ def camera_info(camera_num):
     else:
         return jsonify(error="Camera module data not found")
 
+# SSE endpoint
+@app.route('/stream')
+def stream():
+    def event_stream():
+        while True:
+            data = event_manager.get_event_data()
+            if data:
+                print("Got Data")
+                test = "data: snap\n\n"
+                print(test)
+                yield test
+                time.sleep(3)
+            time.sleep(0.5)
+    return Response(event_stream(), mimetype="text/event-stream")
+
+
+
 @app.route("/photobooth_camera_<int:camera_num>")
 def photobooth(camera_num):
     full_url = request.url_root.rstrip('/')
@@ -694,6 +769,17 @@ def capture_photo(camera_num):
         cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
         camera = cameras.get(camera_num)
         camera.take_photo()  # Call your take_photo function
+        time.sleep(1)
+        return jsonify(success=True, message="Photo captured successfully")
+    except Exception as e:
+        return jsonify(success=False, message=str(e))
+
+@app.route('/photobooth_snap_<int:camera_num>', methods=['POST'])
+def photobooth_snap(camera_num):
+    try:
+        cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
+        camera = cameras.get(camera_num)
+        #camera.take_photo_and_print()  # Call your take_photo function
         time.sleep(1)
         return jsonify(success=True, message="Photo captured successfully")
     except Exception as e:
