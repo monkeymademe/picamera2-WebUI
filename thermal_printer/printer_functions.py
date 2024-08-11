@@ -145,7 +145,7 @@ def print_image(device, ep_out, data):
             end = int(end)
             
             ep_out.write(cmd + data[start:end])
-            time.sleep(0.01)  # Small delay to prevent buffer overflow
+              # time.sleep(0.01)  # Small delay to prevent buffer overflow
 
             res = device.ctrl_transfer(0xC0, 0x0E, 0x020E, 0, 2)
             while res[0] == USB_BUSY:
