@@ -1,8 +1,18 @@
-{% extends 'base.html' %}
-
-{% block content %}
-
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picamera2 WebUI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+  </head>
+<body>
 <style>
+    .full-height {
+            height: 100vh; /* Full viewport height */
+        }
     body, html {
         height: 100%;
         margin: 0;
@@ -49,15 +59,32 @@
     }
 </style>
 
-<div class="camera-container">
+<div class="camera-container container-fluid full-height d-flex justify-content-center align-items-center">
     <img id="cameraImage" alt="Camera Feed">
     <div id="countdown-overlay" class="overlay display-1"></div>
     <div id="flash-overlay" class="flash"></div>
 </div>
 
-<button id="capture-btn" class="btn btn-primary">Capture Image</button>
 
 <script>
+const camera_num = {{ camera_num }};
+
+// Connect to the SSE stream
+        const evtSource = new EventSource('/stream');
+
+        // Handle incoming messages
+        evtSource.onmessage = function(event) {
+            console.log("Received data:", event.data);
+            // You can add logic here to handle the event, e.g., start a countdown
+            if (event.data === "snap"){
+                console.log("Start countdown");
+                take_photo();
+            }
+        };
+
+evtSource.onerror = function(event) {
+    console.error("EventSource failed:", event);
+};
 
 document.addEventListener('DOMContentLoaded', function () {
         // Get the image element
@@ -68,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cameraImage.src = "{{ url_for('video_feed', camera_num=camera_num) }}";
     });
 
-document.getElementById('capture-btn').addEventListener('click', function() {
+function take_photo() {
     const countdownOverlay = document.getElementById('countdown-overlay');
     const flashOverlay = document.getElementById('flash-overlay');
     let countdown = 3;
@@ -87,7 +114,9 @@ document.getElementById('capture-btn').addEventListener('click', function() {
             takePicture();
         }
     }, 1000);
-});
+}
+
+
 
 function triggerFlash() {
     const flashOverlay = document.getElementById('flash-overlay');
@@ -100,7 +129,23 @@ function triggerFlash() {
 function takePicture() {
     // This function would send a request to capture the image from the camera
     console.log('Picture taken');
+
+    // Call your capture_photo function here
+    fetch('/photobooth_snap_'+ camera_num, {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the success response here
+        console.log(data);
+    })
+    .catch(error => {
+        // Handle the error response here
+        console.error('Error capturing photo:', error);
+    });
 }
 </script>
-
-{% endblock%}
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>
