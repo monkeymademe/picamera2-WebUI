@@ -38,21 +38,6 @@ DOTS_PER_LINE = 384
 BYTES_PER_DOT_LINE = DOTS_PER_LINE // 8
 USB_BUSY = 66
 
-def setup_logging():
-    '''Sets up logging for the application.'''
-    LOGGER.setLevel(logging.INFO)
-
-    file_handler = logging.FileHandler('mylog.txt')
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(logging.Formatter(fmt='%(asctime)s %(message)s',
-                                                datefmt='%d/%m/%Y %H:%M:%S'))
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.INFO)
-
-    LOGGER.addHandler(file_handler)
-    LOGGER.addHandler(stream_handler)
-
 def setup_usb():
     '''Connects to the 1st Pipsta found on the USB bus'''
     dev = usb.core.find(custom_match=printer_finder())
@@ -185,12 +170,7 @@ def check_printer_ready(device):
             LOGGER.warning(f"USB Error while checking printer status: {e}")
         time.sleep(0.1)  # Wait a bit before checking again
 
-def print_single_image(filename):       
-    '''Prints a single image using the existing printing logic.'''
-    if platform.system() != 'Linux':
-        sys.exit('This script has only been written for Linux')
-    
-    setup_logging()
+def print_single_image(filename):
     usb_out, device = setup_usb()
     usb_out.write(SET_LED_MODE + b'\x01')
 
@@ -248,13 +228,8 @@ def feed_paper():
     finally:
         usb.util.dispose_resources(device)
 
-def main():        
-    '''This is the main loop where arguments are parsed, connections are established, images are processed and the result is printed out.'''
-    if platform.system() != 'Linux':
-        sys.exit('This script has only been written for Linux')
-    
+def main():
     args = parse_arguments()
-    setup_logging()
     usb_out, device = setup_usb()
     usb_out.write(SET_LED_MODE + b'\x01')
 
