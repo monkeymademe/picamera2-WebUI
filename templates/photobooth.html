@@ -95,6 +95,32 @@ document.addEventListener('DOMContentLoaded', function () {
         cameraImage.src = "{{ url_for('video_feed', camera_num=camera_num) }}";
     });
 
+document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            // Page is visible, reload the camera feed
+            refreshCameraFeed();
+        }
+    });
+
+// Function to refresh the camera feed
+function refreshCameraFeed() {
+  const imageElement = document.getElementById('cameraImage');
+  if (imageElement) {
+    // Get the full resolution of the image
+    const fullResolutionWidth = imageElement.naturalWidth;
+    const fullResolutionHeight = imageElement.naturalHeight;
+
+    // Calculate the aspect ratio
+    const aspectRatio = fullResolutionWidth / fullResolutionHeight;
+
+    // Set the width to 100% and calculate the height based on the aspect ratio
+    imageElement.style.width = '100%';
+    imageElement.style.height = `${imageElement.offsetWidth / aspectRatio}px`;
+    cameraImage.src = `${cameraImage.src.split('?')[0]}?${new Date().getTime()}`;
+
+  }
+}
+
 function take_photo() {
     const countdownOverlay = document.getElementById('countdown-overlay');
     const flashOverlay = document.getElementById('flash-overlay');
