@@ -227,6 +227,25 @@
                             <div class="form-text" id="ExposureTimeRange"></div>                         
                             <hr>
                             {% endif %}
+                            {% if 'AnalogueGain' in settings_from_camera %}
+                            <!-- AnalogueGain -->
+                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                <strong class="mb-1">Analogue Gain</strong>
+                                    <a data-bs-toggle="collapse" href="#AnalogueGain_info" role="button">
+                                    <i class="bi bi-info-circle"></i></a>
+                            </div>
+                            <div class="collapse p-2" id="AnalogueGain_info">
+                                <div class="card card-body">
+                                        <p>Analogue gain applied by the sensor</p>
+                                </div>
+                              </div> 
+                            <div class="form-group">
+                                <label for="AnalogueGain" class="form-label" id="currentAnalogueGain">Value:</label>
+                                <input type="range" class="form-range" min="-8.0" max="8.0" step="0.1" id="AnalogueGain" onchange="adjustSliderSetting('AnalogueGain', this.value)">
+                            </div>
+                            <hr>
+                            {% endif %}
+
                             {% if 'AeEnable' in settings_from_camera %}
                             <!-- AeEnable -->
                             <div class="d-flex w-100 align-items-center justify-content-between">
@@ -853,7 +872,7 @@ document.addEventListener('visibilitychange', function() {
 
     const checkboxSettings = ['AfMode', 'AfRange', 'AfSpeed', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeMeteringMode', 'AwbMode', 'Resolution'];
     const switchSettings = ['AwbEnable', 'AeEnable', 'AwbMode', 'hflip', 'vflip', 'makeRaw'];
-    const sliderSettings = ['LensPosition', 'ExposureValue', 'Brightness', 'Contrast', 'Saturation', 'Sharpness'];
+    const sliderSettings = ['LensPosition', 'ExposureValue', 'Brightness', 'Contrast', 'Saturation', 'Sharpness', 'AnalogueGain'];
     const inputSettings = ['ExposureTime', 'AeFlickerPeriod']
     const camera_num = {{ camera_num }};
     const camera_info = {{ camera_info | tojson }};
@@ -874,7 +893,7 @@ function setrange(settings_from_camera) {
                     const rangeElementId = document.getElementById(`current${key}`);
                     if (key === 'LensPosition') {
                         rangeElementId.innerHTML = `Lens Position: ${defaultValue}`;
-                    } else if (key === 'ExposureValue') {
+                    } else if (key === 'ExposureValue' || key === 'AnalogueGain') {
                         rangeElementId.innerHTML = `Value: ${defaultValue}`;
                     } else {
                         rangeElementId.innerHTML = `${key}: ${defaultValue}`;
@@ -971,7 +990,7 @@ function updateUI(settings) {
                 const slider = document.getElementById(`current${key}`);
                 if (key === 'LensPosition') {
                     slider.innerText = `Lens Position: ${settings[key]}`;
-                } else if (key === 'ExposureValue') {
+                } else if (key === 'ExposureValue' || key === 'AnalogueGain') {
                     slider.innerText = `Value: ${settings[key]}`;
                 } else {
                     slider.innerText = `${key}: ${settings[key]}`; 

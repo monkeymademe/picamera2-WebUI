@@ -165,7 +165,7 @@ class CameraObject:
     def build_default_config(self):
         default_config = {}
         for control, values in self.settings.items():
-            if control in ['ScalerCrop', 'AfPause', 'FrameDurationLimits', 'NoiseReductionMode', 'AfMetering', 'ColourGains', 'StatsOutputEnable', 'AnalogueGain', 'AfWindows', 'AeFlickerPeriod', 'HdrMode', 'AfTrigger']:
+            if control in ['ScalerCrop', 'AfPause', 'FrameDurationLimits', 'NoiseReductionMode', 'AfMetering', 'ColourGains', 'StatsOutputEnable', 'AfWindows', 'AeFlickerPeriod', 'HdrMode', 'AfTrigger']:
                 continue  # Skip ScalerCrop for debugging purposes
             
             if isinstance(values, tuple) and len(values) == 3:
@@ -315,6 +315,7 @@ class CameraObject:
         self.setbutton()
         self.setled()
         self.update_camera_last_config()
+        print(self.live_settings)
 
     def config_from_file(self, file):
         newconfig = self.load_settings_from_file(file)
@@ -372,7 +373,7 @@ class CameraObject:
                 try:
                     if key in ('AfMode', 'AeConstraintMode', 'AeExposureMode', 'AeFlickerMode', 'AeFlickerPeriod', 'AeMeteringMode', 'AfRange', 'AfSpeed', 'AwbMode', 'ExposureTime') :
                         self.live_config['controls'][key] = int(data[key])
-                    elif key in ('Brightness', 'Contrast', 'Saturation', 'Sharpness', 'ExposureValue', 'LensPosition'):
+                    elif key in ('Brightness', 'Contrast', 'Saturation', 'Sharpness', 'ExposureValue', 'LensPosition', 'AnalogueGain'):
                         self.live_config['controls'][key] = float(data[key])
                     elif key in ('AeEnable', 'AwbEnable', 'ScalerCrop'):
                         self.live_config['controls'][key] = data[key]
