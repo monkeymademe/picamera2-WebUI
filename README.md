@@ -10,9 +10,9 @@ Picamera2 WebUI is a lightweight web interface for the Raspberry Pi camera modul
 
 ## Features
 
-- **Camera Control:** Easily configure camera settings such as image rotation, exposure, white balance settings, and meny more.
+- **Camera Control:** Easily configure camera settings such as image rotation, exposure, white balance settings, and many more.
 - **Capture Photos:** Take photos with a single click and save them to the image gallery.
-- **Image Gallery:** Veiw, delete, and download your images in a simple gallery interface.
+- **Image Gallery:** View, delete, and download your images in a simple gallery interface.
 
 ## Is this a finished project
 
@@ -33,7 +33,7 @@ Note: Please also see [Compatibility](#compatibilty) below
 
 ### Preinstalls / Dependencies
 
-As of March 2024 the Bookworm version of Raspberry Pi OS (Desktop) has the required dependencies preinstalled, so you can skip to **Installation** below. If you are using the Lite version you will need to install the following:
+As of September 2024 the Bookworm version of Raspberry Pi OS (Desktop) has the required dependencies preinstalled, so you can skip to **Installation** below. If you are using the Lite version you will need to install the following:
 - [flask](https://flask.palletsprojects.com/en/3.0.x/installation/#install-flask)
 - [Picamera2](https://github.com/raspberrypi/picamera2)
 
@@ -41,7 +41,7 @@ As of March 2024 the Bookworm version of Raspberry Pi OS (Desktop) has the requi
 
 1. Update Raspberry Pi OS: 
 ```bash
-sudo apt update && sudo apt upgrade
+sudo apt update && sudo apt upgrade -y
 ```
 2. Clone the repository to your Raspberry Pi:
 ```bash
@@ -55,7 +55,7 @@ cd picamera2-WebUI
 ```bash
 python app.py
 ```
-5. From your broswer on connected to the same network goto the following address: 'http://**Your IP**:8080/'
+5. From your broswer, on a device connected to the same network, goto the following address: 'http://**Your IP**:8080/'
 
 ## Running as a service 
 
@@ -99,6 +99,7 @@ Tested on Raspberry Pi Camera Module v3 which has focus settings. v1 is untested
 Raspberry Pi Compatibilty: 
 
 - Pi 5 (8GB): Perfect
+- Pi 5 (4GB): Perfect
 - Pi 4 (4GB): Perfect
 - Pi 3B: Perfect
 - Pi Zero v2: Slower lower frame rate on feed but very useable
@@ -109,12 +110,12 @@ Raspberry Pi Compatibilty:
 
 - Timelapse is an option with the current version but it can't be configured and is unstable
 - MultiCamera Support
+- Basic GPIO Config
 
 ## Known issues 
 
 - ScalerCrop is not working correctly
 - Saving config is currently optimal and will be reworked for the next release
-- .gitignore was missing
   
 ## Copyright and license
 
