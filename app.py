@@ -165,7 +165,7 @@ class CameraObject:
     def build_default_config(self):
         default_config = {}
         for control, values in self.settings.items():
-            if control in ['ScalerCrop', 'AfPause', 'FrameDurationLimits', 'NoiseReductionMode', 'AfMetering', 'ColourGains', 'StatsOutputEnable', 'AfWindows', 'AeFlickerPeriod', 'HdrMode', 'AfTrigger']:
+            if control in ['ScalerCrop', 'ScalerCrops', 'AfPause', 'FrameDurationLimits', 'NoiseReductionMode', 'AfMetering', 'ColourGains', 'StatsOutputEnable', 'AfWindows', 'AeFlickerPeriod', 'HdrMode', 'AfTrigger']:
                 continue  # Skip ScalerCrop for debugging purposes
             
             if isinstance(values, tuple) and len(values) == 3:
@@ -299,12 +299,11 @@ class CameraObject:
         mode = self.camera.sensor_modes[self.sensor_mode]
         print(f'MODE Config:\n{mode}\n')
         self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
-
-        # self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
         print(f'\nVideo Config:\n{self.video_config}\n')
         self.camera.configure(self.video_config)
         # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
         self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
+        print(self.live_settings)
         self.camera.set_controls(self.live_settings)
         self.rotation_settings = self.rotation
         self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings, 'GPIO':self.gpio}
@@ -524,6 +523,7 @@ for camera_info in global_cameras:
             camera_obj.start_streaming()
             # Add the camera instance to the dictionary
             cameras[camera_num] = camera_obj
+            
         
     # If camera is not matching the last config, check its a pi camera if not a supported pi camera module its skipped
     if not matching_camera_found:
