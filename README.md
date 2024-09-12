@@ -110,6 +110,7 @@ Raspberry Pi Compatibilty:
 
 - Timelapse is an option with the current version but it can't be configured and is unstable
 - MultiCamera Support
+- Basic GPIO Config
 
 ## Known issues 
 
