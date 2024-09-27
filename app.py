@@ -122,22 +122,30 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
-        self.frame = None
+        self.buffer = io.BytesIO()
         self.condition = Condition()
 
     def write(self, buf):
+        # Clear the buffer before writing the new frame
+        self.buffer.seek(0)
+        self.buffer.truncate()
+        self.buffer.write(buf)
         with self.condition:
-            self.frame = buf
             self.condition.notify_all()
+
+    def read_frame(self):
+        self.buffer.seek(0)
+        return self.buffer.read()
 
 # Define a function to generate the stream for a specific camera
 def generate_stream(camera):
     while True:
         with camera.output.condition:
-            camera.output.condition.wait()
-            frame = camera.output.frame
-        yield (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            camera.output.condition.wait()  # Wait for the new frame to be available
+            frame = camera.output.read_frame()
+        if frame:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 # CameraObject that will store the itteration of 1 or more cameras
 class CameraObject:
