@@ -12,7 +12,7 @@ from PIL import Image
 from gpiozero import Button, LED
 
 from picamera2 import Picamera2
-#from picamera2.encoders import JpegEncoder
+from picamera2.encoders import JpegEncoder
 from picamera2.encoders import MJPEGEncoder
 #from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
@@ -231,8 +231,13 @@ class CameraObject:
 
     def start_streaming(self):
         self.output = StreamingOutput()
-        self.camera.start_recording(MJPEGEncoder(), output=FileOutput(self.output))
-        time.sleep(1)
+        encoder = self.live_config['capture-settings'].get("Encoder", "MJPEGEncoder")
+        if encoder == "MJPEGEncoder":
+            self.camera.start_recording(MJPEGEncoder(), output=FileOutput(self.output))
+            time.sleep(1)
+        if encoder == "JpegEncoder":
+            self.camera.start_recording(JpegEncoder(), output=FileOutput(self.output))
+            time.sleep(1)
 
     def stop_streaming(self):
         self.camera.stop_recording()
@@ -281,7 +286,7 @@ class CameraObject:
         self.capture_settings = {
             "Resize": False,
             "makeRaw": False,
-            "Resolution": 0
+            "Resolution": 0,
         }
         self.rotation = {
             "hflip": 0,
