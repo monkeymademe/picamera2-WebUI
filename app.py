@@ -112,7 +112,6 @@ camera_last_config = load_or_initialize_config(last_config_file_path, minimum_la
 # Set the path where the images will be stored
 CAMERA_CONFIG_FOLDER = os.path.join(current_dir, 'static/camera_config')
 app.config['CAMERA_CONFIG_FOLDER'] = CAMERA_CONFIG_FOLDER
-print(CAMERA_CONFIG_FOLDER)
 # Create the upload folder if it doesn't exist
 os.makedirs(app.config['CAMERA_CONFIG_FOLDER'], exist_ok=True)
 
@@ -254,14 +253,14 @@ class CameraObject:
         try:
             # Attempt to set the controls
             self.camera.set_controls(self.live_config['controls'])
-            print('Controls set successfully.')
+            print('\nControls set successfully.\n')
             
             # Adding a small sleep to ensure operations are completed
             time.sleep(0.5)
         except Exception as e:
             # Log the exception
             logging.error("An error occurred while configuring the camera: %s", str(e))
-            print(f"An error occurred: {str(e)}")
+            print(f"\nAn error occurred: {str(e)}\n")
     
     def file_exists(self, file_name, file_path):
         file = os.path.join(file_path ,file_name)
@@ -272,7 +271,6 @@ class CameraObject:
             file_name = self.camera_info['Config_Location']
             if self.file_exists(file_name, CAMERA_CONFIG_FOLDER):
                 self.config_from_file(file_name)
-                print("LOADING FILE")
             else:
                 self.default_camera_settings()
         else:
@@ -305,13 +303,12 @@ class CameraObject:
         self.stop_streaming()
         # Get the sensor modes and pick from the the camera_config
         mode = self.camera.sensor_modes[self.sensor_mode]
-        print(f'MODE Config:\n{mode}\n')
+        print(f'\nSensor Mode Config:\n{mode}\n')
         self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
         print(f'\nVideo Config:\n{self.video_config}\n')
         self.camera.configure(self.video_config)
         # Pull default settings and filter live_settings for anything picamera2 wont use (because the not all cameras use all settings)
         self.live_settings = {key: value for key, value in self.live_settings.items() if key in self.settings}
-        print(self.live_settings)
         self.camera.set_controls(self.live_settings)
         self.rotation_settings = self.rotation
         self.live_config = {'controls':self.live_settings, 'rotation':self.rotation, 'sensor-mode':int(self.sensor_mode), 'capture-settings':self.capture_settings, 'GPIO':self.gpio}
@@ -322,17 +319,16 @@ class CameraObject:
         self.setbutton()
         self.setled()
         self.update_camera_last_config()
-        print(self.live_settings)
 
     def config_from_file(self, file):
         newconfig = self.load_settings_from_file(file)
-        print(f"NEWCONFIG: {newconfig}")
+        print(f"\Setting New Config:\n {newconfig}\n")
         self.live_config = newconfig
         self.stop_streaming()
         selected_resolution = self.live_config['capture-settings']['Resolution']
         resolution = self.output_resolutions[selected_resolution]
         mode = self.camera.sensor_modes[self.live_config['sensor-mode']]
-        print(f'MODE Config:\n{mode}\n')
+        print(f'\nSensor Mode Config:\n{mode}\n')
         self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
         self.apply_rotation(self.live_config['rotation'])
         self.camera_info['Has_Config'] = True
@@ -353,8 +349,8 @@ class CameraObject:
             json.dump(camera_last_config, file, indent=4)
 
     def save_live_config(self, file):
-        print(f'FILENAME: {file}')
-        self.live_config['Model'] = self.camera_info['Model']
+        print(f'\Saving Live Config:\n{file}\n')
+        self.live_config['Model'] = elf.camera_info['Model']
         self.camera_info['Has_Config'] = True
         
         if not file.endswith(".json"):
@@ -368,13 +364,11 @@ class CameraObject:
             self.update_camera_last_config()
             return file  # Return the filename on success
         except Exception as e:
-            print(e)
+            print(f'\nAn error occurred:\n{e}\n')
             return None  # Return None or raise an exception on failure
 
     def update_live_config(self, data):
          # Update only the keys that are present in the data
-        print(self.live_config)
-        print(self.live_config['GPIO'])
         for key in data:
             if key in self.live_config['controls']:
                 try:
@@ -388,7 +382,7 @@ class CameraObject:
                     
                     success = True
                     settings = self.live_config['controls']
-                    print(settings)
+                    print(f'\nUpdated live setting:\n{settings}\n')
                     return success, settings
                 except Exception as e:
                     logging.error(f"Error capturing image: {e}")
@@ -399,8 +393,6 @@ class CameraObject:
                     resolution = self.output_resolutions[selected_resolution]
                     mode = self.camera.sensor_modes[self.sensor_mode]
                     self.stop_streaming()
-                    print("UPDATING RESOLUTION")
-                    print(self.live_config['rotation'])
                     self.video_config = self.camera.create_video_configuration(main={'size':resolution}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']})
                     self.camera.configure(self.video_config)
                     self.apply_rotation(self.live_config['rotation'])
@@ -416,19 +408,16 @@ class CameraObject:
             elif key in self.live_config['GPIO']:
                 if key in ('button'):
                     self.live_config['GPIO'][key] = int(data[key])
-                    print(self.live_config)
                     success = True
                     settings = self.live_config['GPIO']
                     self.setbutton()
                     return success, settings
                 elif key == 'led':
                     self.live_config['GPIO'][key] = int(data[key])
-                    print(self.live_config)
                     success = True
                     settings = self.live_config['GPIO']
                     self.setled()
                 elif key == 'enableGPIO':
-                    print("GPIOTrue")
                     self.live_config['GPIO'][key] = data[key]
                     success = True
                     settings = self.live_config['GPIO']
@@ -438,8 +427,6 @@ class CameraObject:
                 selected_resolution = self.live_config['capture-settings']['Resolution']
                 resolution = self.output_resolutions[selected_resolution]
                 mode = self.camera.sensor_modes[self.sensor_mode]
-                print("MODE")
-                print(mode)
                 self.live_config['sensor-mode'] = int(data[key])
                 self.stop_streaming()
                 try:
@@ -449,12 +436,9 @@ class CameraObject:
                 except Exception as e:
                     # Log the exception
                     logging.error("An error occurred while configuring the camera: %s", str(e))
-                    print(f"An error occurred: {str(e)}")
-                print(resolution)
+                    print(f"\nAn error occurred:\n{str(e)}\n")
                 self.camera.configure(self.video_config)
                 print(f'\nVideo Config:\n{self.video_config}\n')
-                print(self.camera_info)
-                print(self.settings)
                 self.start_streaming()
                 success = True
                 settings = self.live_config['sensor-mode']
@@ -514,10 +498,8 @@ for camera_info in global_cameras:
     # Iterate over each camera in the last config
     for camera_info_last in camera_last_config['cameras']:
         # Check if the camera number and model match
-        print(camera_info_last)
-        print(f"{camera_info['Num']} {camera_info_last['Num']} and {camera_info['Model']}  {camera_info_last['Model']}")
         if (camera_info['Num'] == camera_info_last['Num'] and camera_info['Model'] == camera_info_last['Model']):
-            print(f"Detected camera {camera_info['Num']}: {camera_info['Model']} matched last used in config.")
+            print(f"\nDetected camera:\n{camera_info['Num']}: {camera_info['Model']} matched last used in config.\n")
             # Add the matching camera to the new config
             camera_new_config['cameras'].append(camera_info_last)
             # Set the flag to True
@@ -540,7 +522,7 @@ for camera_info in global_cameras:
         for camera_modules in camera_module_info['camera_modules']:
             if (camera_info['Model'] == camera_modules['sensor_model']):
                 is_pi_cam = True
-                print("Camera config has changed since last boot - Adding new Camera")
+                print("\nCamera config has changed since last boot - Adding new Camera\n")
                 add_camera_config = {'Num':camera_info['Num'], 'Model':camera_info['Model'], 'Is_Pi_Cam': is_pi_cam, 'Has_Config': False, 'Config_Location': f"default_{camera_info['Model']}.json"}
                 camera_new_config['cameras'].append(add_camera_config)
                 # Merge some data before creating object
@@ -586,7 +568,6 @@ def control_camera(camera_num):
     cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
     camera = cameras.get(camera_num)
     resolutions = camera.available_resolutions()
-    print(camera.live_config.get('capture-settings'))
     config_files = [f for f in os.listdir(CAMERA_CONFIG_FOLDER) if os.path.isfile(os.path.join(CAMERA_CONFIG_FOLDER, f))]
     config_data = []
     for file in config_files:
@@ -594,7 +575,6 @@ def control_camera(camera_num):
             config = json.load(f)
             camera_model = config.get('Model', 'Unknown')
             is_selected = False
-            print(f'CAMERA INFO: {camera.camera_info}')
             if camera.camera_info['Has_Config']:
                 if camera.camera_info['Config_Location'] == file:
                     is_selected = True
@@ -669,24 +649,24 @@ def save_config_file(camera_num):
     try:
         # Fetch the filename from the request
         filename = request.get_json().get('filename')
-        print(f'Received filename: {filename}')
+        print(f'\nReceived filename:\n{filename}\n')
         
         # Fetch the camera object from the global 'cameras' dictionary
         camera = cameras.get(camera_num)
         if not camera:
-            raise ValueError(f'Camera with number {camera_num} not found')
+            raise ValueError(f'\nCamera with number {camera_num} not found\n')
         
         # Call the save_live_config method on the camera object
         response_data = camera.save_live_config(filename)
         if response_data is not None:
-            print(f'Saved config data: {response_data}')
+            print(f'\nSaved config data:\n{response_data}\n')
             # Return the success response with the filename and model
             return jsonify(success=True, filename=response_data, model=camera.camera_info['Model'])
         else:
             return jsonify(success=False, error="Failed to save config file")
     except Exception as e:
         # Log the error and return an error response
-        print(f'ERROR: {e}')
+        print(f'\nERROR:\n{e}\n')
         return jsonify(success=False, error=str(e))
 
 @app.route('/capture_photo_<int:camera_num>', methods=['POST'])
@@ -752,8 +732,6 @@ def update_settings(camera_num):
     try:
         # Parse JSON data from the request
         data = request.get_json()
-        print(data)
-
         success, settings = camera.update_live_config(data)
         if success:
             camera.configure_camera()
@@ -767,7 +745,6 @@ def update_restart_settings(camera_num):
     camera = cameras.get(camera_num)
     try:
         data = request.get_json()
-        print(data)
         success, settings = camera.apply_rotation(data)
         return jsonify(success=True, message="Restart settings updated successfully", settings=settings)
     except Exception as e:
@@ -783,12 +760,9 @@ def update_restart_settings(camera_num):
 def image_gallery():
     # Assuming cameras is a dictionary containing your CameraObjects
     cameras_data = [(camera_num, camera) for camera_num, camera in cameras.items()]
-    print(f'Camera Data {cameras_data}')
     camera_list = [(camera_num, camera, camera.camera_info['Model']) for camera_num, camera in cameras.items()]
     try:
         image_files = [f for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.jpg')]
-        print(image_files)
-
         if not image_files:
             # Handle the case where there are no files
             return render_template('no_files.html')
@@ -852,7 +826,7 @@ def download_image(filename):
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         return send_file(image_path, as_attachment=True)
     except Exception as e:
-        print(f"Error downloading image: {e}")
+        print(f"\nError downloading image:\n{e}\n")
         abort(500)
 
 if __name__ == "__main__":
