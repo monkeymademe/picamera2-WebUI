@@ -235,9 +235,10 @@ class CameraObject:
         if encoder == "MJPEGEncoder":
             self.camera.start_recording(MJPEGEncoder(), output=FileOutput(self.output))
             time.sleep(1)
-        if encoder == "JpegEncoder":
+        elif encoder == "JpegEncoder":
             self.camera.start_recording(JpegEncoder(), output=FileOutput(self.output))
             time.sleep(1)
+        print(f'\nStarted Stream with encoder: {encoder} \n')
 
     def stop_streaming(self):
         self.camera.stop_recording()
@@ -246,7 +247,6 @@ class CameraObject:
         with open(os.path.join(CAMERA_CONFIG_FOLDER ,config_location), 'r') as file:
             return json.load(file)
         
-
     def update_settings(self, new_settings):
         self.settings.update(new_settings)
 
@@ -287,6 +287,7 @@ class CameraObject:
             "Resize": False,
             "makeRaw": False,
             "Resolution": 0,
+            "Encoder": "MJPEGEncoder"
         }
         self.rotation = {
             "hflip": 0,
@@ -330,6 +331,7 @@ class CameraObject:
         print(f"\Setting New Config:\n {newconfig}\n")
         self.live_config = newconfig
         self.stop_streaming()
+        self.live_config['capture-settings']['Encoder'] = self.live_config['capture-settings'].get("Encoder", "MJPEGEncoder")
         selected_resolution = self.live_config['capture-settings']['Resolution']
         resolution = self.output_resolutions[selected_resolution]
         mode = self.camera.sensor_modes[self.live_config['sensor-mode']]
@@ -409,6 +411,14 @@ class CameraObject:
                     self.live_config['capture-settings'][key] = data[key]
                     success = True
                     settings = self.live_config['capture-settings']
+                    return success, settings
+                elif key == 'Encoder':
+                    self.live_config['capture-settings'][key] = data[key]
+                    settings = self.live_config['capture-settings']
+                    self.stop_streaming()
+                    time.sleep(1)
+                    self.start_streaming()
+                    success = True
                     return success, settings
             elif key in self.live_config['GPIO']:
                 if key in ('button'):
@@ -608,7 +618,7 @@ def camera_info(camera_num):
     if connected_camera_data is None:
         connected_camera_data = next(module for module in camera_module_info["camera_modules"] if module["sensor_model"] == "Unknown")
     if connected_camera_data:
-        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), active_page='camera_info', full_url=full_url, gpio_template=gpio_template, gpio_settings=camera.live_config.get('GPIO'))
+        return render_template("camera_info.html", title="Camera Info", cameras_data=cameras_data, camera_num=camera_num, connected_camera_data=connected_camera_data, camera_modes=camera.sensor_modes, sensor_mode=camera.live_config.get('sensor-mode'), capture_settings=camera.live_config.get('capture-settings'), active_page='camera_info', full_url=full_url, gpio_template=gpio_template, gpio_settings=camera.live_config.get('GPIO'))
     else:
         return jsonify(error="Camera module data not found")
 

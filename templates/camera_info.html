@@ -191,6 +191,9 @@
                             <a href="#url" class="nav-link" data-bs-toggle="tab">Camera Links</a>
                         </li>
                         <li class="nav-item">
+                          <a href="#encoder" class="nav-link" data-bs-toggle="tab">Encoder</a>
+                      </li>
+                        <li class="nav-item">
                             <a href="#controls" class="nav-link" data-bs-toggle="tab">Pysical Controls</a>
                         </li>
                       <!--<li class="nav-item">
@@ -288,6 +291,27 @@
                           </div>
                       </div>
                         </div>
+                        <div class="tab-pane fade table-responsive" id="encoder">
+                          <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="Encoder" id="EncoderMJPEGEncoder" value="MJPEGEncoder" onclick="adjustCheckboxSetting('Encoder', 'MJPEGEncoder')">
+                              <label class="form-check-label" for="EncoderMJPEGEncoder">MJPEGEncoder</label>
+                          </div>
+                          <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="Encoder" id="EncoderJpegEncoder" value="JpegEncoder" onclick="adjustCheckboxSetting('Encoder', 'JpegEncoder')">
+                              <label class="form-check-label" for="EncoderJpegEncoder">JpegEncoder</label>
+                          </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Encoder" id="Encoder2" value="H264Encoder" disabled >
+                            <label class="form-check-label" for="Encoder2">H264Encoder (Unavailable)</label>
+                        </div>
+                      </div>
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                          <i class="bi bi-info-circle mr-2 ml-2"></i>
+                          <div>
+                            &nbsp;Switching encoders can effect quality of stream
+                          </div>
+                      </div>
+                        </div>
                         <div class="tab-pane fade" id="controls">
                           <div class="mb-3">
                             <!-- Enable GPIO Button -->
@@ -377,10 +401,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Parse the JSON string into a JavaScript object
     var sensor_mode = {{ sensor_mode | tojson }};
     var gpio_settings = {{ gpio_settings | tojson }};
+    var capture_settings = {{ capture_settings | tojson }};
     
     console.log(camera_num);
     
     updateUI({ 'sensor-mode': sensor_mode });
+    updateUI(capture_settings);
     updateUI( gpio_settings );
     for (const key in gpio_settings) {
         const setting = gpio_settings[key];
@@ -396,7 +422,7 @@ $(document).ready(function(){
     });
 }); 
 
-const checkboxSettings = ['sensor-mode'];
+const checkboxSettings = ['sensor-mode', 'Encoder'];
 const gpioSettings = ['button','led']
 var camera_num = {{ camera_num }}
 
@@ -406,15 +432,13 @@ $(document).ready(function(){
 
 function updateUI(settings) {
     for (const key in settings) {
+      console.log("Key:", key, "Value:", settings[key]);
         if (checkboxSettings.includes(key)) {
-                console.log(settings[key]);
-                console.log(settings);
                 // Update checkboxes
                 const checkboxes = document.getElementsByName(key);
-                console.log(checkboxes);
                 checkboxes.forEach(checkbox => {
-                    const checkboxValue = parseInt(checkbox.id.replace(key, ''));
-                    checkbox.checked = settings[key] === checkboxValue;
+                  const checkboxValue = checkbox.id.replace(key, '');
+                    checkbox.checked = settings[key] == checkboxValue;
                 });
               } else if (switchSettings.includes(key)) {
                 // Update the switch state
@@ -455,7 +479,7 @@ function selectPin(type, pin) {
 
 function adjustCheckboxSetting(settingId, selection) {
     // Convert settingValue to an integer
-    const settingValue = parseInt(selection);
+    const settingValue = selection;
     // Update UI with the new value
     updateUI({ [settingId]: settingValue });
     // Update server settings
