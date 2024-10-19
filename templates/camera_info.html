@@ -150,8 +150,8 @@
             <div class="row row-cols-1 row-cols-md-2 g-5 py-5">
               <div class="col d-flex flex-column align-items-start flex-column align-items-center" style="margin-top:0px;">
                 <div class="card mb-3" style="width: 18rem;" >
-                 <img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image" >
-                
+                 <img id="Camera: {{ connected_camera_data.sensor_model }}" src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/unknown.jpg') }}';">
+
                 </div>
 
                 <!--<img src="{{ url_for('static', filename='img/' + connected_camera_data.sensor_model + '.jpg') }}" alt="{{ connected_camera_data.sensor_model }} Image">-->

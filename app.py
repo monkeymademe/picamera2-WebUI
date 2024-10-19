@@ -503,52 +503,55 @@ class CameraObject:
 cameras = {}
 camera_new_config = {'cameras': []}
 print(f'\nDetected Cameras:\n{global_cameras}\n')
+
 # Iterate over each camera in the global_cameras list
 for camera_info in global_cameras:
     # Flag to check if a matching camera is found in the last config
     matching_camera_found = False
     print(f'\nCamera Info:\n{camera_info}\n')
+
     # Get the number of the camera in the global_cameras list
     camera_num = camera_info['Num']
-    # Iterate over each camera in the last config
+
+    # Check against last known config
     for camera_info_last in camera_last_config['cameras']:
-        # Check if the camera number and model match
         if (camera_info['Num'] == camera_info_last['Num'] and camera_info['Model'] == camera_info_last['Model']):
             print(f"\nDetected camera:\n{camera_info['Num']}: {camera_info['Model']} matched last used in config.\n")
-            # Add the matching camera to the new config
             camera_new_config['cameras'].append(camera_info_last)
-            # Set the flag to True
             matching_camera_found = True
-            # Merge some data before creating object 
             camera_info['Config_Location'] = camera_new_config['cameras'][camera_num]['Config_Location']
             camera_info['Has_Config'] = camera_new_config['cameras'][camera_num]['Has_Config']
-            # Create an instance of the custom CameraObject class
             camera_obj = CameraObject(camera_num, camera_info)
-            # Start the camera
             camera_obj.start_streaming()
-            # Add the camera instance to the dictionary
             cameras[camera_num] = camera_obj
-            
-        
-    # If camera is not matching the last config, check its a pi camera if not a supported pi camera module its skipped
+            break
+    
+    # If no matching camera found, check if it's a known Pi camera module
     if not matching_camera_found:
         is_pi_cam = False
-        # Iterate over the supported Camera Modules and look for a match
         for camera_modules in camera_module_info['camera_modules']:
             if (camera_info['Model'] == camera_modules['sensor_model']):
                 is_pi_cam = True
                 print("\nCamera config has changed since last boot - Adding new Camera\n")
                 add_camera_config = {'Num':camera_info['Num'], 'Model':camera_info['Model'], 'Is_Pi_Cam': is_pi_cam, 'Has_Config': False, 'Config_Location': f"default_{camera_info['Model']}.json"}
                 camera_new_config['cameras'].append(add_camera_config)
-                # Merge some data before creating object
                 camera_info['Config_Location'] = camera_new_config['cameras'][camera_num]['Config_Location']
                 camera_info['Has_Config'] = camera_new_config['cameras'][camera_num]['Has_Config']
-                # Create an instance of the custom CameraObject class
                 camera_obj = CameraObject(camera_num, camera_info)
-                # Start the camera
                 camera_obj.start_streaming()
-                # Add the camera instance to the dictionary
-                cameras[camera_num] = camera_obj 
+                cameras[camera_num] = camera_obj
+                break
+        
+        # If it's not a Pi camera or in the last config, add it anyway
+        if not is_pi_cam:
+            print("\nAdding a new unknown camera to the configuration\n")
+            add_camera_config = {'Num':camera_info['Num'], 'Model':camera_info['Model'], 'Is_Pi_Cam': False, 'Has_Config': False, 'Config_Location': f"default_{camera_info['Model']}.json"}
+            camera_new_config['cameras'].append(add_camera_config)
+            camera_info['Config_Location'] = add_camera_config['Config_Location']
+            camera_info['Has_Config'] = add_camera_config['Has_Config']
+            camera_obj = CameraObject(camera_num, camera_info)
+            camera_obj.start_streaming()
+            cameras[camera_num] = camera_obj
 
 # Print the new config for debug
 print(f'\nCurrent detected compatible Cameras:\n{camera_new_config}\n')
