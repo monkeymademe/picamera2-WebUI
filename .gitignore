@@ -1,3 +1,4 @@
 static/gallery/*
 .venv/*
 static/camera_config/*
+camera-last-config.json

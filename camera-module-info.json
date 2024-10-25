@@ -169,6 +169,27 @@
             "is_pi_cam": true
         },
         {
+            "module_name": "AI Camera",
+            "sensor_model": "imx500",
+            "manufacturer": "Sony",
+            "megapixels": 12.3,
+            "sensor_resolution": "4056 × 3040 pixels",
+            "video_modes": "2028 × 1520p30 and 4056 × 3040p10",
+            "sensor_image_area": "6.287mm × 4.712 mm (7.9mm diagonal)",
+            "pixel_size": "1.55 µm × 1.55 µm",
+            "optical_size": "1/2.3",
+            "focus": "Adjustable",
+            "dof": "Approx 20 cm to ∞",
+            "focal_length": "4.74 mm",
+            "horizontal_fov": "66 ±3 degrees",
+            "vertical_fov": "52.3 ±3 degrees",
+            "f_stop": "F1.79",
+            "max_exposure_time": "112",
+            "lens_mount": "N/A",
+            "got_noir": "No",
+            "is_pi_cam": true
+        },
+        {
             "module_name": "Unknown Camera",
             "sensor_model": "Unknown",
             "manufacturer": "",

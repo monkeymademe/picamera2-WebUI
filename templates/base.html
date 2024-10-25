@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light"> 
+<html lang="en" data-bs-theme="{{ theme }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,7 +64,17 @@
           <li class="nav-item">
             <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="{{ url_for('about') }}">About</a>
           </li>
-          
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i id="theme-icon" class="bi bi-brightness-high-fill"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="dropdown-item" onclick="setTheme('light')"><i class="bi bi-brightness-high-fill"></i> Light Mode</li>
+              <li class="dropdown-item" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i> Dark Mode</li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
@@ -75,5 +85,33 @@
     </main>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+  <script>
+function setTheme(theme) {
+    // Set the Bootstrap theme
+    document.documentElement.setAttribute('data-bs-theme', theme);
+
+    // Select the icon element and update it based on the selected theme
+    const themeIcon = document.getElementById("theme-icon");
+    if (theme === "light") {
+        themeIcon.className = "bi bi-brightness-high-fill"; // Sun icon for light mode
+    } else if (theme === "dark") {
+        themeIcon.className = "bi bi-moon-stars-fill"; // Moon icon for dark mode
+    }
+
+    // Send an AJAX request to set the theme on the Flask backend
+    fetch(`/set_theme/${theme}`, {
+        method: 'GET', // or 'POST' depending on your Flask setup
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        if (!response.ok) {
+            console.error("Failed to set theme on server.");
+        }
+    }).catch(error => {
+        console.error("Error:", error);
+    });
+}
+  </script>
 </body>
 </html>
