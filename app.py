@@ -865,6 +865,7 @@ if __name__ == "__main__":
     # Parse any argument passed from command line
     parser = argparse.ArgumentParser(description='PiCamera2 WebUI')
     parser.add_argument('--port', type=int, default=8080, help='Port number to run the web server on')
+    parser.add_argument('--ip', type=str, default='0.0.0.0', help='IP to which the web server is bound to')
     args = parser.parse_args()
     
-    app.run(host='0.0.0.0', port=args.port)
+    app.run(host=args.ip, port=args.port)
