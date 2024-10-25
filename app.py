@@ -578,7 +578,8 @@ def get_camera_info(camera_model, camera_module_info):
 @app.context_processor
 def inject_theme():
     theme = session.get('theme', 'light')  # Default to 'light'
-    return dict(theme=theme)
+    version = "1.0.5"
+    return dict(version=version, theme=theme)
 
 @app.route('/set_theme/<theme>')
 def set_theme(theme):
