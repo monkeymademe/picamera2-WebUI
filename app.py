@@ -360,7 +360,7 @@ class CameraObject:
 
     def save_live_config(self, file):
         print(f'\Saving Live Config:\n{file}\n')
-        self.live_config['Model'] = elf.camera_info['Model']
+        self.live_config['Model'] = self.camera_info['Model']
         self.camera_info['Has_Config'] = True
         
         if not file.endswith(".json"):
