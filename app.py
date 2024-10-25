@@ -5,7 +5,9 @@ import threading
 import argparse
 
 
-from flask import Flask, render_template, request, jsonify, Response, send_file, abort
+from flask import Flask, render_template, request, jsonify, Response, send_file, abort, session
+
+import secrets
 
 from PIL import Image
 
@@ -20,6 +22,7 @@ from libcamera import Transform, controls
 
 # Init Flask
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)  # Generates a random 32-character hexadecimal string
 Picamera2.set_logging(Picamera2.DEBUG)
 
 # Get global camera information
@@ -571,6 +574,16 @@ def get_camera_info(camera_model, camera_module_info):
 ####################
 # Site Routes (routes to actual pages)
 ####################
+
+@app.context_processor
+def inject_theme():
+    theme = session.get('theme', 'light')  # Default to 'light'
+    return dict(theme=theme)
+
+@app.route('/set_theme/<theme>')
+def set_theme(theme):
+    session['theme'] = theme
+    return 
 
 # Define your 'home' route
 @app.route('/')
