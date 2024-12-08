@@ -23,6 +23,8 @@ from libcamera import Transform, controls
 # Init Flask
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)  # Generates a random 32-character hexadecimal string
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
 Picamera2.set_logging(Picamera2.DEBUG)
 
 # Get global camera information
@@ -584,7 +586,7 @@ def inject_theme():
 @app.route('/set_theme/<theme>')
 def set_theme(theme):
     session['theme'] = theme
-    return 
+    return jsonify(success=True, ok=True, message="Theme updated successfully")
 
 # Define your 'home' route
 @app.route('/')
