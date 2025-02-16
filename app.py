@@ -33,10 +33,10 @@ global_cameras = Picamera2.global_camera_info()
 
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Define the path to the camera-config.json file
 camera_config_path = os.path.join(current_dir, 'camera-config.json')
 last_config_file_path = os.path.join(current_dir, 'camera-last-config.json')
-
 
 # Load the camera-module-info.json file
 with open(os.path.join(current_dir, 'camera-module-info.json'), 'r') as file:
@@ -113,7 +113,6 @@ def load_or_initialize_config(file_path, default_config):
 # Load or initialize the configuration
 camera_last_config = load_or_initialize_config(last_config_file_path, minimum_last_config)
 
-
 # Set the path where the images will be stored
 CAMERA_CONFIG_FOLDER = os.path.join(current_dir, 'static/camera_config')
 app.config['CAMERA_CONFIG_FOLDER'] = CAMERA_CONFIG_FOLDER
@@ -123,6 +122,10 @@ os.makedirs(app.config['CAMERA_CONFIG_FOLDER'], exist_ok=True)
 # Set the path where the images will be stored
 UPLOAD_FOLDER = os.path.join(current_dir, 'static/gallery')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+####################
+# Streaming Class
+####################
 
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
@@ -151,7 +154,10 @@ def generate_stream(camera):
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
+####################
 # CameraObject that will store the itteration of 1 or more cameras
+####################
+
 class CameraObject:
     def __init__(self, camera_num, camera_info):
         # Init camera to picamera2 using the camera number
@@ -285,7 +291,6 @@ class CameraObject:
                 self.default_camera_settings()
         else:
             self.default_camera_settings()
-
 
     def default_camera_settings(self):
         self.capture_settings = {
@@ -464,7 +469,6 @@ class CameraObject:
                 settings = self.live_config['sensor-mode']
                 return success, settings
         
-
     def apply_rotation(self,data):
         self.stop_streaming()
         transform = Transform()
@@ -504,10 +508,14 @@ class CameraObject:
         except Exception as e:
             logging.error(f"Error capturing image: {e}")
 
+####################
+# Setup Cameras
+####################
+
 # Init dictionary to store camera instances
 cameras = {}
 camera_new_config = {'cameras': []}
-print(f'\nDetected Cameras:\n{global_cameras}\n')
+print(f'\nAll Detected Cameras:\n{global_cameras}\n')
 
 # Iterate over each camera in the global_cameras list
 for camera_info in global_cameras:
