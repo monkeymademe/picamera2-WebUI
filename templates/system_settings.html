@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- 1. System Control Section -->
+  <div class="mb-5">
+    <h2 class="pb-2 mb-4 border-bottom">System Controls</h2>
+    <div class="d-flex gap-3">
+     <!-- Shutdown Button -->
+<form action="{{ url_for('shutdown') }}" method="POST">
+  <button type="submit" class="btn btn-danger">Shutdown</button>
+</form>
+
+<!-- Restart Button -->
+<form action="{{ url_for('restart') }}" method="POST">
+  <button type="submit" class="btn btn-warning">Restart</button>
+</form>
+    </div>
+  </div>
+
+  {% if firmware_control %}
+  <!-- 2. Camera Modules Section -->
+  <div>
+    <h2 class="pb-2 mb-4 border-bottom">Select a Camera Module</h2>
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+      <div>
+        <p>If you found this awesome! Please be VERY careful with this setting and its recomended to backup manually your '/boot/firmware/config.txt' as this feature changes that file and can effect the booting of your Pi</p>
+        <p>Some carrier boards for the CM4/5 don't allow automatic camera detection or at the least not allowing it to happen. So this feature turns off automatic detection and actually sets which camera you want loaded to the system. Unfortunatly you can only have one camera set at a time so if you change your camera you are going to need to return to this setting.</p>
+        <p>If you are running on a Raspberry Pi 5/4 directly you should not experiance any issue and you should not need this setting at all.</p>
+      </div>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      {% for camera in camera_modules %}
+      {% if camera.module_name != 'Unknown Camera' %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+                <img id="Camera: {{ camera.sensor_model }}" src="{{ url_for('static', filename='img/' + camera.sensor_model|string + '.jpg') }}" alt="..." onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/unknown.jpg') }}';">
+          <div class="card-body text-center">
+            <h5 class="card-title">{{ camera.module_name }}</h5>
+            <button class="btn btn-primary" onclick="showCameraModal('{{ camera.sensor_model }}', '{{ camera.module_name }}')">Select Camera</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-12 text-center mt-4">
+    <button class="btn btn-warning" onclick="showResetModal()">Reset Automatic Camera Detection</button>
+  </div>
+  {% endif %}
+
+</div>
+
+
+
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cameraModalLabel">Set Camera</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="cameraModalBody">
+        Are you sure you want to set this camera in the boot config?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button id="cameraModalConfirmBtn" type="button" class="btn btn-primary">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentAction = null;
+
+  function showCameraModal(sensorModel, moduleName) {
+    currentAction = 'set_camera';
+    document.getElementById("cameraModalLabel").innerText = "Set Camera";
+    document.getElementById("cameraModalBody").innerText = 
+      `Set "${moduleName}" as the default camera in boot config?`;
+    document.getElementById("cameraModalConfirmBtn").onclick = function() {
+      fetch('/set_camera_config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sensor_model: sensorModel })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data.message); // Or replace this with a toast/snackbar
+        bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
+      });
+    };
+    new bootstrap.Modal(document.getElementById('cameraModal')).show();
+  }
+
+  function showResetModal() {
+    currentAction = 'reset_camera';
+    document.getElementById("cameraModalLabel").innerText = "Reset Camera Detection";
+    document.getElementById("cameraModalBody").innerText = 
+      `Reset boot config to automatically detect cameras?`;
+    document.getElementById("cameraModalConfirmBtn").onclick = function() {
+      fetch('/reset_camera_detection', {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data.message);
+        bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
+      });
+    };
+    new bootstrap.Modal(document.getElementById('cameraModal')).show();
+  }
+</script>
+{% endblock %}

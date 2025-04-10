@@ -1,0 +1,51 @@
+{# Checkbox Setting Template #}
+<div class="mb-3">
+    <div class="d-flex w-100 align-items-center justify-content-between">
+        <strong class="mb-1">{{ setting.name }}</strong>
+        {% if setting.info %}                             
+        <a data-bs-toggle="collapse" href="#{{ setting.id }}_info" role="button">
+            <i class="bi bi-info-circle"></i>
+        </a>
+        {% endif %}
+    </div>
+    
+    {% if setting.info %}
+    <div class="collapse p-2" id="{{ setting.id }}_info">
+        <div class="card card-body">
+            <p class="mb-0">{{ setting.info }}</p>
+            {% if setting.warning %}
+            <div class="alert alert-warning" role="alert">
+                {{ setting.warning }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div>
+        {% for option in setting.options %}
+    <div class="form-check">
+        <input 
+            class="form-check-input" 
+            type="checkbox"  {# or type="radio" if needed #}
+            id="{{ setting.id }}_{{ loop.index }}" 
+            name="{{ setting.id }}" 
+            value="{{ option.value }}"
+            {% if not option.enabled %}disabled{% endif %}  
+            >
+        <label class="form-check-label" for="{{ setting.id }}_{{ loop.index }}">
+            {{ option.label }}
+        </label>
+    </div>
+    
+{% endfor %}
+    </div>
+    {% if setting.validation_text %}
+    <small class="text-muted">
+        {{ setting.validation_text.replace("{min}", setting.min|string).replace("{max}", setting.max|string) }}
+    </small>
+{% endif %}
+    {% if setting.hr %}
+    <hr>
+    {% endif %}
+</div>

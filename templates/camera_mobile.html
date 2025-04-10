@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid p-0 d-flex flex-column">
+    <!-- Video Stream -->
+    <div class="flex-grow-1 d-flex justify-content-center align-items-center">
+        <img id="videoFeed" src="/video_feed_{{camera.Num}}" class="img-fluid" style="max-height: 100vh; object-fit: contain;">
+        {% include "animated_logo.html" %}
+    </div>
+
+    <!-- Fixed Footer for Controls -->
+    <footer class="bg-dark text-center py-2 fixed-bottom">
+        <div class="d-flex justify-content-around">
+            <button class="btn btn-light btn-lg px-5" onclick="location.href='/'">
+                <i class="bi bi-house" style="font-size: 1.5rem;"></i>
+            </button>
+            <button class="btn btn-light btn-lg px-5" onclick="location.href='/image_gallery'">
+                <i class="bi bi-images" style="font-size: 1.5rem;"></i>
+            </button>
+            <button class="btn btn-success btn-lg px-5" id="captureButton">
+                <i class="bi bi-camera" style="font-size: 1.5rem;"></i>
+            </button>
+            <button class="btn btn-light btn-lg px-5" id="fullscreenButton">
+                <i class="bi bi-arrows-fullscreen" style="font-size: 1.5rem;"></i>
+            </button>
+            <button class="btn btn-light btn-lg px-5" data-bs-toggle="offcanvas" data-bs-target="#cameraSettings">
+                <i class="bi bi-sliders" style="font-size: 1.5rem;"></i>
+            </button>
+        </div>
+    </footer>
+</div>
+
+<!-- Offcanvas for Camera Settings -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="cameraSettings">
+    <div class="offcanvas-header">
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        {% include 'camera_controls.html' %}
+    </div>
+</div>
+
+<script>
+document.getElementById("captureButton").addEventListener("click", function() {
+    let button = document.getElementById("captureButton");
+    button.disabled = true;
+    showOverlay();
+
+    fetch("/capture_still_{{ camera.Num }}", { method: "POST" })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Photo Captured:', data.image);
+            reloadvideoFeed();
+        } else {
+            console.error("Capture error:", data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Capture error:", error);
+    })
+    .finally(() => {
+        button.disabled = false;
+        hideOverlay();
+    });
+});
+
+function reloadvideoFeed() {
+    let img = document.getElementById("videoFeed");
+    img.src = "/video_feed_{{ camera.Num }}?t=" + new Date().getTime();
+}
+
+document.getElementById("fullscreenButton").addEventListener("click", function() {
+    let elem = document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+});
+</script>
+{% endblock %}

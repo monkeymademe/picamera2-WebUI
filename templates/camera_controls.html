@@ -1,0 +1,738 @@
+{# camera control settings #}
+<h2 class="pb-2 mb-4 border-bottom">Camera Settings</h2>
+
+<div class="container text-center mt-4">
+    <div class="row justify-content-center">
+        <!-- Desktop Mode Button -->
+        <div class="col-6">
+            <a href="/camera_{{ camera.Num }}" class="btn btn-lg w-100 d-flex flex-column align-items-center px-4 
+                {% if mode == 'desktop' %} btn-primary {% else %} btn-secondary {% endif %}">
+                <i class="bi bi-webcam fs-2"></i> <!-- Bootstrap Camera Icon -->
+                <span class="fw-bold mt-1">Desktop</span>
+            </a>
+        </div>
+
+        <!-- Mobile Mode Button -->
+        <div class="col-6">
+            <a href="/camera_mobile_{{ camera.Num }}" class="btn btn-lg w-100 d-flex flex-column align-items-center px-4 
+                {% if mode == 'mobile' %} btn-primary {% else %} btn-secondary {% endif %}">
+                <i class="bi bi-person-badge fs-2"></i> <!-- Bootstrap Camera Icon -->
+                <span class="fw-bold mt-1">Mobile</span>
+            </a>
+        </div>
+    </div>
+</div>
+    <!-- Hiding the toggle live preview for now as I am thinking its not needed but I don't want to kill it totally just yet
+    
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="videoFeedToggle" data-camera-num="0">
+        <label class="form-check-label" for="videoFeedToggle">Toggle Live Preview</label>
+    </div> -->
+
+    <!-- Accordion for organizing sections -->
+    <div class="accordion pt-3" id="settingsAccordion">
+        {% for section in settings.sections if section.enabled %}
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#section{{ loop.index }}">
+                    {{ section.name }}
+                </button>
+            </h2>
+            <div id="section{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
+                <div class="accordion-body">
+                    
+                    <!-- Loop through settings within a section -->
+                    {% for setting in section.settings if setting.enabled %}
+                    
+                        <!-- Include setting-specific template dynamically -->
+                        {% include "settings/" + setting.type + ".html" %}
+
+                        <!-- Handle Child Settings (conditionally displayed) -->
+                        {% if setting.childsettings %}
+                            <div id="{{ setting.id }}_dependencies" class="collapse" data-parent="{{ setting.id }}">
+                                {% for child in setting.childsettings if child.enabled %}
+                                    {% set setting = child %}
+                                    {% include "settings/" + child.type + ".html" %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    
+                    {% endfor %} <!-- End settings loop -->
+
+                </div>
+            </div>
+        </div>
+        {% endfor %} <!-- End section loop -->
+    </div>
+
+<div class="mt-4"></div> <!-- Gap between sections -->
+    
+<!-- Sensor Mode Selection Accordion -->
+<div class="accordion" id="sensorModeAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingSensorModes">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSensorModes" aria-expanded="false" aria-controls="collapseSensorModes">
+                Sensor Modes
+            </button>
+        </h2>
+        <div id="collapseSensorModes" class="accordion-collapse collapse" aria-labelledby="headingSensorModes" data-bs-parent="#cameraControls">
+            <div class="accordion-body">
+                <ul class="list-group">
+                    {% for mode in sensor_modes %}
+                    <li class="list-group-item" id="sensorModeSelect">
+                        <input class="form-check-input me-1" 
+                               type="radio" 
+                               name="sensor_mode" 
+                               id="sensor_mode_{{ loop.index0 }}" 
+                               onclick="updateSensorMode('{{ loop.index0 }}')"
+                               {% if loop.index0 == active_mode_index|int %}checked{% endif %}>
+                        <label class="form-check-label" for="sensor_mode_{{ loop.index0 }}">
+                            <strong class="fw-semibold">Mode {{ loop.index0 }}</strong>
+                            <span class="d-block small opacity-75">Resolution: {{ mode['size'] }}</span>
+                            <span class="d-block small opacity-75">FPS: {{ mode['fps'] }}</span>
+                            <span class="d-block small opacity-75">Crop Limits: {{ mode['crop_limits'] }}</span>
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProfile" aria-expanded="false" aria-controls="collapseProfile">
+                Load/Save Camera Profile
+            </button>
+        </h2>
+        <div id="collapseProfile" class="accordion-collapse collapse" data-bs-parent="#accordionCameraControls">
+            <div class="accordion-body">
+                <!-- Button Group -->
+                <div class="btn-group" role="group" aria-label="Profile Actions">
+                    <button type="button" class="btn btn-primary active" onclick="showProfileSection('loadProfile')">Load Profile</button>
+                    <button type="button" class="btn btn-primary" onclick="showProfileSection('saveProfile')">Save Profile</button>
+                    <button type="button" class="btn btn-danger" onclick="showProfileSection('resetProfile')">Reset to Default</button>
+                  </div>
+                  <br></br>
+<!-- Profile Sections -->
+<div id="loadProfile" class="profile-section">
+    <div class="alert alert-danger d-none" id="configAlert" role="alert"></div>
+    <table class="table" id="configTable">
+        <thead>
+            <tr>
+                <th scope="col">Select</th>
+                <th scope="col">Filename</th>
+                <th scope="col">Model</th>
+            </tr>
+        </thead>
+        <tbody id="profileTableBody">
+            {% if profiles %}
+                {% for profile in profiles %}
+                    <tr>
+                        <td>
+                            <input type="radio" name="selectedConfig" value="{{ profile.filename }}" data-model="{{ profile.model }}">
+                        </td>
+                        <td>{{ profile.filename }}</td>
+                        <td>{{ profile.model }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3">No profiles saved</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" onclick="loadConfigFile()">Load Selected Profile</button>
+</div>
+
+                <div id="saveProfile" class="profile-section d-none">
+                    <p>Enter filename you wish to use:</p>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="saveConfigFile" placeholder="Enter filename">
+                        <div class="form-text">Using a filename that already exists will overwrite that file.</div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveProfile({{ camera.Num }})">Save Profile</button>
+                </div>
+    
+                <div id="resetProfile" class="profile-section d-none">
+                    <p class="mb-1">Just checking, are you sure?</p>
+                    <button type="button" class="btn btn-danger" onclick="resetProfile({{ camera.Num }})">Reset to Default</button>
+                </div>
+<br>
+                <!-- Bootstrap Alert (Shared across Load, Save, Reset) -->
+                    <div class="alert alert-danger d-none" id="profileAlert" role="alert"></div>
+
+            </div>
+        </div>
+    </div>
+
+<!-- Model Mismatch Warning Modal -->
+<div class="modal fade" id="modelMismatchModal" tabindex="-1" aria-labelledby="modelMismatchLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modelMismatchLabel">Profile Model Mismatch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                The selected profile "<span id="mismatchProfileName"></span>" was created for a different camera model.
+                Loading it may cause unexpected behavior. Do you want to proceed?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmLoadProfile">Load Anyway</button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<script>
+
+
+        function showProfileSection(sectionId) {
+    // Hide all profile sections
+    document.querySelectorAll('.profile-section').forEach(section => {
+        section.classList.add('d-none');
+    });
+
+    // Show the selected section
+    document.getElementById(sectionId).classList.remove('d-none');
+
+    // Remove 'active' class from all buttons
+    document.querySelectorAll('.btn-group .btn').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    // Add 'active' class to the clicked button
+    event.target.classList.add('active');
+}
+
+function saveProfile(cameraNum) {
+    const filename = document.getElementById("saveConfigFile").value;
+    const alertBox = document.getElementById("profileAlert");
+
+    if (!filename) {
+        showAlert(alertBox, "danger", "Please enter a filename.");
+        return;
+    }
+
+    fetch(`/save_profile_${cameraNum}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ filename: filename })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            showAlert(alertBox, "success", data.message);
+            updateProfileList(); // Refresh profile list after loading
+        } else {
+            showAlert(alertBox, "danger", data.error || "Failed to save profile.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        showAlert(alertBox, "danger", "An unexpected error occurred.");
+    });
+}
+
+function resetProfile(cameraNum) {
+    fetch(`/reset_profile_${cameraNum}`, { 
+        method: "POST"
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(document.getElementById("profileAlert"), "success", "Profile reset to default!");
+            fetchCameraProfile(); // Fetch updated settings
+        } else {
+            showAlert(document.getElementById("profileAlert"), "danger", "Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        showAlert(document.getElementById("profileAlert"), "danger", "Request failed: " + error);
+    });
+}
+
+// Fetch updated settings after reset
+function fetchCameraProfile() {
+    fetch(`/get_camera_profile?camera_num=${camera_num}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateUIFromCameraProfile(data.camera_profile);
+        } else {
+            console.error("Failed to fetch live controls:", data.error);
+        }
+    })
+    .catch(error => console.error("Error fetching live controls:", error));
+}
+
+function updateUIFromCameraProfile(cameraProfile) {
+    console.log("Updating UI from camera profile:", cameraProfile);
+
+    // Manually update hflip, vflip
+    const manualKeys = ["hflip", "vflip", "saveRAW"];
+    manualKeys.forEach(key => {
+        let element = document.getElementById(key);
+        if (element) {
+            if (element.type === "checkbox") {
+                element.checked = cameraProfile[key];
+                console.log(`Set ${key} (checkbox) to:`, element.checked);
+            } else {
+                element.value = cameraProfile[key];
+                console.log(`Set ${key} (input) to:`, element.value);
+            }
+        } else {
+            console.warn(`Element with ID '${key}' not found.`);
+        }
+    });
+
+    // Update sensor mode (radio buttons)
+    if (cameraProfile.sensor_mode !== undefined) {
+        let sensorModeRadio = document.getElementById(`sensor_mode_${cameraProfile.sensor_mode}`);
+        if (sensorModeRadio) {
+            sensorModeRadio.checked = true;
+            console.log(`Set sensor_mode to: ${cameraProfile.sensor_mode}`);
+        } else {
+            console.warn(`Sensor mode radio button with ID 'sensor_mode_${cameraProfile.sensor_mode}' not found.`);
+        }
+    }
+
+    // Iterate through controls and update UI
+    if (cameraProfile.controls) {
+        for (const [key, value] of Object.entries(cameraProfile.controls)) {
+            let element = document.getElementById(key);
+
+            // If the element isn't found, check for radio buttons and checkboxes
+            if (!element) {
+                let radioElement = document.querySelector(`input[name="${key}"][value="${value}"]`);
+                if (radioElement) {
+                    radioElement.checked = true;
+                    console.log(`Set ${key} (radio) to: ${value}`);
+                    continue;
+                }
+
+                let checkboxElement = document.querySelector(`input[name="${key}"]`);
+                if (checkboxElement && checkboxElement.type === "checkbox") {
+                    checkboxElement.checked = Boolean(value);
+                    console.log(`Set ${key} (checkbox) to:`, checkboxElement.checked);
+                    continue;
+                }
+
+                console.warn(`Element with ID '${key}' not found.`);
+                continue;
+            }
+
+            // Handle different input types
+            if (element.type === "checkbox") {
+                element.checked = Boolean(value);
+                console.log(`Set ${key} (checkbox) to:`, element.checked);
+            } else if (element.type === "radio") {
+                let radioElement = document.getElementById(`${key}_${value}`);
+                if (radioElement) {
+                    radioElement.checked = true;
+                    console.log(`Set ${key} (radio) to: ${value}`);
+                } else {
+                    console.warn(`Radio button for ${key} with ID '${key}_${value}' not found.`);
+                }
+            } else {
+                element.value = value;
+                console.log(`Set ${key} (input) to:`, element.value);
+            }
+
+            // Update UI labels for range inputs
+            if (element.type === "range") {
+                let valueLabel = document.getElementById("current" + key);
+                if (valueLabel) {
+                    valueLabel.textContent = `Value: ${value}`;
+                    console.log(`Updated label for ${key} to:`, valueLabel.textContent);
+                }
+            }
+        }
+    } 
+    // Iterate through resolutions and update UI
+    if (cameraProfile.resolutions) {
+        for (const [key, value] of Object.entries(cameraProfile.resolutions)) {
+            let element = document.getElementById(key);
+
+            // If the element isn't found, check for radio buttons and checkboxes
+            if (!element) {
+                let radioElement = document.querySelector(`input[name="${key}"][value="${value}"]`);
+                if (radioElement) {
+                    radioElement.checked = true;
+                    console.log(`Set ${key} (radio) to: ${value}`);
+                    continue;
+                }
+
+                let checkboxElement = document.querySelector(`input[name="${key}"]`);
+                if (checkboxElement && checkboxElement.type === "checkbox") {
+                    checkboxElement.checked = Boolean(value);
+                    console.log(`Set ${key} (checkbox) to:`, checkboxElement.checked);
+                    continue;
+                }
+
+                console.warn(`Element with ID '${key}' not found.`);
+                continue;
+            }
+
+            // Handle different input types
+            if (element.type === "checkbox") {
+                element.checked = Boolean(value);
+                console.log(`Set ${key} (checkbox) to:`, element.checked);
+            } else if (element.type === "radio") {
+                let radioElement = document.getElementById(`${key}_${value}`);
+                if (radioElement) {
+                    radioElement.checked = true;
+                    console.log(`Set ${key} (radio) to: ${value}`);
+                } else {
+                    console.warn(`Radio button for ${key} with ID '${key}_${value}' not found.`);
+                }
+            } else {
+                element.value = value;
+                console.log(`Set ${key} (input) to:`, element.value);
+            }
+
+            // Update UI labels for range inputs
+            if (element.type === "range") {
+                let valueLabel = document.getElementById("current" + key);
+                if (valueLabel) {
+                    valueLabel.textContent = `Value: ${value}`;
+                    console.log(`Updated label for ${key} to:`, valueLabel.textContent);
+                }
+            }
+        }
+    }
+}
+
+function showAlert(element, type, message) {
+    element.className = `alert alert-${type}`;
+    element.innerText = message;
+    element.classList.remove("d-none");
+
+    setTimeout(() => {
+        element.classList.add("d-none");
+    }, 5000);
+}
+    </script>
+
+
+
+</div>
+
+
+
+<!-- JavaScript to toggle child settings visibility based on parent state -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Initialize visibility for switches
+    document.querySelectorAll('.form-check-input[type="checkbox"]').forEach(switchElement => {
+        let settingId = switchElement.id;
+        toggleChildSettings(settingId, switchElement.checked);
+
+        switchElement.addEventListener("change", function () {
+            toggleChildSettings(settingId, this.checked);
+        });
+    });
+
+    // Initialize visibility for radio buttons
+    document.querySelectorAll('.form-check-input[type="radio"]').forEach(radioElement => {
+        let settingId = radioElement.name;  // Radio buttons share a name
+        updateRadioChildVisibility(settingId);
+
+        radioElement.addEventListener("change", function () {
+            updateRadioChildVisibility(settingId);
+        });
+    });
+});
+
+
+// Function to show/hide child settings based on checkbox switches
+function toggleChildSettings(settingId, isChecked) {
+    document.querySelectorAll(`#${settingId}_dependencies`).forEach(childElement => {
+        if (isChecked) {
+            childElement.classList.add("show");
+        } else {
+            childElement.classList.remove("show");
+        }
+    });
+}
+
+// Function to show/hide child settings based on radio selection
+function updateRadioChildVisibility(settingId) {
+    let selectedRadio = document.querySelector(`input[name="${settingId}"]:checked`);
+    
+    if (selectedRadio) {
+        let showChild = selectedRadio.dataset.showChild === "true";
+        let dependencies = document.getElementById(settingId + "_dependencies");
+
+        if (dependencies) {
+            dependencies.style.display = showChild ? "block" : "none";
+        }
+    }
+}
+
+let camera_num = {{ camera.Num }};
+
+// Generic function to send updated settings to Flask
+function updateSetting(settingId, newValue) {
+    fetch("/update_setting", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            camera_num: camera_num, 
+            id: settingId,
+            value: newValue
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log(`Updated: Camera ${camera_num}, ${settingId} -> ${newValue}`);
+        } else {
+            console.error("Error updating setting:", data.error);
+        }
+    })
+    .catch(error => console.error("Request failed:", error));
+}
+
+// Function for slider settings
+function adjustSliderSetting(settingId, value) {
+    const slider = document.getElementById(settingId);
+    const valueLabel = document.getElementById("current" + settingId);
+    const unitLabel = document.getElementById(settingId + "_unit_label");
+    const conversionSwitch = document.getElementById(settingId + "_conversion");
+
+    // Check for conversion
+    let displayValue = value;
+    if (slider?.dataset.conversionEnabled === "true" && conversionSwitch?.checked) {
+        const factor = parseFloat(slider.dataset.conversionFactor);
+        if (!isNaN(factor)) {
+            displayValue = (value / factor).toFixed(3);
+        }
+    }
+
+    if (valueLabel) {
+        valueLabel.textContent = `Value: ${displayValue}`;
+        if (unitLabel) {
+            unitLabel.style.display = 'inline';
+        }
+    }
+
+    // Always send raw value to server
+    updateSetting(settingId, value);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('[id$="_conversion"]').forEach(switchElem => {
+        const settingId = switchElem.id.replace('_conversion', '');
+        const slider = document.getElementById(settingId);
+
+        if (!slider) return;
+
+        switchElem.addEventListener("change", () => {
+            const isEnabled = switchElem.checked;
+            const originalStep = slider.dataset.originalStep;
+            const customStep = slider.dataset.conversionStep;
+            const factor = parseFloat(slider.dataset.conversionFactor);
+
+            if (isEnabled && !isNaN(factor)) {
+                if (customStep) {
+                    slider.step = customStep;
+                } else {
+                    slider.step = (parseFloat(originalStep) / factor).toFixed(6);
+                }
+            } else {
+                slider.step = originalStep;
+            }
+
+            // Update label immediately after switching
+            adjustSliderSetting(settingId, slider.value);
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            const settingId = slider.id;
+            const conversionEnabled = slider.dataset.conversionEnabled === "true";
+            const conversionSwitch = document.getElementById(settingId + "_conversion");
+    
+            if (conversionEnabled && conversionSwitch?.checked) {
+                adjustSliderSetting(settingId, slider.value);
+            }
+        });
+    });
+
+conversionSwitch.addEventListener("change", () => {
+    const isEnabled = conversionSwitch.checked;
+    const originalStep = slider.dataset.originalStep;
+    const customStep = slider.dataset.conversionStep;
+    const factor = parseFloat(slider.dataset.conversionFactor);
+
+    if (isEnabled && !isNaN(factor)) {
+        if (customStep) {
+            slider.step = customStep;
+        } else {
+            slider.step = (parseFloat(originalStep) / factor).toFixed(6);
+        }
+    } else {
+        slider.step = originalStep;
+    }
+
+    // Update label with newly converted value
+    adjustSliderSetting(settingId, slider.value);
+});
+
+// Function for switch settings
+function toggleSwitchSetting(settingId) {
+    let switchElement = document.getElementById(settingId);
+    let newValue = switchElement.checked; // true/false
+    updateSetting(settingId, newValue);
+}
+
+function updateRadioSetting(settingId, value) {
+    console.log(`Radio changed: ${settingId} -> ${value}`);
+    updateSetting(settingId, value);
+    updateRadioChildVisibility(settingId);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const videoToggle = document.getElementById("videoFeedToggle");
+    const videoFeed = document.getElementById("videoFeed");
+
+    videoToggle.addEventListener("change", function () {
+
+        if (this.checked) {
+            videoFeed.src = `/video_feed_${camera_num}`; // Set the correct video stream URL
+        } else {
+            videoFeed.src = "/static/placeholder.jpg"; // Show placeholder when off
+        }
+
+        // Send toggle state and camera number to Flask backend
+        fetch("/toggle_video_feed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ enable: this.checked, camera_num: camera_num })
+        });
+    });
+});
+
+// Function to fetch and update the profile list
+function updateProfileList() {
+    fetch('/get_profiles')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.querySelector("#configTable tbody");
+            tableBody.innerHTML = ""; // Clear existing entries
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3">No profiles saved</td></tr>`;
+                return;
+            }
+
+            data.forEach((config, index) => {
+                const checked = config.is_selected ? "checked" : "";
+                const row = `
+                    <tr>
+                        <td>
+                            <input type="radio" name="selectedConfig" value="${config.filename}" data-model="${config.model}" ${checked}>
+                        </td>
+                        <td>${config.filename}</td>
+                        <td>${config.model}</td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        })
+        .catch(error => console.error("Error fetching profiles:", error));
+}
+
+// Function to load the selected profile
+function loadConfigFile() {
+    const selectedProfile = document.querySelector('input[name="selectedConfig"]:checked');
+    if (!selectedProfile) {
+        alert("Please select a profile to load.");
+        return;
+    }
+
+    const profileName = selectedProfile.value;
+    const profileModel = selectedProfile.getAttribute("data-model");
+    const currentModel = "{{ camera.Model }}";
+
+    if (profileModel !== currentModel) {
+        // Show Bootstrap modal if model mismatch
+        const modalElement = new bootstrap.Modal(document.getElementById("modelMismatchModal"));
+        document.getElementById("mismatchProfileName").textContent = profileName;
+        modalElement.show();
+    } else {
+        applyProfile(profileName);
+    }
+}
+
+function applyProfile(profileName) {
+    fetch(`/load_profile`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            profile_name: profileName,
+            camera_num: camera_num
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Profile loaded successfully.");
+            fetchCameraProfile(); 
+        } else {
+            console.log("Failed to load profile: " + data.error);
+        }
+    })
+    .catch(error => console.error("Error loading profile:", error));
+}
+document.addEventListener("DOMContentLoaded", function () {
+    updateProfileList();
+
+    // Handle "Load Anyway" button click
+    document.getElementById("confirmLoadProfile").addEventListener("click", function () {
+        const profileName = document.getElementById("mismatchProfileName").textContent;
+        applyProfile(profileName);
+        bootstrap.Modal.getInstance(document.getElementById("modelMismatchModal")).hide();
+    });
+});
+
+function updateSensorMode(sensorMode) {
+    // Disable all radio buttons
+    document.querySelectorAll('input[name="sensor_mode"]').forEach(radio => {
+        radio.disabled = true;
+    });
+
+    fetch("/set_sensor_mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sensor_mode: sensorMode, camera_num: camera_num })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "done") {
+            console.log("✅ Sensor mode updated successfully");
+        } else {
+            alert("Error: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Request failed:", error);
+    })
+    .finally(() => {
+        // Re-enable all radio buttons after request completes
+        document.querySelectorAll('input[name="sensor_mode"]').forEach(radio => {
+            radio.disabled = false;
+        });
+    });
+}
+
+</script>

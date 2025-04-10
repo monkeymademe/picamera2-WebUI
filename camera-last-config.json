@@ -2,10 +2,17 @@
     "cameras": [
         {
             "Num": 0,
-            "Model": "imx296",
+            "Model": "imx500",
             "Is_Pi_Cam": true,
-            "Has_Config": false,
-            "Config_Location": "default.json"
+            "Has_Config": true,
+            "Config_Location": "kjb.json"
+        },
+        {
+            "Num": 1,
+            "Model": "imx708_wide",
+            "Is_Pi_Cam": true,
+            "Has_Config": true,
+            "Config_Location": "gojerpogjb.json"
         }
     ]
 }

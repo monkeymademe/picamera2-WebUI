@@ -1,0 +1,83 @@
+{# Navbar #}
+
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark border-bottom">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='img/camui_logo.svg') }}" alt="Logo" height="40" class="d-inline-block align-top">      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" aria-current="page" href="{{ url_for('home') }}">Home</a>
+          </li>
+
+          {% if camera_list|length == 1 %}
+            {% for camera_info, camera_module_info in camera_list %}
+              <li class="nav-item">
+                <a class="nav-link {% if active_page == 'camera' %}active{% endif %}" href="/camera_{{ camera_info.Num }}">
+                  Camera
+                </a>
+              </li>
+            {% endfor %}
+          {% elif camera_list|length > 1 %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {% if active_page == 'camera' %}active{% endif %}" href="#" id="cameraDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Cameras
+              </a>
+              <ul class="dropdown-menu">
+                {% for camera_info, camera_module_info in camera_list %}
+                  <li><a class="dropdown-item" href="/camera_{{ camera_info.Num }}">Camera: {{ camera_info.Model }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'gallery' %}active{% endif %}" href="{{ url_for('image_gallery') }}">Image Gallery</a>
+          </li>
+
+          {% if camera_list|length == 1 %}
+            {% for camera_info, camera_module_info in camera_list %}
+              <li class="nav-item">
+                <a class="nav-link {% if active_page == 'camera_info' %}active{% endif %}" href="/camera_info_{{ camera_info.Num }}">
+                  Camera Info
+                </a>
+              </li>
+            {% endfor %}
+          {% elif camera_list|length > 1 %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {% if active_page == 'camera_info' %}active{% endif %}" href="#" id="cameraInfoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Camera Info
+              </a>
+              <ul class="dropdown-menu">
+                {% for camera_info, camera_module_info in camera_list %}
+                  <li><a class="dropdown-item" href="/camera_info_{{ camera_info.Num }}">{{ camera_info.Model }}</a></li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="{{ url_for('about') }}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'system_settings' %}active{% endif %}" href="{{ url_for('system_settings') }}"><i class="bi bi-gear"></i>
+            </a>
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i id="theme-icon" class="bi bi-brightness-high-fill"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li class="dropdown-item" onclick="setTheme('light')"><i class="bi bi-brightness-high-fill"></i> Light Mode</li>
+              <li class="dropdown-item" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i> Dark Mode</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>

@@ -12,18 +12,25 @@
     height: 4rem;
     border-radius: 0.75rem;
     }
+    img.logo {
+      filter: brightness(0) saturate(100%) invert(12%) sepia(4%) saturate(1870%) hue-rotate(169deg) brightness(94%) contrast(92%);
+      height: clamp(50px, 5vw, 150px);
+      width: auto;
+    }
 </style>
-<div class="container-xxl">
-    <div class="container px-4 py-5 pt-5 pb-0 mt-4" id="custom-cards">
-        <h2 class="pb-2 border-bottom">About Picamera2 WebUI - Version: {{ version }}</h2>
-        
+<div class="container">
+    <div class="container" id="custom-cards">        
             <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
+              
               <div class="col d-flex flex-column align-items-start gap-2">
+                <div class="position-relative top-0 start-50 translate-middle-x pb-5">
+                    <img src="{{ url_for('static', filename='img/camui_logo.svg') }}" alt="Logo"class="logo">
+                </div>
                 <h2 class="fw-bold text-body-emphasis">Lightweight web interface for the Raspberry Pi camera module</h2>
                 <p class="text-body-secondary">
-                    Built on the Picamera2 library. This project provides a simple user interface to configure camera settings, capture photos, and manage images in a basic gallery.
+                  Utilizing the picamera2 library. This project provides a simple user interface to configure camera settings, capture photos, and manage images in a basic gallery.
                 </p>
-                <a href="https://github.com/monkeymademe/picamera2-WebUI" class="btn btn-primary btn-lg">Updates on Github</a>
+                <a href="https://github.com/monkeymademe/picamera2-WebUI" class="btn btn-primary btn-lg">Updates on Github</a> Version: {{ version }}
               </div>
         
               <div class="col">
