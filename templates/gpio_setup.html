@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+/* Custom CSS for the GPIO */
+.gpio-layout {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 5px;
+    max-width: 300px;
+    margin: 10px auto;
+}
+.gpio-pin {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+}
+.gpio-pin.round {
+    border-radius: 50%;
+}
+.gpio-label {
+    font-size: 14px;
+    color: #666;
+    margin: 0 10px;
+}
+.gpio-label.left {
+    margin-right: auto;
+}
+.gpio-label.right {
+    margin-left: auto;
+}
+.gpio-wrapper {
+    display: flex;
+    align-items: center;
+    border-radius: 15px;
+    transition: background-color 0.3s;
+}
+.gpio-wrapper.right {
+    flex-direction: row-reverse;
+}
+.gpio-wrapper.left {
+    flex-direction: row;
+}
+.gpio-wrapper.selected {
+    background-color: #a1a1a1;
+}
+.gpio-number.left {
+    margin-right:5px;
+}
+.gpio-number.right {
+  margin-left:5px;
+}
+.btn-purple {
+  background-color: #6f42c1;
+}
+.btn-purple:hover {
+  background-color: #59349e;
+}
+.btn-pink {
+  background-color: #d63384;
+}
+.btn-pink:hover  {
+  background-color: #a22764;
+}
+</style>
+<div class="container mt-4">
+    <h2>Physical Control Mapping</h2>
+    <div class="accordion" id="cameraAccordion">
+        {% for camera in cameras %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-{{ camera.id }}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ camera.id }}" aria-expanded="true" aria-controls="collapse-{{ camera.id }}">
+                    Camera {{ camera.name }}
+                </button>
+            </h2>
+            <div id="collapse-{{ camera.id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ camera.id }}" data-bs-parent="#cameraAccordion">
+                <div class="accordion-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Control</th>
+                                <th>GPIO Pin</th>
+                                <th>Assign</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for control in camera.controls %}
+                            <tr>
+                                <td>{{ control.name }}</td>
+                                <td id="assigned-pin-{{ camera.id }}-{{ control.id }}">{{ control.gpio or "None" }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openGpioSelector({{ camera.id }}, {{ control.id }})" data-bs-toggle="offcanvas" data-bs-target="#gpioOffcanvas">Select GPIO</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Off-canvas for GPIO layout -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="gpioOffcanvas">
+  <div class="offcanvas-header">
+    <h5>Select GPIO Pin</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="container">
+        <div class="gpio-layout text-center">
+            {% for gpio in gpio_pins %}
+            <div class="gpio-wrapper gpio-button {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}" id="gpio-{{ gpio.pin }}-button">
+                <div class="gpio-label {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}">{{ gpio.label }}</div>
+                <span class="gpio-number {% if loop.index % 2 == 1 %}left{% else %}right{% endif %}">{{ gpio.pin }}</span>
+                <div class="gpio-pin btn btn-{{ gpio.color }} {{ gpio.status }} round" data-pin="{{ gpio.pin }}" onclick="selectGpioPin({{ gpio.pin }})"></div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    let selectedCameraId = null;
+    let selectedControlId = null;
+
+    function openGpioSelector(cameraId, controlId) {
+        selectedCameraId = cameraId;
+        selectedControlId = controlId;
+    }
+
+    function selectGpioPin(pin) {
+        const displayCell = document.getElementById(`assigned-pin-${selectedCameraId}-${selectedControlId}`);
+        displayCell.innerText = pin;
+
+        const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('gpioOffcanvas'));
+        offcanvas.hide();
+
+        // You can optionally send this to the backend here via fetch()
+    }
+</script>
+{% endblock %}

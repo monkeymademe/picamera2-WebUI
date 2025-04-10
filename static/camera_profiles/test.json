@@ -1,0 +1,32 @@
+{
+    "hflip": true,
+    "vflip": true,
+    "sensor_mode": 0,
+    "live_preview": true,
+    "model": "imx708_wide",
+    "resolutions": {
+        "StillCaptureResolution": 0
+    },
+    "controls": {
+        "AfMode": 0,
+        "LensPosition": 1.0,
+        "AfRange": 0,
+        "AfSpeed": 0,
+        "ExposureTime": 32821,
+        "AnalogueGain": 8.0,
+        "AeEnable": 0,
+        "ExposureValue": 0.0,
+        "AeConstraintMode": 0,
+        "AeExposureMode": 0,
+        "AeMeteringMode": 0,
+        "AeFlickerMode": 0,
+        "AeFlickerPeriod": 100,
+        "AwbEnable": 0,
+        "AwbMode": 0,
+        "Brightness": 0.0,
+        "Contrast": 1.0,
+        "Saturation": 1.0,
+        "Sharpness": 1.0,
+        "ColourTemperature": 2868
+    }
+}

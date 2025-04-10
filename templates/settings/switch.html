@@ -1,0 +1,44 @@
+{# Switch Setting Template #}
+<div>
+    {% if setting.name or setting.info %}
+    <!-- Setting Label & Info -->
+    <div class="d-flex w-100 align-items-center justify-content-between">
+        {% if setting.name %}
+            <strong class="mb-1">{{ setting.name }}</strong>
+        {% endif %}
+        
+        {% if setting.info %}                            
+            <a data-bs-toggle="collapse" href="#{{ setting.id }}_info" role="button">
+                <i class="bi bi-info-circle"></i>
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+    {% if setting.info %}
+    <div class="collapse p-2" id="{{ setting.id }}_info">
+        <div class="card card-body">
+            <p class="mb-0">{{ setting.info }}</p>
+            {% if setting.warning %}
+            <div class="alert alert-warning" role="alert">
+                {{ setting.warning }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Switch Input -->
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="{{ setting.id }}" 
+        {% if (setting.value is not none and setting.value) or (setting.value is none and setting.default) %}checked{% endif %}
+        onchange="toggleSwitchSetting('{{ setting.id }}')">
+        {% if setting.label %}
+        <label class="form-check-label" for="{{ setting.id }}">{{ setting.label }}</label>
+        {% endif %}
+    </div>
+
+    {% if setting.hr %}
+    <hr>
+    {% endif %}
+</div>

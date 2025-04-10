@@ -1,0 +1,388 @@
+{
+  "sections": [
+    {
+      "name": "Orientation",
+      "enabled": true,
+      "settings": [
+        {
+          "name": "Flip Camera Feed",
+          "id": "hflip",
+          "info": "This setting does not rotate the camera feed but actually flips the image like a mirror in the horizontal or vertical plane.",
+          "warning": "Camera feed will need to be restarted for this setting to be applied.",
+          "type": "switch",
+          "label": "Horizontal Flip",
+          "enabled": true,
+          "default": false
+        },
+        {
+          "id": "vflip",
+          "type": "switch",
+          "label": "Vertical Flip",
+          "enabled": true,
+          "default": false
+        }
+      ]
+    },
+    {
+      "name": "Auto Focus Settings",
+      "enabled": true,
+      "settings": [
+    {
+      "name": "Auto Focus Mode",
+      "id": "AfMode",
+      "info": "Manual: manually set the focus by adjusting the lens position below. Auto: auto focus once when 'Auto' is selected. Continuous: continuously auto focus without user interaction.",
+      "type": "radio",
+      "enabled": true,
+      "source": "controls",
+      "default": 0,
+      "hr": true,
+      "options": [
+        { "value": 0, "label": "Manual", "enabled": true, "show_child": true },
+        { "value": 1, "label": "Auto", "enabled": true, "show_child": false },
+        { "value": 2, "label": "Continuous", "enabled": true, "show_child": false }
+      ],
+      "childsettings": [ 
+            {
+              "name": "Lens Position",
+              "id": "LensPosition",
+              "info": "The period of the lighting cycle in microseconds. For example, for 50Hz mains lighting the flicker occurs at 100Hz, so the period would be 10000 microseconds.",
+              "type": "slider",
+              "label": "Lens Position:",
+              "validation_text": "In dioptres (1 / distance in metres)",
+              "enabled": true,
+              "source": "controls",
+              "step": 0.1,
+              "min": 0.0,
+              "max": 10.0,
+              "default": 0.0
+            }
+          ]
+    },
+    {
+      "name": "Auto Focus Range",
+      "id": "AfRange",
+      "info": "Normal: search the normal range (may exclude very closest objects). Macro: search only the closest part of the range. Full: search everything.",
+      "type": "radio",
+      "enabled": true,
+      "source": "controls",
+      "default": 0,
+      "hr": true,
+      "options": [
+        { "value": 0, "label": "Normal", "enabled": true, "show_child": true },
+        { "value": 1, "label": "Macro", "enabled": true, "show_child": false },
+        { "value": 2, "label": "Full", "enabled": true, "show_child": false }
+      ]
+    },
+    {
+      "name": "Auto Focus Speed",
+      "id": "AfSpeed",
+      "info": "Normal: normal speed. Fast: try to move more quickly",
+      "type": "radio",
+      "enabled": true,
+      "source": "controls",
+      "default": 0,
+      "hr": true,
+      "options": [
+        { "value": 0, "label": "Normal", "enabled": true, "show_child": true },
+        { "value": 1, "label": "Fast", "enabled": true, "show_child": false }
+      ]
+    }
+  ]
+},
+    {
+      "name": "Gain and Exposure",
+      "enabled": true,
+      "settings": [
+        {
+          "name": "Exposure Time",
+          "id": "ExposureTime",
+          "info": "Exposure time for the sensor to use, measured in microseconds.",
+          "type": "slider",
+          "label": "Value in microseconds",
+          "validation_text": "Value in microseconds: Between {min} and {max}.",
+          "enabled": true,
+          "source": "controls",
+          "step": 1,
+          "min": 1,
+          "max": 66666,
+          "default": 20000,
+          "hr": true,
+          "conversion": {
+              "enabled": true,
+              "label": "Seconds",
+              "factor": 1000000,
+              "step": 2
+          }
+        },
+        {
+          "name": "Analogue Gain",
+          "id": "AnalogueGain",
+          "info": "Analogue gain applied by the sensor",
+          "type": "slider",
+          "label": "Original/Flipped",
+          "enabled": true,
+          "source": "controls",
+          "step": 0.1,
+          "min": 1,
+          "max": 16,
+          "default": 1,
+          "hr": true
+        },
+        {
+          "name": "Enable Changes to AEC-AGC algorithm",
+          "id": "AeEnable",
+          "info": "Allow the Auto Exposure Compensation and Auto Gain Compensation (AEC-AGC) algorithm to be turned on and off. When if is off, there will be no automatic updates to the camera’s gain or exposure settings.",
+          "type": "switch",
+          "label": "AEC-AGC Locked/AEC-AGC Enabled",
+          "enabled": true,
+          "source": "controls",
+          "default": true,
+          "value": true,
+          "hr": true,
+          "childsettings": [   
+            {
+              "name": "Exposure Compensation",
+              "id": "ExposureValue",
+              "info": "Exposure compensation value in 'stops', which adjusts the target of the AEC-AGC algorithm. Positive values increase the target brightness, and negative values decrease it. Zero represents the base or 'normal' exposure level.",
+              "type": "slider",
+              "label": "Original/Flipped",
+              "enabled": true,
+              "source": "controls",
+              "step": 0.1,
+              "min": -8.0,
+              "max": 8.0,
+              "default": 0.0,
+              "hr": true
+            },
+            {
+              "name": "AE Constraint Mode",
+              "id": "AeConstraintMode",
+              "info": "Sets the constraint mode of the AEC/AGC algorithm.",
+              "warning": "Shadows and Custom are currently disabled and requires a file to work and that feature is not in the webUI",
+              "type": "radio",
+              "enabled": true,
+              "source": "controls",
+              "default": 0,
+              "hr": true,
+              "options": [
+                { "value": 0, "label": "Normal", "enabled": true },
+                { "value": 1, "label": "Highlight", "enabled": true },
+                { "value": 2, "label": "Shadows", "enabled": false },
+                { "value": 3, "label": "Custom", "enabled": false }
+              ]
+            },
+            {
+              "name": "AE Exposure Mode",
+              "id": "AeExposureMode",
+              "info": "Sets the exposure mode of the AEC/AGC algorithm",
+              "warning": "Custom is currently disabled and requires a file to work and that feature is not in the webUI",
+              "type": "radio",
+              "enabled": true,
+              "source": "controls",
+              "default": 0,
+              "hr": true,
+              "options": [
+                { "value": 0, "label": "Normal", "enabled": true },
+                { "value": 1, "label": "Short", "enabled": true },
+                { "value": 2, "label": "Long", "enabled": true },
+                { "value": 3, "label": "Custom", "enabled": false }
+              ]
+            },
+            {
+              "name": "AE Metering Mode",
+              "id": "AeMeteringMode",
+              "info": "Sets the metering mode of the AEC/AGC algorithm.",
+              "warning": "Custom is currently disabled and requires a file to work and that feature is not in the webUI",
+              "type": "radio",
+              "enabled": true,
+              "source": "controls",
+              "default": 0,
+              "hr": true,
+              "options": [
+                { "value": 0, "label": "Centre Weighted", "enabled": true },
+                { "value": 1, "label": "Short", "enabled": true },
+                { "value": 2, "label": "Matrix", "enabled": true },
+                { "value": 3, "label": "Custom", "enabled": false }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "AE Flicker Mode",
+          "id": "AeFlickerMode",
+          "info": "Sets the flicker avoidance mode of the AEC/AGC algorithm.",
+          "type": "switch",
+          "label": "Off/Manual",
+          "enabled": true,
+          "source": "controls",
+          "default": false,
+          "hr": true,
+          "childsettings": [ 
+            {
+              "name": "AE Flicker Period",
+              "id": "AeFlickerPeriod",
+              "info": "The period of the lighting cycle in microseconds. For example, for 50Hz mains lighting the flicker occurs at 100Hz, so the period would be 10000 microseconds.",
+              "type": "slider",
+              "label": "Value in microseconds",
+              "validation_text": "Value in microseconds: Between {min} and {max}.",
+              "enabled": true,
+              "source": "controls",
+              "step": 1,
+              "min": 100,
+              "max": 1000000,
+              "default": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto White Balance",
+      "enabled": true,
+      "settings": [
+        {
+          "name": "Enable Auto White Balance algorithm",
+          "id": "AwbEnable",
+          "info": "Turn the auto white balance (AWB) algorithm on or off. When it is off, there will be no automatic updates to the colour gains. Auto: Automatically sets white balance and keeps adjusting",
+          "warning": "Custom is currently disabled and requires a file to work and that feature is not in the webUI",
+          "type": "switch",
+          "label": "Disabled/Enabled",
+          "enabled": true,
+          "source": "controls",
+          "default": false,
+          "childsettings": [ 
+            {
+              "id": "AwbMode",
+              "type": "radio",
+              "enabled": true,
+              "source": "controls",
+              "default": 0,
+              "options": [
+                { "value": 0, "label": "Auto", "enabled": true },
+                { "value": 1, "label": "Tungsten", "enabled": true },
+                { "value": 2, "label": "Fluorescent", "enabled": true },
+                { "value": 3, "label": "Indoor", "enabled": true },
+                { "value": 4, "label": "Daylight", "enabled": true },
+                { "value": 5, "label": "Cloudy", "enabled": true },
+                { "value": 6, "label": "Custom", "enabled": false }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Brightness & Contrast",
+      "enabled": true,
+      "settings": [
+        {
+          "name": "Brightness",
+          "id": "Brightness",
+          "info": "Adjusts the image brightness where -1.0 is very dark, 1.0 is very bright, and 0.0 is the default 'normal' brightness.",
+          "type": "slider",
+          "label": "Value:",
+          "enabled": true,
+          "source": "controls",
+          "step": 0.1,
+          "min": -1.0,
+          "max": 1.0,
+          "default": 0.0,
+          "hr": true
+        },
+        {
+          "name": "Contrast",
+          "id": "Contrast",
+          "info": "Sets the contrast of the image, where zero means 'no contrast', 1.0 is the default 'normal' contrast, and larger values increase the contrast proportionately",
+          "type": "slider",
+          "label": "Value:",
+          "enabled": true,
+          "source": "controls",
+          "step": 0.1,
+          "min": 0.0,
+          "max": 32.0,
+          "default": 1.0,
+          "hr": true
+        },
+        {
+          "name": "Saturation",
+          "id": "Saturation",
+          "info": "Amount of colour saturation, where zero produces greyscale images, 1.0 represents default 'normal' saturation, and higher values produce more saturated colours.",
+          "type": "slider",
+          "label": "Value:",
+          "enabled": true,
+          "source": "controls",
+          "step": 0.1,
+          "min": 0.0,
+          "max": 32.0,
+          "default": 1.0,
+          "hr": true
+        },
+        {
+          "name": "Sharpness",
+          "id": "Sharpness",
+          "info": "Sets the image sharpness, where zero implies no additional sharpening is performed, 1.0 is the default 'normal' level of sharpening, and larger values apply proportionately stronger sharpening.",
+          "type": "slider",
+          "label": "Value:",
+          "enabled": true,
+          "source": "controls",
+          "step": 0.1,
+          "min": 0.0,
+          "max": 16.0,
+          "default": 1.0
+        },
+        {
+          "name": "Colour Temperature",
+          "id": "ColourTemperature",
+          "info": "",
+          "type": "slider",
+          "label": "Value:",
+          "enabled": true,
+          "source": "controls",
+          "step": 1,
+          "min": 100,
+          "max": 100000
+        }
+      ]
+    },
+    {
+      "name": "Output Resolution",
+      "enabled": true,
+      "settings": [
+        {
+          "name": "Still Capture Resolution",
+          "id": "StillCaptureResolution",
+          "source": "generatedresolutions",
+          "info": "Sets the resolution used when capturing a still image, independent of the sensor mode.",
+          "type": "radio",
+          "enabled": true,
+          "default": 0,
+          "hr":true,
+          "options": [
+            { "value": 0, "label": "This needs to be where the resolutions go", "enabled": true }
+          ]
+        },
+        {
+          "name": "Save RAW DNG",
+          "id": "saveRAW",
+          "info": "When enabled the camera will take a Jpg and RAW file from the same buffer. A link will be added to the file in the image gallery for downloading DNG",
+          "type": "switch",
+          "label": "Disabled/Enabled",
+          "enabled": true,
+          "default": false
+        },
+        {
+          "name": "Live Feed Resolution",
+          "id": "LiveFeedResolution",
+          "info": "Controls the resolution of the video feed, allowing for a lower or higher resolution while keeping the sensor mode independent.",
+          "type": "radio",
+          "enabled": false,
+          "default": 0,
+          "options": [
+            { "value": 0, "label": "This needs to be where the resolutions go", "enabled": true }
+          ]
+        }
+      ]
+    }
+
+  ]
+}

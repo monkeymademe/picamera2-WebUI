@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger text-center" role="alert">
+        <h4 class="alert-heading">Oops! Something went wrong.</h4>
+        <p>{{ error }}</p>
+        <hr>
+        <p class="mb-0">Try going <a href="{{ url_for('image_gallery') }}">back to the gallery</a> or <a href="{{ url_for('home') }}">home</a>.</p>    </div>
+</div>
+{% endblock %}

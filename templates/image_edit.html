@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container d-flex flex-column align-items-center" style="height: 90vh;">
+    <div class="row justify-content-center align-items-center w-100" style="height: 60vh; display: flex; overflow: hidden;">
+        <img id="editable-image" 
+            src="{{ url_for('static', filename='gallery/' + filename) }}" 
+            alt="{{ filename }}" 
+            class="img-fluid"
+            style="max-height: 60vh; max-width: 95vw; object-fit: contain;"
+            data-filename="{{ filename }}">
+    </div>
+
+    <!-- Controls -->
+    <div class="mt-3 mb-3 text-center w-100">
+        <div class="mb-2">
+            <label for="brightness">Brightness</label>
+            <input type="range" id="brightness" min="0" max="200" value="100" class="form-range">
+                </div>
+        <div class="mb-2">
+            <label for="contrast">Contrast</label>
+            <input type="range" id="contrast" min="0" max="200" value="100" class="form-range">
+                </div>
+
+        <button id="rotate-button" class="btn btn-info mt-2">Rotate 90°</button>
+        <button class="btn btn-primary mt-2" onclick="resetEdits()">Reset</button>
+        <button class="btn btn-success mt-2" onclick="openSaveModal()">Save</button>
+    </div>
+
+    <div id="alert-container" class="alert d-none" role="alert"></div>
+</div>
+
+<!-- Save Modal -->
+<div class="modal fade" id="saveImageModal" tabindex="-1" aria-labelledby="saveImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveImageModalLabel">Save Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Choose how to save the image:</p>
+                <input type="text" id="newFilename" class="form-control" placeholder="Enter new filename" value="edited_{{ filename }}">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="saveImage(true)">Replace</button>
+                <button type="button" class="btn btn-success" onclick="saveImage(false)">Save as New</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const image = document.getElementById("editable-image");
+    const brightnessSlider = document.getElementById("brightness");
+    const contrastSlider = document.getElementById("contrast");
+    const rotateButton = document.getElementById("rotate-button");
+    const alertContainer = document.getElementById("alert-container");
+    
+    let rotation = 0;  // Track rotation globally
+    let scaleFactor = 1;
+    const filename = image.getAttribute("data-filename"); 
+
+    function updateFilters() {
+        let brightness = brightnessSlider.value || 100;
+        let contrast = contrastSlider.value || 100;
+        
+        image.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+        image.style.transform = `rotate(${rotation}deg) scale(${scaleFactor})`;
+    }
+
+
+    brightnessSlider.addEventListener("input", updateFilters);
+    contrastSlider.addEventListener("input", updateFilters);
+
+    rotateButton.addEventListener("click", function () {
+    rotation = (rotation + 90) % 360;
+    scaleFactor = (rotation % 180 !== 0) ? 0.7 : 1;
+    
+    image.style.transform = `rotate(${rotation}deg) scale(${scaleFactor})`;
+
+    console.log(`Rotated to: ${rotation}deg`);
+});
+
+    window.resetEdits = function () {
+        brightnessSlider.value = 100;
+        contrastSlider.value = 100;
+        rotation = 0;
+        scaleFactor = 1;
+        updateFilters();
+    };
+
+    window.openSaveModal = function () {
+        const modal = new bootstrap.Modal(document.getElementById("saveImageModal"));
+        modal.show();
+    };
+
+    function showAlert(message, type) {
+        alertContainer.className = `alert alert-${type}`;
+        alertContainer.textContent = message;
+        alertContainer.classList.remove("d-none");
+
+        setTimeout(() => {
+            alertContainer.classList.add("d-none");
+        }, 3000);
+    }
+
+    window.saveImage = function (isReplace) {
+        const brightness = brightnessSlider.value;
+        const contrast = contrastSlider.value;
+        const newFilename = document.getElementById("newFilename").value.trim();
+        const saveOption = isReplace ? "replace" : "new_file";
+
+        fetch("/save_edit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                filename: filename,
+                edits: { brightness, contrast, rotation },
+                saveOption: saveOption,
+                newFilename: saveOption === "new_file" ? newFilename : null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showAlert(data.message, data.success ? "success" : "danger");
+            if (data.success) {
+                setTimeout(() => {
+                    location.href = "/image_gallery";  
+                }, 1500);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            showAlert("An error occurred while saving.", "danger");
+        });
+    };
+});
+</script>
+{% endblock %}

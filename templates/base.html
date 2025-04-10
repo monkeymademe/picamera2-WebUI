@@ -3,115 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Picamera2 WebUI</title>
+    <title>{{ project_title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
-  </head>
-<body>
-  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark border-bottom">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#"><i class="bi bi-camera"></i> Picamera2 WebUI</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarCollapse">
-        <ul class="navbar-nav me-auto mb-2 mb-md-0">
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" aria-current="page" href="{{ url_for('home') }}">Home</a>
-          </li>
-          {% if cameras_data|length > 1 %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page == 'control_camera' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Control Cameras
-            </a>
-            <ul class="dropdown-menu">
-              {% for camera_num, camera in cameras_data %}
-               <li><a class="dropdown-item" href="{{ url_for('control_camera', camera_num=camera_num) }}">Camera {{ camera_num }}</a></li>
-              {% endfor %}
+</head>
+<body> 
+  {% if navbar %}
+  {% include "navbar.html" %}
+  <main class="pt-3" style="margin-top: 66px; margin-bottom: 110px;">
+    {% else %}
+    <main>
+{% endif %}
+  
+    {% block content %}
+    {% endblock %}
+  </main>
 
-            </ul>
-          </li>
-          {% else %}
-          <li class="nav-item">
-            {% for camera_num, camera in cameras_data %}
-               <a class="nav-link {% if active_page == 'control_camera' %}active{% endif %}" href="{{ url_for('control_camera', camera_num=camera_num) }}">Control Camera</a>
-            {% endfor %}
-          </li>
-          {% endif %}
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'image_gallery' %}active{% endif %}" href="{{ url_for('image_gallery') }}">View Image Gallery</a>
-          </li>
-          {% if cameras_data|length > 1 %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page == 'camera_info' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Camera Info
-            </a>
-            <ul class="dropdown-menu">
-              {% for camera_num, camera in cameras_data %}
-               <li><a class="dropdown-item" href="{{ url_for('camera_info', camera_num=camera_num) }}">Camera {{ camera_num }}</a></li>
-              {% endfor %}
-
-            </ul>
-          </li>
-          {% else %}
-          <li class="nav-item">
-            {% for camera_num, camera in cameras_data %}
-               <a class="nav-link {% if active_page == 'camera_info' %}active{% endif %}" href="{{ url_for('camera_info', camera_num=camera_num) }}">Camera Info</a>
-            {% endfor %}
-          </li>
-          {% endif %}
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="{{ url_for('about') }}">About</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i id="theme-icon" class="bi bi-brightness-high-fill"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li class="dropdown-item" onclick="setTheme('light')"><i class="bi bi-brightness-high-fill"></i> Light Mode</li>
-              <li class="dropdown-item" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i> Dark Mode</li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-  <main>
-        {% block content %}
-        {% endblock %}
-    </main>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
   <script>
-function setTheme(theme) {
-    // Set the Bootstrap theme
-    document.documentElement.setAttribute('data-bs-theme', theme);
 
-    // Select the icon element and update it based on the selected theme
+
+document.addEventListener("DOMContentLoaded", function () {
+    const theme = "{{ theme }}";  // This should be injected from Flask
     const themeIcon = document.getElementById("theme-icon");
-    if (theme === "light") {
-        themeIcon.className = "bi bi-brightness-high-fill"; // Sun icon for light mode
-    } else if (theme === "dark") {
-        themeIcon.className = "bi bi-moon-stars-fill"; // Moon icon for dark mode
+
+    function updateTheme(theme) {
+        document.documentElement.setAttribute("data-bs-theme", theme);
+        themeIcon.className = theme === "light" ? "bi bi-brightness-high-fill" : "bi bi-moon-stars-fill";
     }
 
-    // Send an AJAX request to set the theme on the Flask backend
-    fetch(`/set_theme/${theme}`, {
-        method: 'GET', // or 'POST' depending on your Flask setup
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).then(response => {
-        if (!response.ok) {
-            console.error("Failed to set theme on server.");
-        }
-    }).catch(error => {
-        console.error("Error:", error);
-    });
-}
+    updateTheme(theme);  // Apply the correct theme and icon on page load
+
+    window.setTheme = function (newTheme) {
+        updateTheme(newTheme);
+        fetch(`/set_theme/${newTheme}`, { method: "GET", headers: { "Content-Type": "application/json" } })
+            .catch(error => console.error("Error:", error));
+    };
+});
   </script>
 </body>
 </html>

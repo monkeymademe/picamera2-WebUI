@@ -4,166 +4,209 @@
 
 <div class="container-xxl">
     <div class="row">
-        <div class="pt-5">
+        <div>
             <!-- ###### Main Content ###### -->
-            <h2 class="pt-4 pb-2 mb-4 border-bottom">Image Gallery</h2>
 
-    <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </button>
-        </div>
-        <div class="modal-body">
-          Are you sure you want to delete this image?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" onclick="deleteImageFromModal()">Delete</button>
-        </div>
-      </div>
-    </div>
-</div>
-
-    <div class="container">
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-        {% for file_data in image_files %}
-    <div class="col" id="card_{{ file_data['filename'] }}">
-        <div class="card shadow-sm" >
-            <img src="{{ url_for('static', filename='gallery/' + file_data['filename']) }}" alt="{{ file_data['filename'] }}" class="bd-placeholder-img card-img-top" width="100%">
-            <div class="card-body">
-                <p class="card-text">Date taken: {{ file_data['timestamp'] }}
-                <br>
-                Resolution: {{ file_data['width'] }}x{{ file_data['height'] }}</p>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/view_image/{{ file_data['filename'] }}'">View</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteConfirmationModal('{{ file_data['filename'] }}', 'card_{{ file_data['filename'] }}')">Delete</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['filename'] }}'">Download</button>
-                        {% if file_data['has_dng'] %}
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['dng_file'] }}'">Download Raw</button>
-                        {% endif %}
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this image?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="container">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="image-gallery">
+                    {% for file_data in image_files %}
+                    <div class="col" id="card_{{ file_data['filename'] }}">
+                        <div class="card shadow-sm">
+                            <a href="/view_image/{{ file_data['filename'] }}">
+                                <img src="{{ url_for('static', filename='gallery/' + file_data['filename']) }}" alt="{{ file_data['filename'] }}" class="bd-placeholder-img card-img-top" width="100%">
+                                {% if file_data['has_dng'] %}
+                                <span class="badge rounded-pill text-bg-secondary position-absolute top-0 end-0 m-2">
+                                    DNG
+                                </span>
+                                {% endif %}
+                            </a>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    Date taken: {{ file_data['timestamp'] }}<br>
+                                    Resolution: {{ file_data['width'] }}x{{ file_data['height'] }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/image_edit/{{ file_data['filename'] }}'" data-bs-toggle="tooltip" data-bs-title="Edit Image">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteConfirmationModal('{{ file_data['filename'] }}')" data-bs-toggle="tooltip" data-bs-title="Delete Image">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['filename'] }}'" data-bs-toggle="tooltip" data-bs-title="Download Image">
+                                            <i class="bi bi-download"></i>
+                                        </button>
+                                        {% if file_data['has_dng'] %}
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/{{ file_data['dng_file'] }}'" data-bs-toggle="tooltip" data-bs-title="Download DNG">
+                                            <i class="bi bi-file-earmark-arrow-down"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
         </div>
     </div>
-{% endfor %}
+</div>
+<!-- Fixed Footer for Controls -->
+<footer class="bg-dark text-center py-2 fixed-bottom">
+    <div class="d-flex justify-content-around">
+        <nav class="mt-3" aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    {% if page == 1 %}
+                    <span class="page-link">Previous</span>
+                    {% else %}
+                    <a class="page-link" href="{{ url_for('image_gallery', page=page-1) }}">Previous</a>
+                    {% endif %}
+                </li>
 
+                {% for i in range(start_page, end_page + 1) %}
+                <li class="page-item {% if i == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('image_gallery', page=i) }}">{{ i }}</a>
+                </li>
+                {% endfor %}
+
+                <li class="page-item {% if page == end_page %}disabled{% endif %}">
+                    {% if page == end_page %}
+                    <span class="page-link">Next</span>
+                    {% else %}
+                    <a class="page-link" href="{{ url_for('image_gallery', page=page+1) }}">Next</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
     </div>
-    </div>
-    <div class="clearfix">...</div>
-
-<nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center">
-    {% if page == 1 %}
-    <li class="page-item disabled">
-      <a class="page-link">Previous</a>
-    </li>
-    {% else %}
-    <li class="page-item">
-      <a class="page-link" href="{{ url_for('image_gallery', page=page-1) }}">Previous</a>
-    </li>
-    {% endif %}
-{% for i in range(start_page, end_page + 1) %}
-    <li class="page-item {% if i == page %}active{% endif %}">
-      <a class="page-link" href="{{ url_for('image_gallery', page=i) }}">{{ i }}</a>
-    </li>
-    {% endfor %}
-    {% if page == end_page %}
-    <li class="page-item disabled">
-      <a class="page-link">Next</a>
-    </li>
-    {% else %}
-    <li class="page-item">
-      <a class="page-link" href="{{ url_for('image_gallery', page=page+1) }}">Next</a>
-    </li>
-    {% endif %}
-  </ul>
-</nav>
-
-</div>
-</div>
-</div>
+</footer>
 <script>
-function openDeleteConfirmationModal(filename, cardId) {
-    $('#deleteConfirmationModal').data('filename', filename);
-    $('#deleteConfirmationModal').data('card-id', cardId);
-    $('#deleteConfirmationModal').modal('show');
-}
+    function openDeleteConfirmationModal(filename) {
+        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+        const confirmButton = document.getElementById('confirmDeleteButton');
+        confirmButton.setAttribute('data-filename', filename);
+        modal.show();
+    }
+    
+    document.getElementById('confirmDeleteButton').addEventListener('click', function () {
+    const selectedFilename = this.getAttribute('data-filename');
+    console.log("Deleting:", selectedFilename);
 
-function deleteImageFromModal() {
-    const filename = $('#deleteConfirmationModal').data('filename');
-    const cardId = $('#deleteConfirmationModal').data('card-id');
+    fetch(`/delete_image/${selectedFilename}`, { method: 'DELETE' })
+        .then(response => {
+            if (!response.ok) throw new Error("Delete failed");
+            return response.json();
+        })
+        .then(() => {
+            // Get the current page number safely
+            let activePageElement = document.querySelector('.page-item.active a');
+            let currentPage = activePageElement ? parseInt(activePageElement.textContent) : 1;
+            if (isNaN(currentPage)) currentPage = 1;
 
-    console.log('Deleting image:', filename, 'Card ID:', cardId);
+            const fetchUrl = `/get_image_for_page?page=${currentPage}`;
+            console.log("Fetching:", fetchUrl);
+            return fetch(fetchUrl);
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update gallery (same as before)
+            const gallery = document.getElementById('image-gallery');
+            gallery.innerHTML = '';
+            data.image_files.forEach(fileData => {
+                const card = document.createElement('div');
+                card.classList.add('col');
+                card.id = `card_${fileData.filename}`;
+                card.innerHTML = `
+                    <div class="card shadow-sm">
+                        <a href="/view_image/${fileData.filename}">
+                            <img src="/static/gallery/${fileData.filename}" alt="${fileData.filename}" class="bd-placeholder-img card-img-top" width="100%">
+                            ${fileData.has_dng ? `<span class="badge rounded-pill text-bg-secondary position-absolute top-0 end-0 m-2">DNG</span>` : ''}
+                        </a>
+                        <div class="card-body">
+                            <p class="card-text">
+                                Date taken: ${fileData.timestamp}<br>
+                                Resolution: ${fileData.width}x${fileData.height}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/image_edit/${fileData.filename}'" data-bs-toggle="tooltip" data-bs-title="Edit Image">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteConfirmationModal('${fileData.filename}')" data-bs-toggle="tooltip" data-bs-title="Delete Image">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/${fileData.filename}'" data-bs-toggle="tooltip" data-bs-title="Download Image">
+                                        <i class="bi bi-download"></i>
+                                    </button>
+                                    ${fileData.has_dng ? `
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='/download_image/${fileData.dng_file}'" data-bs-toggle="tooltip" data-bs-title="Download DNG">
+                                        <i class="bi bi-file-earmark-arrow-down"></i>
+                                    </button>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
 
-    fetch(`/delete_image/${filename}`, {
-        method: 'DELETE',
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const card = document.getElementById(cardId);
-            console.log('Selected card:', card);
-            if (card) {
-                card.remove();
-                console.log('Card removed successfully');
-                $('#deleteConfirmationModal').modal('hide'); // Close the modal
-            } else {
-                console.log('Card not found');
+            // Update pagination (same as before)
+            const paginationContainer = document.querySelector('ul.pagination');
+            paginationContainer.innerHTML = `
+                <li class="page-item ${data.page === 1 ? 'disabled' : ''}">
+                    ${data.page === 1
+                        ? `<span class="page-link">Previous</span>`
+                        : `<a class="page-link" href="?page=${data.page - 1}">Previous</a>`}
+                </li>
+                ${Array.from({ length: data.end_page - data.start_page + 1 }, (_, i) => {
+                    const pageNum = data.start_page + i;
+                    return `
+                        <li class="page-item ${pageNum === data.page ? 'active' : ''}">
+                            <a class="page-link" href="?page=${pageNum}">${pageNum}</a>
+                        </li>`;
+                }).join('')}
+                <li class="page-item ${data.page === data.total_pages ? 'disabled' : ''}">
+                    ${data.page === data.total_pages
+                        ? `<span class="page-link">Next</span>`
+                        : `<a class="page-link" href="?page=${data.page + 1}">Next</a>`}
+                </li>
+            `;
+
+            // Close the modal properly
+            const modalElement = document.getElementById('deleteConfirmationModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+                // Optionally, remove focus from the modal's confirm button
+                this.blur(); // This removes focus from the button
             }
-        }
-    })
-    .catch(error => console.error('Error deleting image:', error));
-}
+        })
+        .catch(error => {
+            console.error("Error during deletion:", error);
+        });
+});
+    </script>
 
-
-function deleteImageeee(filename, cardId) {
-    console.log('Deleting image:', filename, 'Card ID:', cardId);
-
-    // Perform the deletion without using confirm
-    fetch(`/delete_image/${filename}`, {
-        method: 'DELETE', // Use DELETE method
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Remove the card from the UI
-            const card = document.getElementById(cardId);
-            console.log('Selected card:', card);
-            if (card) {
-                card.remove();
-                console.log('Card removed successfully');
-            } else {
-                console.log('Card not found');
-            }
-        }
-    })
-    .catch(error => console.error('Error deleting image:', error));
-}
-function adjustCardHeight() {
-    const cards = document.querySelectorAll('.card');
-    const rowHeight = 300; // Set your desired row height
-
-    let currentRow = -1;
-    let currentRowHeight = 0;
-
-    cards.forEach((card, index) => {
-        const cardHeight = card.offsetHeight;
-
-        if (currentRowHeight + cardHeight > rowHeight) {
-            currentRow++;
-            currentRowHeight = 0;
-        }
-
-        currentRowHeight += cardHeight;
-        card.style.gridRow = `span ${Math.ceil(cardHeight / rowHeight)}`;
-    });
-}
-</script>
-
-{% endblock%}
+{% endblock %}
