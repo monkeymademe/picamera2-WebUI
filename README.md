@@ -1,5 +1,7 @@
 # CamUI for PiCamera2
 
+![CamUI for PiCamera2](https://github.com/monkeymademe/CamUI/blob/main/static/img/camuilogosideways.png)
+
 ## Overview
 
 CamUI for picamera2 is a lightweight web interface for the Raspberry Pi camera module, built on the picamera2 Python library and using Flask. This project provides a user interface to configure camera settings, capture photos, and manage images in a basic gallery.
