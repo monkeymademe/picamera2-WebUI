@@ -1,5 +1,5 @@
 # System level imports
-import os, io, json, time, re, glob, math, tempfile
+import os, io, json, time, tempfile
 from datetime import datetime
 from threading import Condition
 import threading, subprocess
@@ -15,10 +15,10 @@ from picamera2.encoders import JpegEncoder
 from picamera2.encoders import MJPEGEncoder
 #from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
-from libcamera import Transform, controls
+from libcamera import Transform
 
 # Image handeling imports
-from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageOps, ExifTags
+from PIL import Image, ImageDraw, ImageEnhance, ImageOps
 
 # werkzeug imports
 from werkzeug.utils import secure_filename
