@@ -20,6 +20,13 @@ from libcamera import Transform, controls
 # Image handeling imports
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageOps, ExifTags
 
+# werkzeug imports
+from werkzeug.utils import secure_filename
+
+# Helper to ensure file path is within the intended directory
+def is_safe_path(basedir, path):
+    return os.path.realpath(path).startswith(os.path.realpath(basedir))
+
 ####################
 # Initialize Flask 
 ####################
@@ -1613,16 +1620,23 @@ def get_image_for_page():
     
 @app.route('/view_image/<filename>')
 def view_image(filename):
-    return render_template('view_image.html', filename=filename)
+    safe_filename = secure_filename(filename)
+    image_path = os.path.join(app.config['upload_folder'], safe_filename)
+    if not os.path.isfile(image_path) or not is_safe_path(app.config['upload_folder'], image_path):
+        abort(404)
+    return render_template('view_image.html', filename=safe_filename)
 
 @app.route('/delete_image/<filename>', methods=['DELETE'])
 def delete_image(filename):
-    success, message = image_gallery_manager.delete_image(filename)
-
+    safe_filename = secure_filename(filename)
+    image_path = os.path.join(app.config['upload_folder'], safe_filename)
+    if not os.path.isfile(image_path) or not is_safe_path(app.config['upload_folder'], image_path):
+        return jsonify({"success": False, "message": "Image not found"}), 404
+    success, message = image_gallery_manager.delete_image(safe_filename)
     if success:
         return jsonify({"success": True, "message": message}), 200
     else:
-        return jsonify({"success": False, "message": message}), 404 if "not found" in message else 500
+        return jsonify({"success": False, "message": message}), 500
 
 @app.route('/image_edit/<filename>')
 def edit_image(filename):
@@ -1653,8 +1667,11 @@ def apply_filters():
 
 @app.route('/download_image/<filename>', methods=['GET'])
 def download_image(filename):
+    safe_filename = secure_filename(filename)
+    image_path = os.path.join(app.config['upload_folder'], safe_filename)
+    if not os.path.isfile(image_path) or not is_safe_path(app.config['upload_folder'], image_path):
+        abort(404)
     try:
-        image_path = os.path.join(app.config['upload_folder'], filename)
         return send_file(image_path, as_attachment=True)
     except Exception as e:
         print(f"\nError downloading image:\n{e}\n")
