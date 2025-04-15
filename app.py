@@ -57,17 +57,18 @@ firmware_control = False
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Set the path where the camera profiles are stored
-camera_profile_folder = os.path.join(current_dir, 'static/camera_profiles')
-app.config['camera_profile_folder'] = camera_profile_folder
-# Create the folder if it does not exist
-os.makedirs(app.config['camera_profile_folder'], exist_ok=True)
+# Helper function to ensure a directory exists
+def ensure_directory(path):
+    os.makedirs(path, exist_ok=True)
+    return path
 
-# Set the path where the images will be stored for the image gallery
-upload_folder = os.path.join(current_dir, 'static/gallery')
+# Set and ensure the camera profiles directory
+camera_profile_folder = ensure_directory(os.path.join(current_dir, 'static/camera_profiles'))
+app.config['camera_profile_folder'] = camera_profile_folder
+
+# Set and ensure the image gallery directory
+upload_folder = ensure_directory(os.path.join(current_dir, 'static/gallery'))
 app.config['upload_folder'] = upload_folder
-# Create the folder if it does not exist
-os.makedirs(app.config['upload_folder'], exist_ok=True)
 
 # For the image gallery set items per page
 items_per_page = 12
