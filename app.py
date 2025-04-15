@@ -1,5 +1,5 @@
 # System level imports
-import os, io, logging, json, time, re, glob, math, tempfile
+import os, io, json, time, re, glob, math, tempfile
 from datetime import datetime
 from threading import Condition
 import threading, subprocess
@@ -80,8 +80,12 @@ minimum_last_config = {
 # Load the camera-module-info.json file
 last_config_file_path = os.path.join(current_dir, 'camera-last-config.json')
 
-with open(os.path.join(current_dir, 'camera-module-info.json'), 'r') as file:
-    camera_module_info = json.load(file)
+try:
+    with open(os.path.join(current_dir, 'camera-module-info.json'), 'r') as file:
+        camera_module_info = json.load(file)
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    print(f"Error loading camera-module-info.json: {e}")
+    camera_module_info = {"camera_modules": []}
 
 # Function to load or initialize configuration
 def load_or_initialize_config(file_path, default_config):
@@ -913,7 +917,7 @@ class ImageGallery:
                     unix_timestamp = int(image_file.split('_')[-1].split('.')[0])
                     timestamp = datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S')
                 except ValueError:
-                    logging.warning(f"Skipping file {image_file} due to incorrect timestamp format")
+                    print(f"Skipping file {image_file} due to incorrect timestamp format")
                     continue  # Skip files with incorrect format
 
                 # Check if corresponding .dng file exists
@@ -940,7 +944,7 @@ class ImageGallery:
             return files_and_timestamps
 
         except Exception as e:
-            logging.error(f"Error loading image files: {e}")
+            print(f"Error loading image files: {e}")
             return []
 
     def paginate_images(self, page):
@@ -982,7 +986,7 @@ class ImageGallery:
             try:
                 
                 os.remove(image_path)
-                logging.info(f"Deleted image: {filename}")
+                print(f"Deleted image: {filename}")
                 # Check if corresponding .dng file exists
                 dng_file = os.path.splitext(filename)[0] + '.dng'
                 print(dng_file)
@@ -992,7 +996,7 @@ class ImageGallery:
                     os.remove(os.path.join(self.upload_folder, dng_file))
                 return True, f"Image '{filename}' deleted successfully."
             except Exception as e:
-                logging.error(f"Error deleting image {filename}: {e}")
+                print(f"Error deleting image {filename}: {e}")
                 return False, "Failed to delete image"
         else:
             return False, "Image not found"
@@ -1043,7 +1047,7 @@ class ImageGallery:
                 return True, "Image saved successfully."
 
         except Exception as e:
-            logging.error(f"Error applying edits to image {filename}: {e}")
+            print(f"Error applying edits to image {filename}: {e}")
             return False, "Failed to edit image."
 
 
@@ -1309,7 +1313,7 @@ def camera_mobile(camera_num):
         last_image = image_gallery_manager.find_last_image_taken()
         return render_template('camera_mobile.html', camera=camera.camera_info, settings=live_controls, sensor_modes=sensor_modes, active_mode_index=active_mode_index, last_image=last_image, profiles=list_profiles(),navbar=False, theme='dark', mode="mobile") 
     except Exception as e:
-        logging.error(f"Error loading camera view: {e}")
+        print(f"Error loading camera view: {e}")
         return render_template('error.html', error=str(e))
 
 @app.route("/camera_<int:camera_num>")
@@ -1327,7 +1331,7 @@ def camera(camera_num):
         last_image = image_gallery_manager.find_last_image_taken()
         return render_template('camera.html', camera=camera.camera_info, settings=live_controls, sensor_modes=sensor_modes, active_mode_index=active_mode_index, last_image=last_image, profiles=list_profiles(), mode="desktop")
     except Exception as e:
-        logging.error(f"Error loading camera view: {e}")
+        print(f"Error loading camera view: {e}")
         return render_template('error.html', error=str(e))
 
 # Dictionary to track the last capture time per camera
@@ -1338,17 +1342,17 @@ def capture_still(camera_num):
     global last_capture_time
 
     try:
-        logging.debug(f"📸 Received capture request for camera {camera_num}")
+        print(f"📸 Received capture request for camera {camera_num}")
 
         camera = cameras.get(camera_num)
         if not camera:
-            logging.warning(f"❌ Camera {camera_num} not found.")
+            print(f"❌ Camera {camera_num} not found.")
             return jsonify(success=False, message="Camera not found"), 404
 
         # Rate limit: Prevent captures happening too quickly (2 seconds per camera)
         current_time = time.time()
         #if camera_num in last_capture_time and (current_time - last_capture_time[camera_num]) < 2:
-        #   logging.warning(f"⚠️ Capture request too fast for camera {camera_num}. Ignoring request.")
+        #   print(f"⚠️ Capture request too fast for camera {camera_num}. Ignoring request.")
         #   return jsonify(success=False, message="Capture request too fast"), 429  # Too Many Requests
 
         # Update the last capture time for this camera
@@ -1357,7 +1361,7 @@ def capture_still(camera_num):
         # Generate the new filename
         timestamp = int(time.time())  # Current Unix timestamp
         image_filename = f"pimage_camera_{camera_num}_{timestamp}"
-        logging.debug(f"📁 New image filename: {image_filename}")
+        print(f"📁 New image filename: {image_filename}")
 
         # Capture and save the new image
         image_path = camera.take_still(camera_num, image_filename)
@@ -1366,14 +1370,14 @@ def capture_still(camera_num):
         time.sleep(0.5)
 
         if image_path:
-            logging.info(f"✅ Image captured successfully: {image_filename}")
+            print(f"✅ Image captured successfully: {image_filename}")
             return jsonify(success=True, message="Image captured successfully", image=image_filename)
         else:
-            logging.error(f"❌ Failed to capture image for camera {camera_num}")
+            print(f"❌ Failed to capture image for camera {camera_num}")
             return jsonify(success=False, message="Failed to capture image")
 
     except Exception as e:
-        logging.error(f"🔥 Error capturing still image: {e}")
+        print(f"🔥 Error capturing still image: {e}")
         return jsonify(success=False, message=str(e)), 500
     
 @app.route('/snapshot_<int:camera_num>')
@@ -1669,7 +1673,7 @@ def save_edit():
         return jsonify({'success': success, 'message': message})
 
     except Exception as e:
-        logging.error(f"Error in save_edit route: {e}")
+        print(f"Error in save_edit route: {e}")
         return jsonify({'success': False, 'message': 'Error saving edit'}), 500
 
 
