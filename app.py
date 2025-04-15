@@ -4,6 +4,7 @@ from datetime import datetime
 from threading import Condition
 import threading, subprocess
 import argparse
+import importlib.util
 
 # Flask imports
 from flask import Flask, render_template, request, jsonify, Response, send_file, abort, session, redirect, url_for
@@ -26,6 +27,19 @@ from werkzeug.utils import secure_filename
 # Helper to ensure file path is within the intended directory
 def is_safe_path(basedir, path):
     return os.path.realpath(path).startswith(os.path.realpath(basedir))
+
+# Plugin loader function
+def load_plugins(app, plugins_folder='plugins'):
+    if not os.path.exists(plugins_folder):
+        return
+    for filename in os.listdir(plugins_folder):
+        if filename.endswith('.py') and not filename.startswith('__'):
+            plugin_path = os.path.join(plugins_folder, filename)
+            spec = importlib.util.spec_from_file_location(filename[:-3], plugin_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if hasattr(module, 'init_plugin'):
+                module.init_plugin(app)
 
 ####################
 # Initialize Flask 
@@ -1720,7 +1734,7 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=8080, help='Port number to run the web server on')
     parser.add_argument('--ip', type=str, default='0.0.0.0', help='IP to which the web server is bound to')
     args = parser.parse_args()
-    # If there are no arguments the port will be 8080 and ip 0.0.0.0 
+    load_plugins(app)  # <-- Ensure plugins are loaded before running the app
     app.run(host=args.ip, port=args.port)
 
 @app.errorhandler(404)
