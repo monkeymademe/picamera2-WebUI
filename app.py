@@ -25,7 +25,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageOps, ExifTags
 ####################
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)  # Generates a random 32-character hexadecimal string
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', secrets.token_hex(16))  # Use env var if set, else random
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
