@@ -1705,3 +1705,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # If there are no arguments the port will be 8080 and ip 0.0.0.0 
     app.run(host=args.ip, port=args.port)
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html', message="Page not found."), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('error.html', message="An internal error occurred."), 500
