@@ -121,7 +121,7 @@ def list_profiles():
     return profiles
 
 def control_template():
-    with open("camera_controls_db.json", "r") as f:
+    with open(os.path.join(current_dir, "camera_controls_db.json"), "r") as f:
         settings = json.load(f)
     return settings
 
@@ -340,7 +340,7 @@ class CameraObject:
         return self.camera_profile
     
     def initialize_controls_template(self, picamera2_controls):
-        with open("camera_controls_db.json", "r") as f:
+        with open(os.path.join(current_dir, "camera_controls_db.json"), "r") as f:
             camera_json = json.load(f)
         if "sections" not in camera_json:
             print("Error: 'sections' key not found in camera_json!")
