@@ -34,6 +34,10 @@ plugin_hooks = {
 def is_safe_path(basedir, path):
     return os.path.realpath(path).startswith(os.path.realpath(basedir))
 
+# Print statement header
+def print_section(title):
+    print(f"\n{'=' * 10} {title} {'=' * 10}")
+
 # Plugin loader function
 def load_plugins(app, context=None, plugins_folder='plugins'):
     if not os.path.exists(plugins_folder):
@@ -64,7 +68,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 ####################
 
 # Set debug level to Warning
-Picamera2.set_logging(Picamera2.DEBUG)
+# Picamera2.set_logging(Picamera2.DEBUG)
 # Ask picamera2 for what cameras are connected
 global_cameras = Picamera2.global_camera_info()
 
@@ -74,7 +78,8 @@ global_cameras = Picamera2.global_camera_info()
 ##### Uncomment the line below simulate having no cameras connected
 # global_cameras = []
 
-print(f'\nInitialize picamera2 - Cameras Found:\n{global_cameras}\n')
+print_section("Initialize picamera2")
+print(f'\nCameras Found:\n{global_cameras}\n')
 
 ####################
 # Initialize default values 
@@ -227,9 +232,12 @@ class CameraObject:
         self.update_camera_from_metadata()
 
         # Final debug statements
-        print(f"Available Camera Controls: {self.picam2.camera_controls}")
-        print(f"Available Resolutions: {self.camera_resolutions}")
-        print(f"Final Camera Profile: {self.camera_profile}")
+        print_section("Available Camera Controls")
+        print(f"\n{self.picam2.camera_controls}")
+        print_section("Available Resolutions")
+        print(f"\n{self.camera_resolutions}")
+        print_section("Final Camera Profile")
+        print(f"\n{self.camera_profile}")
         
 
     #-----
@@ -303,15 +311,16 @@ class CameraObject:
         
 
     def load_saved_camera_profile(self):
-        """Load the saved camera config if available."""
+        #Load the saved camera config if available.
         if self.camera_info.get("Has_Config") and self.camera_info.get("Config_Location"):
             self.load_camera_profile(self.camera_info["Config_Location"])
 
     def load_camera_profile(self, profile_filename):
-        """Load and apply a camera profile from a given filename."""
+        #Load and apply a camera profile from a given filename.
+        print_section("Loading Camera Profile")
         profile_path = os.path.join(camera_profile_folder, profile_filename)
         if not os.path.exists(profile_path):
-            print(f"Profile file not found: {profile_path}")
+            print(f"\nProfile file not found: {profile_path}")
             return False
         try:
             with open(profile_path, "r") as f:
@@ -343,15 +352,15 @@ class CameraObject:
                         updated = True
                         break
                 if not updated:
-                    print(f"Camera {camera_num} not found in camera-last-config.json.")
+                    print(f"\nCamera {camera_num} not found in camera-last-config.json.")
                 with open(last_config_file_path, "w") as f:
                     json.dump(last_config, f, indent=4)
-                print(f"Loaded profile '{profile_filename}' and updated camera-last-config.json.")
+                print(f"\nLoaded profile '{profile_filename}' and updated camera-last-config.json.")
             except Exception as e:
-                print(f"Error updating camera-last-config.json: {e}")
+                print(f"\nError updating camera-last-config.json: {e}")
             return True
         except Exception as e:
-            print(f"Error loading camera profile '{profile_filename}': {e}")
+            print(f"\nError loading camera profile '{profile_filename}': {e}")
             return False
 
     def generate_camera_profile(self):
@@ -375,21 +384,22 @@ class CameraObject:
         return self.camera_profile
     
     def initialize_controls_template(self, picamera2_controls):
+        print_section("Initialize Controls Template")
         with open(os.path.join(current_dir, "camera_controls_db.json"), "r") as f:
             camera_json = json.load(f)
         if "sections" not in camera_json:
-            print("Error: 'sections' key not found in camera_json!")
+            print("\nError: 'sections' key not found in camera_json!")
             return camera_json  # Return unchanged if it's not structured as expected
         # Initialize empty controls in camera_profile
         self.camera_profile["controls"] = {}
         for section in camera_json["sections"]:
             if "settings" not in section:
-                print(f"Warning: Missing 'settings' key in section: {section.get('title', 'Unknown')}")
+                print(f"\nWarning: Missing 'settings' key in section: {section.get('title', 'Unknown')}")
                 continue        
             section_enabled = False  # Track if any setting is enabled
             for setting in section["settings"]:
                 if not isinstance(setting, dict):
-                    print(f"Warning: Unexpected setting format: {setting}")
+                    print(f"\nWarning: Unexpected setting format: {setting}")
                     continue  # Skip if it's not a dictionary
                 setting_id = setting.get("id")  # Use `.get()` to avoid crashes
                 source = setting.get("source", None)  # Check if source exists
@@ -444,7 +454,8 @@ class CameraObject:
                         else:
                             print(f"Skipping or Disabling Child Setting {child_id}: Not found or no source specified")
             section["enabled"] = section_enabled
-        print(f"Initialized camera_profile controls: {self.camera_profile}")
+        print_section("Initialized camera_profile controls")
+        print(f"\n{self.camera_profile}")
         return camera_json
 
     def update_settings(self, setting_id, setting_value):
@@ -521,7 +532,7 @@ class CameraObject:
         return setting_value  # Returning for confirmation
 
     def sync_live_controls(self):
-        """Updates self.live_controls to match self.camera_profile without resetting defaults."""
+        # Updates self.live_controls to match self.camera_profile without resetting defaults.
         for section in self.live_controls.get("sections", []):
             for setting in section.get("settings", []):
                 setting_id = setting["id"]
@@ -532,7 +543,6 @@ class CameraObject:
                     child_id = child["id"]
                     if child_id in self.camera_profile["controls"]:
                         child["value"] = self.camera_profile["controls"][child_id]
-        print("✅ Live controls updated to match camera profile.")
 
     def apply_profile_controls(self):
         if "controls" in self.camera_profile:
@@ -565,7 +575,7 @@ class CameraObject:
             mode = self.sensor_modes[mode_index]
             self.camera_profile["sensor_mode"] = mode_index  
             # Print the mode for debugging
-            print(f"📷 Sensor mode selected for Camera {self.camera_info['Num']}: {mode}")
+            print(f"\nSensor mode selected for Camera {self.camera_info['Num']}: \n\n{mode}\n")
             # Set still and video configs
             self.still_config = self.picam2.create_still_configuration(
                 sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']}
@@ -844,13 +854,13 @@ class CameraObject:
     def start_streaming(self):
         self.output = StreamingOutput()
         self.picam2.start_recording(MJPEGEncoder(), output=FileOutput(self.output))
-        print("[INFO] Streaming started")
+        print_section("Streaming started")
         time.sleep(1)
 
     def stop_streaming(self):
         if self.output:  # Ensure streaming was started before stopping
             self.picam2.stop_recording()
-            print("[INFO] Streaming stopped")
+            print_section("Streaming stopped")
 
     #-----
     # Camera Capture Functions
