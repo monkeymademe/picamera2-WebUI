@@ -272,6 +272,26 @@
       ]
     },
     {
+      "name": "Noise Reduction",
+      "enabled": true,
+      "settings": [
+        {
+          "name": "Noise Reduction Mode",
+          "id": "NoiseReductionMode",
+          "info": "Selects a suitable noise reduction mode. Normally Picamera2’s configuration will select an appropriate mode automatically, so it should not normally be necessary to change it. The HighQuality noise reduction mode can be expected to affect the maximum achievable framerate.",
+          "type": "radio",
+          "enabled": true,
+          "source": "controls",
+          "default": 0,
+          "options": [
+                { "value": 0, "label": "Off", "enabled": true },
+                { "value": 1, "label": "Fast", "enabled": true },
+                { "value": 2, "label": "High Quality", "enabled": true }
+              ]
+        }
+      ]
+    },
+    {
       "name": "Brightness & Contrast",
       "enabled": true,
       "settings": [
