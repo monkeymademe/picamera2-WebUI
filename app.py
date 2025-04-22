@@ -768,12 +768,19 @@ class CameraObject:
         last_resolution = None  # Track last known resolution
 
         while True:
-            if self.capturing_still:
-                frame = self.placeholder_frame
-            else:
-                with self.output.condition:
-                    self.output.condition.wait()
-                    frame = self.output.read_frame()
+            try:
+                if self.capturing_still:
+                    frame = self.placeholder_frame
+                else:
+                    with self.output.condition:
+                        # Add a timeout to the wait?
+                        notified = self.output.condition.wait(timeout=5.0) # e.g., 5 second timeout
+                        if not notified:
+                            print("⚠️ Stream generation timed out waiting for frame. Checking stream status...")
+                            # Add logic here to check if the underlying recording is still active
+                            # If not active, maybe break the loop or attempt recovery?
+                            continue # Or break, depending on desired behavior
+                        frame = self.output.read_frame()
 
                 # 🚨 Handle invalid frames
                 if frame is None:
@@ -813,9 +820,17 @@ class CameraObject:
                     frame = self.placeholder_frame
                     continue  
 
-            # Send frame to the stream
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                # Send frame to the stream
+                yield (b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+            except Exception as e:
+                print(f"🚨 UNHANDLED EXCEPTION in generate_stream: {e}")
+                # Log the full traceback for debugging
+                import traceback
+                traceback.print_exc()
+                # Potentially break the loop or attempt recovery
+                break # Stop the stream generation on error for now
 
     def oldgenerate_stream(self):
         while True:
