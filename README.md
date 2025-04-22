@@ -111,17 +111,19 @@ There has been some reported issues with the PiCamera2 on older Raspberry Pi's: 
 
 - **Hardware**
 
-Tested on Raspberry Pi Camera Module v3 which has focus settings. v1 is untested but if you see any bugs please post an issue. v2 and HQ has been tested settings like Auto focus that are unique to Camera Module v3 are filtered and removed when an older camera is used.
-
 Raspberry Pi Compatibilty: 
 
 - Pi 5 (8GB): Perfect
 - Pi 5 (4GB): Perfect
-- Pi 4 (4GB): Perfect
-- Pi 3B: Perfect
-- Pi Zero v2: Slower lower frame rate on feed but very useable
+- Pi 4 (4GB): Users reported issues with higher resoltuions 
+- Pi 3B: Untested with v2 likely issues with higher resolutions
+- Pi Zero v2: Slower lower frame rate on feed but very useable recomend lower resolutions
 - Pi Zero v1: Untested
 - Older Pi's (Model A, 2B etc): Untested but expected not to work well.
+
+## New Cameras
+
+New cameras can be added if they are picamera2 compatible. If you wish your camera to be added to the system permantly then run the diagnostic.py file and paste the output into a new issue on this repo
 
 ## Known issues 
 
