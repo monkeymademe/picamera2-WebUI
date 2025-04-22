@@ -1,5 +1,5 @@
 # System level imports
-import os, io, json, time, tempfile
+import os, io, json, time, tempfile, traceback
 from datetime import datetime
 from threading import Condition
 import threading, subprocess
@@ -224,7 +224,7 @@ class CameraObject:
         self.load_saved_camera_profile()
         self.camera_init = False
         # Set capture flag and set placeholder image
-        self.capturing_still = False
+        self.use_placeholder = False
         self.placeholder_frame = self.generate_placeholder_frame()  # Create placeholder
         
         # Start Stream and sync metadata
@@ -261,7 +261,7 @@ class CameraObject:
 
     def configure_camera(self):
         if not self.camera_init:
-            self.capturing_still = True
+            self.use_placeholder = True
             self.stop_streaming()
             self.picam2.stop()
             time.sleep(0.1)
@@ -271,7 +271,7 @@ class CameraObject:
             time.sleep(0.1)
             self.picam2.start()
             self.start_streaming()
-            self.capturing_still = False
+            self.use_placeholder = False
 
     def set_still_config(self):
         self.picam2.configure(self.still_config)
@@ -281,7 +281,7 @@ class CameraObject:
 
     def configure_video_config(self):
         if not self.camera_init:
-            self.capturing_still = True
+            self.use_placeholder = True
             self.stop_streaming()
             time.sleep(0.1)
             self.picam2.stop()
@@ -293,11 +293,11 @@ class CameraObject:
             time.sleep(0.1)
             self.picam2.start()
             self.start_streaming()
-            self.capturing_still = False
+            self.use_placeholder = False
     
     def configure_still_config(self):
         if not self.camera_init:
-            self.capturing_still = True
+            self.use_placeholder = True
             self.stop_streaming()
             self.picam2.stop()
             time.sleep(0.1)
@@ -307,7 +307,7 @@ class CameraObject:
             time.sleep(0.1)
             self.picam2.start()
             self.start_streaming()
-            self.capturing_still = False
+            self.use_placeholder = False
         
 
     def load_saved_camera_profile(self):
@@ -572,10 +572,20 @@ class CameraObject:
             mode_index = int(mode_index)
             if mode_index < 0 or mode_index >= len(self.sensor_modes):
                 raise ValueError("Invalid sensor mode index")
+            
+            # Stop the camera if it's running
+            if not self.camera_init:
+                self.use_placeholder = True
+                self.stop_streaming()
+                self.picam2.stop()
+                time.sleep(0.1)  # Reduced delay for faster response
+            
             mode = self.sensor_modes[mode_index]
             self.camera_profile["sensor_mode"] = mode_index  
+            
             # Print the mode for debugging
             print(f"\nSensor mode selected for Camera {self.camera_info['Num']}: \n\n{mode}\n")
+            
             # Set still and video configs
             self.still_config = self.picam2.create_still_configuration(
                 sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']}
@@ -583,10 +593,30 @@ class CameraObject:
             self.video_config = self.picam2.create_video_configuration(
                 main={"size": mode['size']}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']}
             )
-            self.configure_video_config()  # Apply new configuration
+            
+            # Configure the camera
+            self.picam2.configure(self.video_config)
+            
+            # Restart the camera if it was running
+            if not self.camera_init:
+                self.picam2.start()
+                self.start_streaming()
+                time.sleep(0.1)  # Reduced delay for faster response
+                self.use_placeholder = False
+                
+            print(f"✅ Sensor mode {mode_index} applied")
+            
         except Exception as e:
-            print(f"Error saving profile: {e}")
-        
+            print(f"⚠️ Error: {e}")
+            # Try to recover by restarting the camera
+            if not self.camera_init:
+                try:
+                    self.picam2.stop()
+                    self.picam2.start()
+                    self.start_streaming()
+                except Exception as recovery_error:
+                    print(f"⚠️ Recovery failed: {recovery_error}")
+            raise ValueError(str(e))
 
     def set_live_feed_resolution(self, resolution_index):
         with self.sensor_mode_lock:  # Prevent conflicts with sensor mode changes
@@ -763,78 +793,88 @@ class CameraObject:
     #-----
     # Camera Streaming Functions
     #-----
+
+    def flush_frames(self, count=5, delay=0.05):
+        for _ in range(count):
+            try:
+                self.picam2.capture_array("main")
+                time.sleep(delay)
+            except Exception as e:
+                print(f"⚠️ Flush error: {e}")
+                break
+
+    def safe_restart_stream(self):
+        try:
+            print("🔄 Restarting stream with correct config...")
+            self.use_placeholder = True
+            self.stop_streaming()
+            self.picam2.stop()
+            time.sleep(0.1)
+            self.picam2.start(self.video_config, show_preview=False)
+            self.start_streaming()
+            self.flush_frames()
+            self.use_placeholder = False
+            print("✅ Stream restarted and flushed.")
+        except Exception as e:
+            print(f"🚨 Failed to restart stream: {e}")
+            traceback.print_exc()
+            self.use_placeholder = True  # Keep using placeholder if restart fails
     
     def generate_stream(self):
-        last_resolution = None  # Track last known resolution
-
         while True:
             try:
-                if self.capturing_still:
+                if self.use_placeholder:
                     frame = self.placeholder_frame
                 else:
                     with self.output.condition:
-                        # Add a timeout to the wait?
-                        notified = self.output.condition.wait(timeout=5.0) # e.g., 5 second timeout
+                        notified = self.output.condition.wait(timeout=5.0)
                         if not notified:
-                            print("⚠️ Stream generation timed out waiting for frame. Checking stream status...")
-                            # Add logic here to check if the underlying recording is still active
-                            # If not active, maybe break the loop or attempt recovery?
-                            continue # Or break, depending on desired behavior
+                            print("⚠️ Timed out waiting for frame.")
+                            continue
                         frame = self.output.read_frame()
 
-                # 🚨 Handle invalid frames
-                if frame is None:
-                    print("🚨 Error: read_frame() returned None! Using placeholder.")
+                if frame is None or not isinstance(frame, bytes):
+                    print(f"⚠️ Invalid frame ({type(frame)}), using placeholder.")
                     frame = self.placeholder_frame
-                    continue  
+                    continue
 
-                if not isinstance(frame, bytes):
-                    print(f"⚠️ Warning: Frame is not bytes! Type: {type(frame)}")
+                # Safely get camera configuration
+                try:
+                    config = self.picam2.camera_configuration()
+                    if config is None:
+                        frame = self.placeholder_frame
+                        continue
+                except Exception as e:
+                    print(f"⚠️ Error getting camera config: {e}")
                     frame = self.placeholder_frame
-                    continue  
+                    continue
 
-                # ✅ Extract actual frame resolution from metadata
-                config = self.picam2.stream_configuration("main")
-                if config is None:
-                    print("🚨 stream_configuration returned None! Skipping frame...")
+                # Check if we need to restart the stream
+                try:
+                    actual_res = config["main"]["size"]
+                    expected_res = self.video_config["main"]["size"]
+
+                    if actual_res != expected_res:
+                        print(f"⚠️ Resolution mismatch: {actual_res} ≠ {expected_res}")
+                        self.safe_restart_stream()
+                        continue
+                except Exception as e:
+                    print(f"⚠️ Error checking resolution: {e}")
                     frame = self.placeholder_frame
-                    continue  
+                    continue
 
-                actual_resolution = config["size"]
-                expected_resolution = self.video_config["main"]["size"]
-
-                # 🚨 Detect resolution mismatch
-                if last_resolution is None or actual_resolution != expected_resolution:
-                    print(f"🔄 Resolution change detected: {last_resolution} → {expected_resolution}")
-                    last_resolution = expected_resolution  # Update last known resolution
-
-                    # 🧹 CLEAR BUFFER to avoid old mismatched frames
-                    self.picam2.stop()
-                    self.picam2.start(show_preview=False)  # Restart stream cleanly
-                    print("✅ Buffer cleared. Restarting stream with new resolution...")
-                    continue  # Skip current frame after restart
-
-                # ✅ Check resolution before sending frame
-                if actual_resolution != expected_resolution:
-                    print(f"⚠️ Skipping frame due to resolution mismatch: {actual_resolution} expected: {expected_resolution}")
-                    frame = self.placeholder_frame
-                    continue  
-
-                # Send frame to the stream
                 yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
             except Exception as e:
-                print(f"🚨 UNHANDLED EXCEPTION in generate_stream: {e}")
-                # Log the full traceback for debugging
-                import traceback
+                print(f"🚨 Stream loop error: {e}")
                 traceback.print_exc()
-                # Potentially break the loop or attempt recovery
-                break # Stop the stream generation on error for now
+                time.sleep(0.1)  # Prevent tight loop on error
+                continue
 
     def oldgenerate_stream(self):
         while True:
-            if self.capturing_still:
+            if self.use_placeholder:
                 frame = self.placeholder_frame
             else:
                 # Normal video streaming
@@ -883,7 +923,7 @@ class CameraObject:
 
     def take_still(self, camera_num, image_name):
         try:
-            self.capturing_still = True  # Start sending placeholder frames
+            self.use_placeholder = True  # Start sending placeholder frames
             time.sleep(0.5)  # Short delay to allow clients to receive the placeholder
             self.stop_streaming()
             filepath = os.path.join(app.config['upload_folder'], image_name)
@@ -906,7 +946,7 @@ class CameraObject:
             self.start_streaming()
             print("Applied video config:", self.picam2.camera_configuration())
              
-            self.capturing_still = False
+            self.use_placeholder = False
             return f'{filepath}.jpg'
         except Exception as e:
             print(f"Error capturing image: {e}")
@@ -1532,8 +1572,6 @@ def set_sensor_mode():
         previous_mode = camera.get_sensor_mode()  # Store previous mode
         camera.set_sensor_mode(sensor_mode)  # Blocks until done
         camera.camera_profile["sensor_mode"] = sensor_mode
-
-        print(f"✅ Sensor mode {sensor_mode} applied")
         return jsonify({"status": "done", "new_mode": sensor_mode})  
     except ValueError as e:
         print(f"⚠️ Error: {e}")
@@ -1717,7 +1755,7 @@ def apply_filters():
     edited_path = os.path.join(app.config['upload_folder'], edited_filename)
     img.save(edited_path)
 
-    return send_from_directory(app.config['upload_folder'], edited_filename)
+    return edited_path
 
 @app.route('/download_image/<filename>', methods=['GET'])
 def download_image(filename):
