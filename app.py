@@ -573,14 +573,23 @@ class CameraObject:
             if mode_index < 0 or mode_index >= len(self.sensor_modes):
                 raise ValueError("Invalid sensor mode index")
             
+            mode = self.sensor_modes[mode_index]
+            print(f"\nSensor mode selected for Camera {self.camera_info['Num']}: \n\n{mode}\n")
+            
+            # Check if this is a high-resolution mode
+            width, height = mode['size']
+            if width * height > 2304 * 1296:  # If resolution is higher than 1080p
+                print(f"⚠️ High resolution mode detected: {width}x{height}")
+                # Add extra delay for high-res modes
+                time.sleep(0.5)
+            
             # Stop the camera if it's running
             if not self.camera_init:
                 self.use_placeholder = True
                 self.stop_streaming()
                 self.picam2.stop()
-                time.sleep(0.1)  # Reduced delay for faster response
+                time.sleep(0.2)  # Increased delay for high-res modes
             
-            mode = self.sensor_modes[mode_index]
             self.camera_profile["sensor_mode"] = mode_index  
             
             # Print the mode for debugging
@@ -599,10 +608,15 @@ class CameraObject:
             
             # Restart the camera if it was running
             if not self.camera_init:
-                self.picam2.start()
-                self.start_streaming()
-                time.sleep(0.1)  # Reduced delay for faster response
-                self.use_placeholder = False
+                try:
+                    self.picam2.start()
+                    self.start_streaming()
+                    time.sleep(0.2)  # Increased delay for high-res modes
+                    self.use_placeholder = False
+                except Exception as e:
+                    print(f"⚠️ Error restarting camera: {e}")
+                    self.use_placeholder = True
+                    raise
                 
             print(f"✅ Sensor mode {mode_index} applied")
             
@@ -616,6 +630,7 @@ class CameraObject:
                     self.start_streaming()
                 except Exception as recovery_error:
                     print(f"⚠️ Recovery failed: {recovery_error}")
+                    self.use_placeholder = True
             raise ValueError(str(e))
 
     def set_live_feed_resolution(self, resolution_index):
