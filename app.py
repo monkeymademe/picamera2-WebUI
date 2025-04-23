@@ -68,7 +68,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 ####################
 
 # Set debug level to Warning
-# Picamera2.set_logging(Picamera2.DEBUG)
+Picamera2.set_logging(Picamera2.DEBUG)
 # Ask picamera2 for what cameras are connected
 global_cameras = Picamera2.global_camera_info()
 
@@ -604,7 +604,16 @@ class CameraObject:
             )
             
             # Configure the camera
-            self.picam2.configure(self.video_config)
+            try:
+                print(f"Attempting to configure sensor mode: {mode}")
+                self.picam2.configure(self.video_config)
+                print("Camera configuration successful")
+            except Exception as e:
+                print(f"⚠️ Error configuring sensor mode: {e}")
+                print(f"Error type: {type(e)}")
+                print(f"Error details: {str(e)}")
+                traceback.print_exc()
+                raise
             
             # Restart the camera if it was running
             if not self.camera_init:
