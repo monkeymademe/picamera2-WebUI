@@ -600,7 +600,9 @@ class CameraObject:
                 sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']}
             )
             self.video_config = self.picam2.create_video_configuration(
-                main={"size": mode['size']}, sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']}
+                main={"size": mode['size']}, 
+                sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
+                buffer_count=2  # Reduced from default to help with high-res modes
             )
             
             # Configure the camera
