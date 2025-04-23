@@ -829,24 +829,10 @@ class CameraObject:
                 print(f"⚠️ Flush error: {e}")
                 break
 
-    def safe_restart_stream(self):
-        try:
-            print("🔄 Restarting stream with correct config...")
-            self.use_placeholder = True
-            self.stop_streaming()
-            self.picam2.stop()
-            time.sleep(0.1)
-            self.picam2.start(self.video_config, show_preview=False)
-            self.start_streaming()
-            self.flush_frames()
-            self.use_placeholder = False
-            print("✅ Stream restarted and flushed.")
-        except Exception as e:
-            print(f"🚨 Failed to restart stream: {e}")
-            traceback.print_exc()
-            self.use_placeholder = True  # Keep using placeholder if restart fails
-    
     def generate_stream(self):
+        consecutive_timeouts = 0
+        max_timeouts = 3  # Maximum number of consecutive timeouts before recovery
+        
         while True:
             try:
                 if self.use_placeholder:
@@ -856,8 +842,16 @@ class CameraObject:
                         notified = self.output.condition.wait(timeout=5.0)
                         if not notified:
                             print("⚠️ Timed out waiting for frame.")
-                            continue
-                        frame = self.output.read_frame()
+                            consecutive_timeouts += 1
+                            if consecutive_timeouts >= max_timeouts:
+                                print("⚠️ Too many consecutive timeouts, attempting stream recovery...")
+                                self.safe_restart_stream()
+                                consecutive_timeouts = 0
+                                continue
+                            frame = self.placeholder_frame
+                        else:
+                            consecutive_timeouts = 0  # Reset counter on successful frame
+                            frame = self.output.read_frame()
 
                 if frame is None or not isinstance(frame, bytes):
                     print(f"⚠️ Invalid frame ({type(frame)}), using placeholder.")
@@ -898,28 +892,22 @@ class CameraObject:
                 time.sleep(0.1)  # Prevent tight loop on error
                 continue
 
-    def oldgenerate_stream(self):
-        while True:
-            if self.use_placeholder:
-                frame = self.placeholder_frame
-            else:
-                # Normal video streaming
-                with self.output.condition:
-                    self.output.condition.wait()  # Wait for new frame
-                    frame = self.output.read_frame()
-
-            # Debugging print statements
-            if frame is None:
-                print("🚨 Error: read_frame() returned None!")
-                continue  # Skip this iteration
-
-            if not isinstance(frame, bytes):
-                print(f"⚠️ Warning: Frame is not bytes! Type: {type(frame)}")
-                continue  # Skip this iteration
-
-            # Send frame to the stream
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    def safe_restart_stream(self):
+        try:
+            print("🔄 Restarting stream with correct config...")
+            self.use_placeholder = True
+            self.stop_streaming()
+            self.picam2.stop()
+            time.sleep(0.2)
+            self.picam2.start(self.video_config, show_preview=False)
+            self.start_streaming()
+            self.flush_frames()
+            self.use_placeholder = False
+            print("✅ Stream restarted and flushed.")
+        except Exception as e:
+            print(f"🚨 Failed to restart stream: {e}")
+            traceback.print_exc()
+            self.use_placeholder = True  # Keep using placeholder if restart fails
 
     def generate_placeholder_frame(self):
         mode_index = int(self.camera_profile["sensor_mode"])
