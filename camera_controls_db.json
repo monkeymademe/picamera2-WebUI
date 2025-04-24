@@ -382,6 +382,19 @@
           ]
         },
         {
+          "name": "Live Feed Resolution",
+          "id": "LiveFeedResolution",
+          "source": "generatedresolutions",
+          "info": "Sets the resolution used for the live feed, independent of the sensor mode.",
+          "type": "radio",
+          "enabled": true,
+          "default": 0,
+          "hr":true,
+          "options": [
+            { "value": 0, "label": "This needs to be where the resolutions go", "enabled": true }
+          ]
+        },
+        {
           "name": "Save RAW DNG",
           "id": "saveRAW",
           "info": "When enabled the camera will take a Jpg and RAW file from the same buffer. A link will be added to the file in the image gallery for downloading DNG",

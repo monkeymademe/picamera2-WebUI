@@ -218,11 +218,11 @@ class CameraObject:
         self.init_configure_camera()
         # Compare camera controls DB flushing out settings not avaialbe from picamera2
         self.live_controls = self.initialize_controls_template(self.picam2.camera_controls)
-        # Set the Camers sensor mode 
-        self.set_sensor_mode(self.camera_profile["sensor_mode"])
         # Load saved camaera profile if one exists
         self.load_saved_camera_profile()
         self.camera_init = False
+        # Set the Camers sensor mode 
+        self.set_sensor_mode(self.camera_profile["sensor_mode"])
         # Set capture flag and set placeholder image
         self.use_placeholder = False
         self.placeholder_frame = self.generate_placeholder_frame()  # Create placeholder
@@ -373,7 +373,7 @@ class CameraObject:
                 "sensor_mode": 0,
                 "live_preview": True,
                 "model": self.camera_info.get("Model", "Unknown"),
-                "resolutions": {"StillCaptureResolution": 0},
+                "resolutions": {"StillCaptureResolution": 0, "LiveFeedResolution": 6},
                 "saveRAW": False,
                 "controls": {}
             }
@@ -599,8 +599,9 @@ class CameraObject:
             self.still_config = self.picam2.create_still_configuration(
                 sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']}
             )
+            print(self.camera_resolutions[int(self.camera_profile['resolutions']['LiveFeedResolution'])])
             self.video_config = self.picam2.create_video_configuration(
-                main={"size": self.camera_resolutions[int(3)]}, 
+                main={"size": self.camera_resolutions[int(self.camera_profile['resolutions']['LiveFeedResolution'])]}, 
                 sensor={'output_size': mode['size'], 'bit_depth': mode['bit_depth']},
             )
             
@@ -644,19 +645,36 @@ class CameraObject:
             raise ValueError(str(e))
 
     def set_live_feed_resolution(self, resolution_index):
-        with self.sensor_mode_lock:  # Prevent conflicts with sensor mode changes
-            # Ensure resolution_index is an integer
-            resolution_index = int(resolution_index)
-            if resolution_index < 0 or resolution_index >= len(self.camera_resolutions):
-                raise ValueError("Invalid resolution index")
-            
-            resolution = self.camera_resolutions[resolution_index]
-            print(f"Setting live feed resolution to: {resolution}")
+        # Stop the camera if it's running
+        if not self.camera_init:
+            self.use_placeholder = True
+            self.stop_streaming()
+            self.picam2.stop()
+            time.sleep(0.2)  # Increased delay for high-res modes
+        # Ensure resolution_index is an integer
+        resolution_index = int(resolution_index)
+        if resolution_index < 0 or resolution_index >= len(self.camera_resolutions):
+            raise ValueError("Invalid resolution index")
+        
+        resolution = self.camera_resolutions[resolution_index]
+        print(f"Setting live feed resolution to: {resolution}")
 
-            # Update video config
-            self.video_config = self.picam2.create_video_configuration(main={"size": resolution})
-            # Apply new configuration
-            self.configure_video_config()
+        # Update video config
+        self.video_config = self.picam2.create_video_configuration(main={"size": resolution})
+        # Apply new configuration
+        self.configure_video_config()
+
+        # Restart the camera if it was running
+        if not self.camera_init:
+            try:
+                self.picam2.start()
+                self.start_streaming()
+                time.sleep(0.2)  # Increased delay for high-res modes
+                self.use_placeholder = False
+            except Exception as e:
+                print(f"⚠️ Error restarting camera: {e}")
+                self.use_placeholder = True
+                raise
 
     def update_camera_from_metadata(self):
         metadata = self.capture_metadata()
@@ -731,7 +749,7 @@ class CameraObject:
             "sensor_mode": 0,
             "live_preview": True,
             "model": self.camera_info.get("Model", "Unknown"),
-            "resolutions": {"StillCaptureResolution": 0},
+            "resolutions": {"StillCaptureResolution": 0, "LiveFeedResolution": 0},
             "saveRAW": False,
             "controls": {}  # Empty controls to be updated later
         }
