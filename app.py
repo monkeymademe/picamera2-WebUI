@@ -256,16 +256,10 @@ class CameraObject:
         if not self.camera_init:
             self.picam2.stop()
         self.set_orientation()
-        self.set_still_config()
-        self.set_video_config()
+        self.picam2.configure(self.still_config)
+        self.picam2.configure(self.video_config)
         if not self.camera_init:
             self.picam2.start()
-
-    def set_still_config(self):
-        self.picam2.configure(self.still_config)
-
-    def set_video_config(self):
-        self.picam2.configure(self.video_config)
 
     # set_live_feed_resolution
     def configure_video_config(self):
