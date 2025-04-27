@@ -244,12 +244,14 @@ class CameraObject:
     # Camera Config Functions
     #-----
 
+    # Init the camera config setting up still and vidoe configs
     def init_configure_camera(self):
         self.still_config = {}
         self.video_config = {}
         self.still_config = self.picam2.create_still_configuration()
         self.video_config = self.picam2.create_video_configuration()
 
+    # Update camera settings flip and resolution settings
     def update_camera_config(self):
         if not self.camera_init:
             self.picam2.stop()
@@ -259,32 +261,18 @@ class CameraObject:
         if not self.camera_init:
             self.picam2.start()
 
-    def configure_camera(self):
-        if not self.camera_init:
-            self.use_placeholder = True
-            self.stop_streaming()
-            self.picam2.stop()
-            time.sleep(0.1)
-        self.set_still_config()
-        self.set_video_config()
-        if not self.camera_init:
-            time.sleep(0.1)
-            self.picam2.start()
-            self.start_streaming()
-            self.use_placeholder = False
-
     def set_still_config(self):
         self.picam2.configure(self.still_config)
 
     def set_video_config(self):
         self.picam2.configure(self.video_config)
 
+    # set_live_feed_resolution
     def configure_video_config(self):
         if not self.camera_init:
             self.use_placeholder = True
             self.stop_streaming()
             time.sleep(0.1)
-            self.picam2.stop()
             self.picam2.stop()
             time.sleep(0.1)
         self.set_orientation()
@@ -294,21 +282,6 @@ class CameraObject:
             self.picam2.start()
             self.start_streaming()
             self.use_placeholder = False
-    
-    def configure_still_config(self):
-        if not self.camera_init:
-            self.use_placeholder = True
-            self.stop_streaming()
-            self.picam2.stop()
-            time.sleep(0.1)
-        self.set_orientation()
-        self.picam2.configure(self.still_config)
-        if not self.camera_init:
-            time.sleep(0.1)
-            self.picam2.start()
-            self.start_streaming()
-            self.use_placeholder = False
-        
 
     def load_saved_camera_profile(self):
         #Load the saved camera config if available.
