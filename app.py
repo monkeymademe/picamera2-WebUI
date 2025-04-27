@@ -253,6 +253,7 @@ class CameraObject:
 
     # Update camera settings flip and resolution settings
     def update_camera_config(self):
+        # If the system is initializing no need to start stop camera so skip it 
         if not self.camera_init:
             self.picam2.stop()
         self.set_orientation()
