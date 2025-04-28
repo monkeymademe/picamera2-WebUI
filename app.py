@@ -252,7 +252,7 @@ class CameraObject:
         self.video_config = self.picam2.create_video_configuration()
 
     # Update camera settings flip and resolution settings
-    def update_camera_config(self):
+    def update_camera_config_OLD(self):
         # If the system is initializing no need to start stop camera so skip it 
         if not self.camera_init:
             self.picam2.stop()
@@ -261,6 +261,47 @@ class CameraObject:
         self.picam2.configure(self.video_config)
         if not self.camera_init:
             self.picam2.start()
+
+    # Update camera settings flip and resolution settings
+    def update_camera_config(self, update=None):
+        # Update the camera configuration.
+        # Args: update (str, optional): 'video' or 'still' to update a specific config.
+        # If None, both still and video configs are updated.
+        print_section("Updating camera configuration")
+        try:
+            if not self.camera_init:
+                print("Stopping camera/stream for reconfiguration")
+                self.use_placeholder = True
+                self.stop_streaming()
+                time.sleep(0.1)
+                self.picam2.stop()
+                time.sleep(0.1)
+
+            # Set flip/mirror orientation
+            self.set_orientation()
+
+            if update in (None, "still"):
+                print("Applying still configuration")
+                self.picam2.configure(self.still_config)
+
+            if update in (None, "video"):
+                print("Applying video configuration")
+                self.picam2.configure(self.video_config)
+
+            if not self.camera_init:
+                print("Starting camera")
+                time.sleep(0.1)
+                self.picam2.start()
+                time.sleep(0.1)
+                self.start_streaming()
+                self.use_placeholder = False
+
+            print_section("Camera reconfiguration complete")
+
+        except Exception as e:
+            print(f"UNHANDLED error during camera config update: {e}")
+            import traceback
+            traceback.print_exc()
 
     # set_live_feed_resolution
     def configure_video_config(self):
@@ -341,7 +382,7 @@ class CameraObject:
                 "sensor_mode": 0,
                 "live_preview": True,
                 "model": self.camera_info.get("Model", "Unknown"),
-                "resolutions": {"StillCaptureResolution": 0, "LiveFeedResolution": 6},
+                "resolutions": {"StillCaptureResolution": 0, "LiveFeedResolution": 0},
                 "saveRAW": False,
                 "controls": {}
             }
